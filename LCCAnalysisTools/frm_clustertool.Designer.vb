@@ -49,6 +49,7 @@ Partial Class frm_clustertool
         Me.rtxtHELP_CNT = New System.Windows.Forms.RichTextBox()
         Me.Panel2 = New System.Windows.Forms.Panel()
         Me.Label2 = New System.Windows.Forms.Label()
+        Me.btnOptParam = New System.Windows.Forms.Button()
         Me.grpCLUSTER.SuspendLayout()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
@@ -85,7 +86,7 @@ Partial Class frm_clustertool
         '
         Me.txtNQUERY.Location = New System.Drawing.Point(18, 22)
         Me.txtNQUERY.Name = "txtNQUERY"
-        Me.txtNQUERY.Size = New System.Drawing.Size(303, 20)
+        Me.txtNQUERY.Size = New System.Drawing.Size(366, 20)
         Me.txtNQUERY.TabIndex = 0
         Me.txtNQUERY.Text = "1500"
         Me.txtNQUERY.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
@@ -122,7 +123,7 @@ Partial Class frm_clustertool
         Me.grpCLUSTER.Controls.Add(Me.txtCMBFVAL)
         Me.grpCLUSTER.Location = New System.Drawing.Point(7, 167)
         Me.grpCLUSTER.Name = "grpCLUSTER"
-        Me.grpCLUSTER.Size = New System.Drawing.Size(338, 141)
+        Me.grpCLUSTER.Size = New System.Drawing.Size(400, 141)
         Me.grpCLUSTER.TabIndex = 3
         Me.grpCLUSTER.TabStop = False
         Me.grpCLUSTER.Text = "Cluster method"
@@ -152,7 +153,7 @@ Partial Class frm_clustertool
         '
         Me.txtCMSVAL.Location = New System.Drawing.Point(149, 18)
         Me.txtCMSVAL.Name = "txtCMSVAL"
-        Me.txtCMSVAL.Size = New System.Drawing.Size(172, 20)
+        Me.txtCMSVAL.Size = New System.Drawing.Size(235, 20)
         Me.txtCMSVAL.TabIndex = 4
         Me.txtCMSVAL.Text = "1700"
         Me.txtCMSVAL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
@@ -161,7 +162,7 @@ Partial Class frm_clustertool
         '
         Me.txtCMBSVAL.Location = New System.Drawing.Point(149, 111)
         Me.txtCMBSVAL.Name = "txtCMBSVAL"
-        Me.txtCMBSVAL.Size = New System.Drawing.Size(172, 20)
+        Me.txtCMBSVAL.Size = New System.Drawing.Size(235, 20)
         Me.txtCMBSVAL.TabIndex = 6
         Me.txtCMBSVAL.Text = "1700"
         Me.txtCMBSVAL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
@@ -170,7 +171,7 @@ Partial Class frm_clustertool
         '
         Me.txtCMBFVAL.Location = New System.Drawing.Point(202, 88)
         Me.txtCMBFVAL.Name = "txtCMBFVAL"
-        Me.txtCMBFVAL.Size = New System.Drawing.Size(119, 20)
+        Me.txtCMBFVAL.Size = New System.Drawing.Size(182, 20)
         Me.txtCMBFVAL.TabIndex = 5
         Me.txtCMBFVAL.Text = "1.5"
         Me.txtCMBFVAL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
@@ -179,7 +180,7 @@ Partial Class frm_clustertool
         '
         Me.btnCANCEL.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.btnCANCEL.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.btnCANCEL.Location = New System.Drawing.Point(182, 432)
+        Me.btnCANCEL.Location = New System.Drawing.Point(102, 432)
         Me.btnCANCEL.Name = "btnCANCEL"
         Me.btnCANCEL.Size = New System.Drawing.Size(75, 23)
         Me.btnCANCEL.TabIndex = 2
@@ -192,13 +193,13 @@ Partial Class frm_clustertool
         Me.cboLAYER.FormattingEnabled = True
         Me.cboLAYER.Location = New System.Drawing.Point(7, 22)
         Me.cboLAYER.Name = "cboLAYER"
-        Me.cboLAYER.Size = New System.Drawing.Size(338, 21)
+        Me.cboLAYER.Size = New System.Drawing.Size(400, 21)
         Me.cboLAYER.TabIndex = 0
         '
         'btnOK
         '
         Me.btnOK.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnOK.Location = New System.Drawing.Point(101, 432)
+        Me.btnOK.Location = New System.Drawing.Point(9, 432)
         Me.btnOK.Name = "btnOK"
         Me.btnOK.Size = New System.Drawing.Size(75, 23)
         Me.btnOK.TabIndex = 1
@@ -208,7 +209,7 @@ Partial Class frm_clustertool
         'btnSHHELP
         '
         Me.btnSHHELP.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnSHHELP.Location = New System.Drawing.Point(263, 432)
+        Me.btnSHHELP.Location = New System.Drawing.Point(325, 432)
         Me.btnSHHELP.Name = "btnSHHELP"
         Me.btnSHHELP.Size = New System.Drawing.Size(84, 23)
         Me.btnSHHELP.TabIndex = 3
@@ -226,6 +227,7 @@ Partial Class frm_clustertool
         '
         'splcHELP.Panel1
         '
+        Me.splcHELP.Panel1.Controls.Add(Me.btnOptParam)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
         Me.splcHELP.Panel1.Controls.Add(Me.grpMEASSPACE)
         Me.splcHELP.Panel1.Controls.Add(Me.grpNQUERY)
@@ -240,7 +242,7 @@ Partial Class frm_clustertool
         Me.splcHELP.Panel2.Controls.Add(Me.Panel2)
         Me.splcHELP.Panel2Collapsed = True
         Me.splcHELP.Panel2MinSize = 0
-        Me.splcHELP.Size = New System.Drawing.Size(356, 429)
+        Me.splcHELP.Size = New System.Drawing.Size(421, 429)
         Me.splcHELP.SplitterDistance = 356
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
@@ -250,7 +252,7 @@ Partial Class frm_clustertool
         Me.grpOUT.Controls.Add(Me.txtOUT)
         Me.grpOUT.Location = New System.Drawing.Point(7, 314)
         Me.grpOUT.Name = "grpOUT"
-        Me.grpOUT.Size = New System.Drawing.Size(338, 50)
+        Me.grpOUT.Size = New System.Drawing.Size(400, 50)
         Me.grpOUT.TabIndex = 4
         Me.grpOUT.TabStop = False
         Me.grpOUT.Text = "Output layer name"
@@ -259,7 +261,7 @@ Partial Class frm_clustertool
         '
         Me.txtOUT.Location = New System.Drawing.Point(18, 20)
         Me.txtOUT.Name = "txtOUT"
-        Me.txtOUT.Size = New System.Drawing.Size(303, 20)
+        Me.txtOUT.Size = New System.Drawing.Size(366, 20)
         Me.txtOUT.TabIndex = 0
         '
         'grpMEASSPACE
@@ -268,7 +270,7 @@ Partial Class frm_clustertool
         Me.grpMEASSPACE.Controls.Add(Me.radMEASGEO)
         Me.grpMEASSPACE.Location = New System.Drawing.Point(7, 108)
         Me.grpMEASSPACE.Name = "grpMEASSPACE"
-        Me.grpMEASSPACE.Size = New System.Drawing.Size(338, 53)
+        Me.grpMEASSPACE.Size = New System.Drawing.Size(400, 53)
         Me.grpMEASSPACE.TabIndex = 2
         Me.grpMEASSPACE.TabStop = False
         Me.grpMEASSPACE.Text = "Measurement space"
@@ -303,10 +305,10 @@ Partial Class frm_clustertool
         Me.grpNQUERY.Controls.Add(Me.txtNQUERY)
         Me.grpNQUERY.Location = New System.Drawing.Point(7, 49)
         Me.grpNQUERY.Name = "grpNQUERY"
-        Me.grpNQUERY.Size = New System.Drawing.Size(338, 53)
+        Me.grpNQUERY.Size = New System.Drawing.Size(400, 53)
         Me.grpNQUERY.TabIndex = 1
         Me.grpNQUERY.TabStop = False
-        Me.grpNQUERY.Text = "Only when Nearest Neighbor distance is less than or equal to (m)"
+        Me.grpNQUERY.Text = "Threshold Distance"
         '
         'Panel1
         '
@@ -351,13 +353,22 @@ Partial Class frm_clustertool
         Me.Label2.TabIndex = 0
         Me.Label2.Text = "Input point layer:"
         '
+        'btnOptParam
+        '
+        Me.btnOptParam.Location = New System.Drawing.Point(7, 385)
+        Me.btnOptParam.Name = "btnOptParam"
+        Me.btnOptParam.Size = New System.Drawing.Size(119, 23)
+        Me.btnOptParam.TabIndex = 4
+        Me.btnOptParam.Text = "Optimize Parameters"
+        Me.btnOptParam.UseVisualStyleBackColor = True
+        '
         'frm_clustertool
         '
         Me.AcceptButton = Me.btnOK
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.btnCANCEL
-        Me.ClientSize = New System.Drawing.Size(356, 457)
+        Me.ClientSize = New System.Drawing.Size(421, 457)
         Me.Controls.Add(Me.btnCANCEL)
         Me.Controls.Add(Me.btnOK)
         Me.Controls.Add(Me.btnSHHELP)
@@ -413,4 +424,5 @@ Partial Class frm_clustertool
     Friend WithEvents Panel1 As System.Windows.Forms.Panel
     Friend WithEvents rtxtHELP_CNT As System.Windows.Forms.RichTextBox
     Friend WithEvents Panel2 As System.Windows.Forms.Panel
+    Friend WithEvents btnOptParam As System.Windows.Forms.Button
 End Class

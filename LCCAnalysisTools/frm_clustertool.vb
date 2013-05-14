@@ -9,6 +9,9 @@ Imports ESRI.ArcGIS.Framework
 Imports ESRI.ArcGIS.Geometry
 Imports System.Math
 Imports System.Drawing
+Imports ESRI.ArcGIS.Geoprocessor
+
+
 
 Public Class frm_clustertool
 
@@ -16,7 +19,7 @@ Public Class frm_clustertool
                                          ByVal e As System.EventArgs) _
                                          Handles MyBase.Load
 
-        Dim pEditor As IEditor = My.ArcMap.Editor
+        Dim pEditor As IEditor3 = My.ArcMap.Editor
 
         'Make sure you are NOT in edit mode
         If pEditor.EditState = esriEditState.esriStateEditing Then
@@ -104,7 +107,7 @@ Public Class frm_clustertool
             If CInt(txtNQUERY.Text) > 0 Then txtNQUERY.Text = _
                                     CInt(txtNQUERY.Text).ToString
         Catch ex As Exception
-            MsgBox("Please enter a 'Nearest Neighbor distance filter' value greater than 0.", _
+            MsgBox("Please enter a 'Threshold Distance'. Craters with no neighbors within this distance are ignored.", _
                    MsgBoxStyle.Exclamation, _
                    "Invalid Parameter")
             txtNQUERY.Text = "1500"
@@ -150,14 +153,14 @@ Public Class frm_clustertool
     Private Sub btnOK_Click(ByVal sender As System.Object, _
                             ByVal e As System.EventArgs) _
                             Handles btnOK.Click
-
+        'This method handles the OK OnClick call.
         'Check for errors in all field values
         FormErrorHandler()
 
     End Sub
 
     Private Sub FormErrorHandler()
-
+        'On form submission this method is called to validate all the form fields.
         Dim pFLayer As IFeatureLayer = GetFLayerByName(m_sCAFLayer)
 
         'Make sure an input layer was selected and assigned to an object
@@ -226,10 +229,10 @@ Public Class frm_clustertool
 
     End Sub
 
-    Private Sub btnSHHELP_Click(ByVal sender As System.Object, _
+    Private Sub btnSHHELP_Click(ByVal sender As System.Object,
                                 ByVal e As System.EventArgs) _
                                 Handles btnSHHELP.Click
-
+        'This method shows and hides the help dialog boxes.
         If btnSHHELP.Text = "<< Hide Help" Then
             splcHELP.Panel2Collapsed = True
             Me.MaximumSize = New Size(Me.MinimumSize.Width, _
@@ -246,6 +249,7 @@ Public Class frm_clustertool
     End Sub
 
     Private Sub LoadProgressForm()
+        'This method launches the progress form, packages the parameters from the form, and calls the RunClustering method to initiate processing.
 
         'Hide the Cluster Analysis form
         Me.Hide()
@@ -276,6 +280,7 @@ Public Class frm_clustertool
     End Sub
 
     Public Sub RunClustering(ByVal CAF As CAPARAM)
+        'This is the algorithm to run the clustering analysis.
 
         Dim PRINTtxt As String = ""
 
@@ -290,6 +295,8 @@ Public Class frm_clustertool
         Dim pGCS As IGeographicCoordinateSystem2 = GetGCS(pSpatRef) ' GetGCS lives in mod_public
         Dim dSemiMajAxis As Double = pGCS.Datum.Spheroid.SemiMajorAxis
         Dim dSemiMinAxis As Double = pGCS.Datum.Spheroid.SemiMinorAxis
+
+        Dim productCode As String = GetArcGISLicenseName()
 
         '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         ' Create a CancelTracker
@@ -343,11 +350,19 @@ Public Class frm_clustertool
             PRINTtxt += " Buffer option - Fixed distance: " & CAF.sCMBSVAL & " m."
         End If
         PRINTtxt += vbCrLf & " Output layer name: " & CAF.sOUT
+        PRINTtxt += vbCrLf & " License Type: " & productCode
         PRINTtxt += vbCrLf & vbCrLf
+
+        'Near is much faster than this method.  If the user has an Advanced License and the distances are planar, use that.
+        If productCode = "Advanced" And measName = "Planar" Then
+            UseNearGeoprocessing(pFClass, CAF.sNQUERY)
+        End If
+
+
 
         'Here the initial feature array is populated.  Each point in the input is copied to the output and the following fields are created:
 
-        Dim pFCursor1 As IFeatureCursor = pFClass.Search(Nothing, False) ' The input layer is accessed viat pFClass, which is defined above via PFLayer, which is accessed via a global which stores the layer name.  From the input form.
+        Dim pFCursor1 As IFeatureCursor = pFClass.Search(Nothing, False) 'The input layer is accessed viat pFClass, which is defined above via PFLayer, which is accessed via a global which stores the layer name.  From the input form.
         Dim pFeature1 As IFeature = pFCursor1.NextFeature
 
         '   AID =   Array ID (or the 'cnt' value in iteration below)
@@ -1023,6 +1038,34 @@ Public Class frm_clustertool
 
     End Sub
 
+    Public Function GetArcGISLicenseName() As System.String
+
+        Dim esriLicenseInfo As ESRI.ArcGIS.esriSystem.IESRILicenseInfo = New ESRI.ArcGIS.esriSystem.ESRILicenseInfoClass
+        Dim string_LicenseLevel As System.String = Nothing
+
+        Select Case esriLicenseInfo.DefaultProduct
+            Case ESRI.ArcGIS.esriSystem.esriProductCode.esriProductCodeBasic
+                string_LicenseLevel = "Basic"
+            Case ESRI.ArcGIS.esriSystem.esriProductCode.esriProductCodeStandard
+                string_LicenseLevel = "Standard"
+            Case ESRI.ArcGIS.esriSystem.esriProductCode.esriProductCodeAdvanced
+                string_LicenseLevel = "Advanced"
+        End Select
+
+        Return string_LicenseLevel
+
+    End Function
+
+    Public Sub UseNearGeoprocessing(ByRef pFClass, ByVal nquery)
+        Dim GP As Geoprocessor = New Geoprocessor()
+        Dim parameters As IVariantArray = New VarArray
+        parameters.Add(pFClass)
+        parameters.Add(pFClass)
+        parameters.Add(nquery)
+
+        GP.Execute("Near", parameters, Nothing)
+
+    End Sub
 
 #Region "*** HELP CONTENT DISPLAY DYNAMICS ****************************************************"
 #End Region
@@ -1175,10 +1218,10 @@ Public Class frm_clustertool
 
         'Update help panel
         Dim strText As String = _
-            "Points with a Nearest Neighbor distance outside this threshold are excluded from " & _
-            "the cluster analysis."
+            "Points without a neighbor within this distance are considered outluers and are not " & _
+            "considered during the cluster analysis process."
 
-        HELPCntUpdate("Nearest Neighbor distance filter", strText)
+        HELPCntUpdate("Threshold Distance", strText)
 
     End Sub
 
@@ -1278,4 +1321,11 @@ Public Class frm_clustertool
 
     End Sub
 
+    Private Sub btnCANCEL_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCANCEL.Click
+
+    End Sub
+
+    Private Sub Optimize_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnOptParam.Click
+
+    End Sub
 End Class
