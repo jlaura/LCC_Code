@@ -1,0 +1,38 @@
+﻿<ESRI.Configuration xmlns="http://schemas.esri.com/Desktop/AddIns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>LCCAnalysisTools</Name>
+  <AddInID>{0aba61f7-85a8-4e35-89b8-db5a786c33e3}</AddInID>
+  <Description>LCC Analysis Tools provides a set of tools for backtracking secondary impact crater chains, e.g. Large Crater Clusters (LCC) to potential parent crater sites.</Description>
+  <Version>1.0</Version>
+  <Image>Images\LCCAnalysisTools.png</Image>
+  <Author>Richard A Nava</Author>
+  <Company>USGS Astrogeology</Company>
+  <Date>3/12/2012</Date>
+  <Targets>
+    <Target name="Desktop" version="10.0" />
+  </Targets>
+  <AddIn language="CLR" library="LCCAnalysisTools.dll" namespace="LCCAnalysisTools">
+    <ArcMap>
+      <Commands>
+        <Button id="USGS_Astrogeology_LCCAnalysisTools_btn_clustertool" class="btn_clustertool" message="Identifies clusters of points by Nearest Neighbor analysis." caption="Cluster Tool" tip="Cluster tool" category="USGS Astrogeology" image="Images\btn_clustertool.png" />
+        <Button id="USGS_Astrogeology_LCCAnalysisTools_btn_dirdistool" class="btn_dirdistool" message="Fits an line or ellipse to clusters." caption="Directional Distribution Tool" tip="Directional Distribution tool" category="USGS Astrogeology" image="Images\btn_dirdistool.png" />
+        <Button id="USGS_Astrogeology_LCCAnalysisTools_btn_trajecttool" class="btn_trajecttool" message="Extends center lines of clusters to model ejecta trajectories." caption="Trajectory Tool" tip="Trajectory tool" category="USGS Astrogeology" image="Images\btn_trajecttool.png" />
+        <Button id="USGS_Astrogeology_LCCAnalysisTools_btn_intersecttool" class="btn_intersecttool" message="Intersects trajectories, calculates clusters of intersections, and computes centroid for intersection clusters." caption="Primary Impact Approximation Tool" tip="Primary Impact Approximation tool" category="USGS Astrogeology" image="Images\btn_intersecttool.png" />
+      </Commands>
+      <Toolbars>
+        <Toolbar id="USGS_Astrogeology_LCCAnalysisTools_LCC_Analysis_Tools" caption="LCC Analysis Tools" showInitially="true">
+          <Items>
+            <Button refID="USGS_Astrogeology_LCCAnalysisTools_btn_clustertool" />
+            <Button refID="USGS_Astrogeology_LCCAnalysisTools_btn_dirdistool" />
+            <Button refID="USGS_Astrogeology_LCCAnalysisTools_btn_trajecttool" />
+            <Button refID="USGS_Astrogeology_LCCAnalysisTools_btn_intersecttool" />
+          </Items>
+        </Toolbar>
+      </Toolbars>
+      <Editor>
+        <Extensions>
+          <Extension id="USGS_Astrogeology_LCCAnalysisTools_ext_editor" class="ext_editor" />
+        </Extensions>
+      </Editor>
+    </ArcMap>
+  </AddIn>
+</ESRI.Configuration>
