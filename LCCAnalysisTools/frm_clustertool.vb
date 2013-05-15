@@ -283,13 +283,14 @@ Public Class frm_clustertool
         Dim PRINTtxt As String = ""
 
         Dim pMxDoc As IMxDocument = My.ArcMap.Document 'This is an interface that allows access to the map document.  It is used to add the cluster layer to the ToC and update the ToC.
-        'Dim pFLayer As IFeatureLayer = GetFLayerByName(CAF.sFLAYER) 'The IFeatureLayer Interface provides access to the GetFLayerByName Method.  IFeatureLayer has been superceeded bt IFeatureLayer2.
-        Dim pFlayer As IFeatureLayer2 = GetFLayerByName(CAF.sFLAYER) ' Updated to use V2 - GetFLayerByName access the public function in mod_public, which iterates over the ToC just like the Arc example.
-        Dim pFClass As IFeatureClass = pFLayer.FeatureClass 'A property - the datasource for the layer
+        Dim pMap As IMap = pMxDoc.FocusMap
+        Dim pFLayer As IFeatureLayer = GetFLayerByName(CAF.sFLAYER) 'The IFeatureLayer Interface provides access to the GetFLayerByName Method.  IFeatureLayer has been superceeded bt IFeatureLayer2.
+        'Dim pFlayer As IFeatureLayer = GetFLayerByName(CAF.sFLAYER) ' Updated to use V2 - GetFLayerByName access the public function in mod_public, which iterates over the ToC just like the Arc example.
+        Dim pFClass As IFeatureClass = pFlayer.FeatureClass 'A property - the datasource for the layer
         Dim pDataset As IDataset = pFClass
         Dim pFDataset As IFeatureDataset = pFClass.FeatureDataset
         Dim pWrkspc2 As IWorkspace2 = DirectCast(pDataset.Workspace, IWorkspace2)
-        Dim pSpatRef As ISpatialReference = GetFLayerSpatRef(pFLayer)
+        Dim pSpatRef As ISpatialReference = GetFLayerSpatRef(pFlayer)
         Dim pGCS As IGeographicCoordinateSystem2 = GetGCS(pSpatRef) ' GetGCS lives in mod_public
         Dim dSemiMajAxis As Double = pGCS.Datum.Spheroid.SemiMajorAxis
         Dim dSemiMinAxis As Double = pGCS.Datum.Spheroid.SemiMinorAxis
@@ -321,6 +322,17 @@ Public Class frm_clustertool
         Dim sSTime As String = Now.Hour.ToString & ":" & Now.Minute.ToString & _
                                ":" & ((CDbl(Now.Second + (Now.Millisecond / _
                                                           1000))).ToString)
+
+        'Create the output table to store the iteration statistics
+        Dim tName = "LCC_Statistics" + pFLayer.Name
+        Dim tTable = CreateTable(pWrkspc2, tName, Nothing)
+
+        'Add the table to the ToC.  If the table exists, this is the existing table.
+        Dim pStandAloneTable As IStandaloneTable = New StandaloneTable()
+        pStandAloneTable.Table = tTable
+        Dim pStandAloneColl As IStandaloneTableCollection = pMap
+        pStandAloneColl.AddStandaloneTable(pStandAloneTable)
+        pMxDoc.UpdateContents() 'See if this updates the TOC with the table...
 
         'SUMMARY PRINT: Progress header
         PRINTtxt += SumProgramHeader("Cluster Tool", _
@@ -1123,6 +1135,209 @@ Public Class frm_clustertool
         Return lStats
     End Function
 
+    Private Function CreateTable(ByVal workspace As IWorkspace2, ByVal tableName As System.String, ByVal fields As IFields) As ITable
+
+        ' Create the behavior clasid for the featureclass  
+        Dim uid As ESRI.ArcGIS.esriSystem.UID = New ESRI.ArcGIS.esriSystem.UIDClass
+
+        If workspace Is Nothing Then
+            Return Nothing ' valid feature workspace not passed in as an argument to the method
+        End If
+
+        Dim featureWorkspace As IFeatureWorkspace = CType(workspace, IFeatureWorkspace) ' Explicit Cast
+        Dim table As ITable
+
+        If workspace.NameExists(esriDatasetType.esriDTTable, tableName) Then
+
+            '  A table with that name already exists so return that table 
+            table = featureWorkspace.OpenTable(tableName)
+            Return table
+        End If
+
+        uid.Value = "esriGeoDatabase.Object"
+
+        Dim objectClassDescription As IObjectClassDescription = New ObjectClassDescriptionClass
+
+        ' If a fields collection is not passed in then supply our own
+        If fields Is Nothing Then
+
+            ' Create the fields using the required fields method
+            fields = New FieldsClass()
+
+            Dim fieldsEdit As IFieldsEdit = CType(fields, IFieldsEdit) ' Explicit Cast
+
+            'Threshold Field
+            Dim fDist As IField = New FieldClass()
+            Dim fDistEdit As IFieldEdit = CType(fDist, IFieldEdit)
+            fDistEdit.Name_2 = "ThreshDist"
+            fDistEdit.AliasName_2 = "Threshold Distance"
+            fDistEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fDistEdit.Precision_2 = 12
+            fDistEdit.Scale_2 = 4
+            fDistEdit.Editable_2 = True
+            fDistEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fDist)
+
+            'Count Field
+            Dim fCount As IField = New FieldClass()
+            Dim fCountEdit As IFieldEdit = CType(fCount, IFieldEdit)
+            fCountEdit.Name_2 = "Count"
+            fCountEdit.AliasName_2 = "Total Point Count"
+            fCountEdit.Length_2 = 8
+            fCountEdit.Type_2 = esriFieldType.esriFieldTypeInteger
+            fCountEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fCount)
+
+            'Count with outliers removed
+            Dim fCountR As IField = New FieldClass()
+            Dim fCountEditR As IFieldEdit = CType(fCountR, IFieldEdit)
+            fCountEditR.Name_2 = "CountR"
+            fCountEditR.AliasName_2 = "Count w/o Outliers"
+            fCountEditR.Length_2 = 8
+            fCountEditR.Type_2 = esriFieldType.esriFieldTypeInteger
+            fCountEditR.IsNullable_2 = False
+            fieldsEdit.AddField(fCountR)
+
+            'Reduced Count percentage of total
+            Dim fPercTot As IField = New FieldClass()
+            Dim fpercTotEdit As IFieldEdit = CType(fPercTot, IFieldEdit)
+            fpercTotEdit.Name_2 = "PercTot"
+            fpercTotEdit.AliasName_2 = "RCount Percentage of Total"
+            fpercTotEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fpercTotEdit.Precision_2 = 12
+            fpercTotEdit.Scale_2 = 4
+            fpercTotEdit.Editable_2 = True
+            fpercTotEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fPercTot)
+
+            'Mean
+            Dim fMean As IField = New FieldClass()
+            Dim fMeanEdit As IFieldEdit = CType(fMean, IFieldEdit)
+            fMeanEdit.Name_2 = "Mean"
+            fMeanEdit.AliasName_2 = "Mean Distance"
+            fMeanEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fMeanEdit.Precision_2 = 12
+            fMeanEdit.Scale_2 = 4
+            fMeanEdit.Editable_2 = True
+            fMeanEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fMean)
+
+            'Median
+            Dim fMedian As IField = New FieldClass()
+            Dim fMedianEdit As IFieldEdit = CType(fMedian, IFieldEdit)
+            fMedianEdit.Name_2 = "Median"
+            fMedianEdit.AliasName_2 = "Median Distance"
+            fMedianEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fMedianEdit.Precision_2 = 12
+            fMedianEdit.Scale_2 = 4
+            fMedianEdit.Editable_2 = True
+            fMedianEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fMedian)
+
+            'Min
+            Dim fMin As IField = New FieldClass()
+            Dim fMinEdit As IFieldEdit = CType(fMin, IFieldEdit)
+            fMinEdit.Name_2 = "Min"
+            fMinEdit.AliasName_2 = "Minimum Distance"
+            fMinEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fMinEdit.Precision_2 = 12
+            fMinEdit.Scale_2 = 4
+            fMinEdit.Editable_2 = True
+            fMinEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fMin)
+
+            'Max
+            Dim fMax As IField = New FieldClass()
+            Dim fMaxEdit As IFieldEdit = CType(fMax, IFieldEdit)
+            fMaxEdit.Name_2 = "Max"
+            fMaxEdit.AliasName_2 = "Maximum Distance"
+            fMaxEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fMaxEdit.Precision_2 = 12
+            fMaxEdit.Scale_2 = 4
+            fMaxEdit.Editable_2 = True
+            fMaxEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fMax)
+
+            'Range
+            Dim fRange As IField = New FieldClass()
+            Dim fRangeEdit As IFieldEdit = CType(fRange, IFieldEdit)
+            fRangeEdit.Name_2 = "Range"
+            fRangeEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fRangeEdit.Precision_2 = 12
+            fRangeEdit.Scale_2 = 4
+            fRangeEdit.Editable_2 = True
+            fRangeEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fRange)
+
+            'Std
+            Dim fStd As IField = New FieldClass()
+            Dim fStdEdit As IFieldEdit = CType(fStd, IFieldEdit)
+            fStdEdit.Name_2 = "Std"
+            fStdEdit.AliasName_2 = "Standard Deviation"
+            fStdEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fStdEdit.Precision_2 = 12
+            fStdEdit.Scale_2 = 4
+            fStdEdit.Editable_2 = True
+            fStdEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fStd)
+
+            'IQR
+            Dim fIqr As IField = New FieldClass()
+            Dim fIqrEdit As IFieldEdit = CType(fIqr, IFieldEdit)
+            fIqrEdit.Name_2 = "Iqr"
+            fIqrEdit.AliasName_2 = "Interquartile Range"
+            fIqrEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fIqrEdit.Precision_2 = 12
+            fIqrEdit.Scale_2 = 4
+            fIqrEdit.Editable_2 = True
+            fIqrEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fIqr)
+
+            'qLQ
+            Dim fqLQ As IField = New FieldClass()
+            Dim fqLQEdit As IFieldEdit = CType(fqLQ, IFieldEdit)
+            fqLQEdit.Name_2 = "qLQ"
+            fqLQEdit.AliasName_2 = "Lower Quartile"
+            fqLQEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fqLQEdit.Precision_2 = 12
+            fqLQEdit.Scale_2 = 4
+            fqLQEdit.Editable_2 = True
+            fqLQEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fqLQ)
+
+            'qUQ
+            Dim fqUq As IField = New FieldClass()
+            Dim fqUqEdit As IFieldEdit = CType(fqUq, IFieldEdit)
+            fqUqEdit.Name_2 = "qUq"
+            fqUqEdit.AliasName_2 = "Upper Quartile"
+            fqUqEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fqUqEdit.Precision_2 = 12
+            fqUqEdit.Scale_2 = 4
+            fqUqEdit.Editable_2 = True
+            fqUqEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fqUq)
+
+
+
+        End If
+
+        ' Use IFieldChecker to create a validated fields collection.
+        Dim fieldChecker As IFieldChecker = New FieldCheckerClass()
+        Dim enumFieldError As IEnumFieldError = Nothing
+        Dim validatedFields As IFields = Nothing
+        fieldChecker.ValidateWorkspace = CType(workspace, IWorkspace)
+        fieldChecker.Validate(fields, enumFieldError, validatedFields)
+
+        ' The enumFieldError enumerator can be inspected at this point to determine 
+        ' which fields were modified during validation.
+
+
+        ' Create and return the table
+        table = featureWorkspace.CreateTable(tableName, validatedFields, uid, Nothing, "")
+
+        Return table
+
+    End Function
 
 #Region "*** HELP CONTENT DISPLAY DYNAMICS ****************************************************"
 #End Region
@@ -1164,8 +1379,8 @@ Public Class frm_clustertool
         HELP_DistanceQuery()
     End Sub
 
-    Private Sub grpNQUERY_Enter(sender As System.Object, _
-                                e As System.EventArgs) _
+    Private Sub grpNQUERY_Enter(ByVal sender As System.Object, _
+                                ByVal e As System.EventArgs) _
                                 Handles grpNQUERY.Enter
         HELP_DistanceQuery()
     End Sub
@@ -1173,14 +1388,14 @@ Public Class frm_clustertool
 #Region "***** MEASUREMENT SPACE *******"
 #End Region
 
-    Private Sub grpMEASSPACE_Click(sender As System.Object, _
-                           e As System.EventArgs) _
+    Private Sub grpMEASSPACE_Click(ByVal sender As System.Object, _
+                           ByVal e As System.EventArgs) _
                            Handles grpMEASSPACE.Click
         HELP_MeasurementSpace()
     End Sub
 
-    Private Sub grpMEASSPACE_Enter(sender As System.Object, _
-                               e As System.EventArgs) _
+    Private Sub grpMEASSPACE_Enter(ByVal sender As System.Object, _
+                               ByVal e As System.EventArgs) _
                                Handles grpMEASSPACE.Enter
         HELP_MeasurementSpace()
     End Sub
@@ -1233,14 +1448,14 @@ Public Class frm_clustertool
 #Region "***** OUTPUT ********"
 #End Region
 
-    Private Sub grpOUT_Enter(sender As System.Object, _
-                             e As System.EventArgs) _
+    Private Sub grpOUT_Enter(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) _
                              Handles grpOUT.Enter
         HELP_Out()
     End Sub
 
-    Private Sub grpOUT_Click(sender As System.Object, _
-                             e As System.EventArgs) _
+    Private Sub grpOUT_Click(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) _
                              Handles grpOUT.Click
         HELP_Out()
     End Sub
