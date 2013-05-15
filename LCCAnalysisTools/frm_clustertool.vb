@@ -9,9 +9,7 @@ Imports ESRI.ArcGIS.Framework
 Imports ESRI.ArcGIS.Geometry
 Imports System.Math
 Imports System.Drawing
-Imports ESRI.ArcGIS.Geoprocessor
-
-
+Imports ESRI.ArcGIS.DataManagementTools
 
 Public Class frm_clustertool
 
@@ -296,8 +294,6 @@ Public Class frm_clustertool
         Dim dSemiMajAxis As Double = pGCS.Datum.Spheroid.SemiMajorAxis
         Dim dSemiMinAxis As Double = pGCS.Datum.Spheroid.SemiMinorAxis
 
-        Dim productCode As String = GetArcGISLicenseName()
-
         '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         ' Create a CancelTracker
         Dim pTrkCan As ITrackCancel = New CancelTracker
@@ -350,14 +346,7 @@ Public Class frm_clustertool
             PRINTtxt += " Buffer option - Fixed distance: " & CAF.sCMBSVAL & " m."
         End If
         PRINTtxt += vbCrLf & " Output layer name: " & CAF.sOUT
-        PRINTtxt += vbCrLf & " License Type: " & productCode
         PRINTtxt += vbCrLf & vbCrLf
-
-        'Near is much faster than this method.  If the user has an Advanced License and the distances are planar, use that.
-        If productCode = "Advanced" And measName = "Planar" Then
-            UseNearGeoprocessing(pFClass, CAF.sNQUERY)
-        End If
-
 
 
         'Here the initial feature array is populated.  Each point in the input is copied to the output and the following fields are created:
@@ -435,6 +424,22 @@ Public Class frm_clustertool
             End If
         Next
 
+        'Compute statistics on the clusters and save the results as a table.
+        Dim lStats = CalcStats(Ar, CAF.sNQUERY)
+
+        PRINTtxt += vbCrLf & " Threshold " & lStats(0)
+        PRINTtxt += vbCrLf & " Count " & pFClass.FeatureCount(Nothing)
+        PRINTtxt += vbCrLf & " Count without Outliers " & lStats(1)
+        PRINTtxt += vbCrLf & " % of Craters with neighbors within Threshold " & lStats(1) / pFClass.FeatureCount(Nothing) * 100
+        PRINTtxt += vbCrLf & " Mean: " & lStats(2)
+        PRINTtxt += vbCrLf & " Min: " & lStats(3)
+        PRINTtxt += vbCrLf & " Max: " & lStats(4)
+        PRINTtxt += vbCrLf & " Range: " & lStats(5)
+        PRINTtxt += vbCrLf & " STD: " & lStats(6)
+        PRINTtxt += vbCrLf & " Interquartile range: " & lStats(7)
+        PRINTtxt += vbCrLf & " Lower Quartile: " & lStats(8)
+        PRINTtxt += vbCrLf & " Upper Quartile: " & lStats(9)
+        PRINTtxt += vbCrLf & " Median: " & lStats(10)
         '********************************************************************************************
         'If the the clustering method is 'Same distance'
         If CAF.bCMS = True Then
@@ -1055,17 +1060,69 @@ Public Class frm_clustertool
         Return string_LicenseLevel
 
     End Function
+    Private Function CalcStats(ByVal Ar, ByVal dThreshold)
+        Dim dCount, dCountout, dRange, dSum, dMean, dStd, dIqr, dMin, dMax, dSumsq, dArray(), _
+            dMedian, dLQ, dUQ As Double
 
-    Public Sub UseNearGeoprocessing(ByRef pFClass, ByVal nquery)
-        Dim GP As Geoprocessor = New Geoprocessor()
-        Dim parameters As IVariantArray = New VarArray
-        parameters.Add(pFClass)
-        parameters.Add(pFClass)
-        parameters.Add(nquery)
+        dCount = 0
+        dMax = Ar(4, 0)
+        dMin = Ar(4, 0)
+        ReDim dArray(Ar.GetUpperBound(1) - 1)
+        'Ignore those points that are outliers in this computation.
+        For i As Integer = 0 To Ar.GetUpperBound(1) - 1
+            dCount += 1
+            dArray(i) = Ar(4, i)
+            If Ar(4, i) < dMin Then dMin = Ar(4, i)
+            If Ar(4, i) > dMax Then dMax = Ar(4, i)
+            If Ar(4, i) <= dThreshold Then dCountout = dCountout + 1
+            dSum = dSum + Ar(4, i)
+        Next
+        dMean = dSum / dCount
+        dRange = dMax - dMin
 
-        GP.Execute("Near", parameters, Nothing)
+        'Variance and STD
+        dSumsq = 0
+        For i As Integer = 0 To Ar.GetUpperBound(1) - 1
+            dSumsq = dSumsq + (Ar(4, i) - dMean) ^ 2
+        Next
 
-    End Sub
+        dStd = Sqrt(dSumsq / dCount) ' We are not using dCount - 1 as the sample is the total population.
+
+        System.Array.Sort(dArray)
+
+        'Compute the quartiles
+        If IEEERemainder(dCount, 2) = 0 Then
+            dMedian = (dArray(Round(dCount * 0.5)) + _
+                       dArray(Round((dCount * 0.5) + 1))) / 2
+            dLQ = (dArray(Round(dCount * 0.25)) + _
+                   dArray(Round((dCount * 0.25) + 1))) / 2
+            dUQ = (dArray(Round(dCount * 0.75)) + _
+                   dArray(Round((dCount * 0.75) + 1))) / 2
+        Else
+            dMedian = dArray(Round(dCount * 0.5))
+            dLQ = dArray(Round(dCount * 0.25))
+            dUQ = dArray(Round(dCount * 0.75))
+        End If
+
+        'Approximate Interquartile range
+        dIqr = dUQ - dLQ
+
+        Dim lStats As New List(Of Double)
+        lStats.Add(dThreshold)
+        lStats.Add(dCountout)
+        lStats.Add(dMean)
+        lStats.Add(dMin)
+        lStats.Add(dMax)
+        lStats.Add(dRange)
+        lStats.Add(dStd)
+        lStats.Add(dIqr)
+        lStats.Add(dLQ)
+        lStats.Add(dUQ)
+        lStats.Add(dMedian)
+
+        Return lStats
+    End Function
+
 
 #Region "*** HELP CONTENT DISPLAY DYNAMICS ****************************************************"
 #End Region
