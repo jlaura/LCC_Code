@@ -514,6 +514,7 @@ Public Class frm_intersecttool
 
         'Populate array with NDIST for all records in feature class
         Dim dFeature1(2, 0) As Double
+        Dim neighbor As Double = Nothing
         pTrkCan.Reset()
         For i As Integer = 0 To Ar.GetUpperBound(1)
             'Store the OID,X,Y of current feature

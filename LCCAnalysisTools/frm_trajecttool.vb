@@ -545,6 +545,9 @@ Public Class frm_trajecttool
                 End While
         End Select
 
+        'Get total number of features
+        Dim population = ArInDDs.Count
+
         If p_inGeometry = "line" Or p_inGeometry = "ellipse" Then
             'Filter by Major Axis and Inverse Flattening
             p_TrajQuery = New TRJQUERY
@@ -590,6 +593,22 @@ Public Class frm_trajecttool
                 Return
             End If
         End If
+
+        'Get sample size
+        Dim sample = ArInDDs.Count
+
+        Dim f100 As String = Space(3) & "|" & "{0,-20}" & "{1}" & "{2,16:F4}" & "|"
+        Dim f300 As String = Space(3) & "|" & StrDup(37, "-") & "|"
+        Dim f400 As String = Space(3) & "|" & StrDup(37, "_") & "|"
+        Dim f500 As String = Space(3) & StrDup(39, "_")
+
+        PRINTtxt += vbCrLf & vbCrLf & _
+           Space(3) & "STATS: Trajectories" & vbCrLf & _
+           (String.Format(f500, "_")) & vbCrLf & _
+           (String.Format(f100, "Total Population", "=", population)) & vbCrLf & _
+           (String.Format(f100, "Sample", "=", sample)) & vbCrLf & _
+           (String.Format(f100, "Percentage of Total", "=", sample / population * 100)) & vbCrLf & _
+           (String.Format(f400, "_")) & vbCrLf
 
         '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         pStepPro.MaxRange = ArInDDs.Count

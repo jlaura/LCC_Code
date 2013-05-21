@@ -39,6 +39,7 @@ Partial Class frm_clustertool
         Me.btnOK = New System.Windows.Forms.Button()
         Me.btnSHHELP = New System.Windows.Forms.Button()
         Me.splcHELP = New System.Windows.Forms.SplitContainer()
+        Me.btnOptParam = New System.Windows.Forms.Button()
         Me.grpOUT = New System.Windows.Forms.GroupBox()
         Me.txtOUT = New System.Windows.Forms.TextBox()
         Me.grpMEASSPACE = New System.Windows.Forms.GroupBox()
@@ -49,7 +50,6 @@ Partial Class frm_clustertool
         Me.rtxtHELP_CNT = New System.Windows.Forms.RichTextBox()
         Me.Panel2 = New System.Windows.Forms.Panel()
         Me.Label2 = New System.Windows.Forms.Label()
-        Me.btnOptParam = New System.Windows.Forms.Button()
         Me.grpCLUSTER.SuspendLayout()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
@@ -84,7 +84,7 @@ Partial Class frm_clustertool
         '
         'txtNQUERY
         '
-        Me.txtNQUERY.Location = New System.Drawing.Point(18, 22)
+        Me.txtNQUERY.Location = New System.Drawing.Point(18, 19)
         Me.txtNQUERY.Name = "txtNQUERY"
         Me.txtNQUERY.Size = New System.Drawing.Size(366, 20)
         Me.txtNQUERY.TabIndex = 0
@@ -121,7 +121,7 @@ Partial Class frm_clustertool
         Me.grpCLUSTER.Controls.Add(Me.txtCMSVAL)
         Me.grpCLUSTER.Controls.Add(Me.txtCMBSVAL)
         Me.grpCLUSTER.Controls.Add(Me.txtCMBFVAL)
-        Me.grpCLUSTER.Location = New System.Drawing.Point(7, 167)
+        Me.grpCLUSTER.Location = New System.Drawing.Point(7, 165)
         Me.grpCLUSTER.Name = "grpCLUSTER"
         Me.grpCLUSTER.Size = New System.Drawing.Size(400, 141)
         Me.grpCLUSTER.TabIndex = 3
@@ -227,7 +227,6 @@ Partial Class frm_clustertool
         '
         'splcHELP.Panel1
         '
-        Me.splcHELP.Panel1.Controls.Add(Me.btnOptParam)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
         Me.splcHELP.Panel1.Controls.Add(Me.grpMEASSPACE)
         Me.splcHELP.Panel1.Controls.Add(Me.grpNQUERY)
@@ -242,15 +241,24 @@ Partial Class frm_clustertool
         Me.splcHELP.Panel2.Controls.Add(Me.Panel2)
         Me.splcHELP.Panel2Collapsed = True
         Me.splcHELP.Panel2MinSize = 0
-        Me.splcHELP.Size = New System.Drawing.Size(421, 429)
+        Me.splcHELP.Size = New System.Drawing.Size(419, 429)
         Me.splcHELP.SplitterDistance = 356
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
         '
+        'btnOptParam
+        '
+        Me.btnOptParam.Location = New System.Drawing.Point(192, 487)
+        Me.btnOptParam.Name = "btnOptParam"
+        Me.btnOptParam.Size = New System.Drawing.Size(119, 23)
+        Me.btnOptParam.TabIndex = 4
+        Me.btnOptParam.Text = "Optimize Parameters"
+        Me.btnOptParam.UseVisualStyleBackColor = True
+        '
         'grpOUT
         '
         Me.grpOUT.Controls.Add(Me.txtOUT)
-        Me.grpOUT.Location = New System.Drawing.Point(7, 314)
+        Me.grpOUT.Location = New System.Drawing.Point(3, 320)
         Me.grpOUT.Name = "grpOUT"
         Me.grpOUT.Size = New System.Drawing.Size(400, 50)
         Me.grpOUT.TabIndex = 4
@@ -268,7 +276,7 @@ Partial Class frm_clustertool
         '
         Me.grpMEASSPACE.Controls.Add(Me.radMEASPLAN)
         Me.grpMEASSPACE.Controls.Add(Me.radMEASGEO)
-        Me.grpMEASSPACE.Location = New System.Drawing.Point(7, 108)
+        Me.grpMEASSPACE.Location = New System.Drawing.Point(7, 106)
         Me.grpMEASSPACE.Name = "grpMEASSPACE"
         Me.grpMEASSPACE.Size = New System.Drawing.Size(400, 53)
         Me.grpMEASSPACE.TabIndex = 2
@@ -305,7 +313,7 @@ Partial Class frm_clustertool
         Me.grpNQUERY.Controls.Add(Me.txtNQUERY)
         Me.grpNQUERY.Location = New System.Drawing.Point(7, 49)
         Me.grpNQUERY.Name = "grpNQUERY"
-        Me.grpNQUERY.Size = New System.Drawing.Size(400, 53)
+        Me.grpNQUERY.Size = New System.Drawing.Size(400, 51)
         Me.grpNQUERY.TabIndex = 1
         Me.grpNQUERY.TabStop = False
         Me.grpNQUERY.Text = "Threshold Distance"
@@ -353,29 +361,21 @@ Partial Class frm_clustertool
         Me.Label2.TabIndex = 0
         Me.Label2.Text = "Input point layer:"
         '
-        'btnOptParam
-        '
-        Me.btnOptParam.Location = New System.Drawing.Point(7, 385)
-        Me.btnOptParam.Name = "btnOptParam"
-        Me.btnOptParam.Size = New System.Drawing.Size(119, 23)
-        Me.btnOptParam.TabIndex = 4
-        Me.btnOptParam.Text = "Optimize Parameters"
-        Me.btnOptParam.UseVisualStyleBackColor = True
-        '
         'frm_clustertool
         '
         Me.AcceptButton = Me.btnOK
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.btnCANCEL
-        Me.ClientSize = New System.Drawing.Size(421, 457)
+        Me.ClientSize = New System.Drawing.Size(419, 457)
+        Me.Controls.Add(Me.btnOptParam)
         Me.Controls.Add(Me.btnCANCEL)
         Me.Controls.Add(Me.btnOK)
         Me.Controls.Add(Me.btnSHHELP)
         Me.Controls.Add(Me.splcHELP)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
-        Me.MaximumSize = New System.Drawing.Size(900, 495)
+        Me.MaximumSize = New System.Drawing.Size(900, 550)
         Me.MinimizeBox = False
         Me.MinimumSize = New System.Drawing.Size(372, 495)
         Me.Name = "frm_clustertool"

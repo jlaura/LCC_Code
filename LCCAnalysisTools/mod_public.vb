@@ -7,6 +7,7 @@ Imports ESRI.ArcGIS.Geoprocessor
 Imports ESRI.ArcGIS.Editor
 Imports ESRI.ArcGIS.GeoDatabaseUI
 Imports ESRI.ArcGIS.Geometry
+Imports ESRI.ArcGIS.AnalysisTools
 Imports System.Math
 Imports ESRI.ArcGIS.Display
 Imports ESRI.ArcGIS.Framework
@@ -1349,7 +1350,6 @@ Public Module mod_public
                                pArray(3, pArray.GetLowerBound(1)), _
                                dFeature1(1, 0), dFeature1(2, 0), dSemiMajAxis, dSemiMinAxis, bPlan)
         End If
-
         For i As Integer = 0 To pArray.GetUpperBound(1)
             dDist = GetDist(pArray(2, i), pArray(3, i), _
                             dFeature1(1, 0), dFeature1(2, 0), dSemiMajAxis, dSemiMinAxis, bPlan)
@@ -1434,4 +1434,72 @@ Public Module mod_public
 
     End Sub
 
+
+    Public Sub FindNearestGeo(ByVal pFlayer, ByVal queryDistance, ByRef workspace)
+        'Setup the geoprocessor
+
+        Dim gp As Geoprocessor = New Geoprocessor()
+        'Run the near geoprocessing tool
+        Dim nearTool As Near = New Near()
+        nearTool.in_features = pFlayer
+        nearTool.near_features = pFlayer
+        nearTool.search_radius = queryDistance
+        'nearTool.out_feature_class = "in_memory\output"
+
+        Dim sev As Object = Nothing
+
+        Try
+            'Execute the tool
+            gp.Execute(nearTool, Nothing)
+
+            'Print the messages to the console
+            Console.WriteLine(gp.GetMessages(sev))
+
+        Catch ex As Exception
+            Console.WriteLine(gp.GetMessages(sev))
+
+        End Try
+
+
+    End Sub
+
+    Public Function GetArcGISLicenseName() As System.String
+
+        Dim esriLicenseInfo As ESRI.ArcGIS.esriSystem.IESRILicenseInfo = New ESRI.ArcGIS.esriSystem.ESRILicenseInfoClass
+        Dim string_LicenseLevel As System.String = Nothing
+
+        Select Case esriLicenseInfo.DefaultProduct
+            Case ESRI.ArcGIS.esriSystem.esriProductCode.esriProductCodeBasic
+                string_LicenseLevel = "Basic"
+            Case ESRI.ArcGIS.esriSystem.esriProductCode.esriProductCodeStandard
+                string_LicenseLevel = "Standard"
+            Case ESRI.ArcGIS.esriSystem.esriProductCode.esriProductCodeAdvanced
+                string_LicenseLevel = "Advanced"
+        End Select
+
+        Return string_LicenseLevel
+
+    End Function
+
+    Public Sub GenNearTable(ByVal pFlayer, ByVal dist, ByVal count)
+        Dim GP As Geoprocessor = New Geoprocessor
+        Dim NearTable As GenerateNearTable = New GenerateNearTable()
+        NearTable.in_features = pFlayer
+        NearTable.near_features = pFlayer
+        NearTable.out_table = "OUTPUT"
+        NearTable.search_radius = dist
+        NearTable.location = "NO_LOCATION"
+        NearTable.angle = "No_Angle"
+        NearTable.closest = "ALL"
+        NearTable.closest_count = count
+
+        Try
+            GP.Execute(NearTable, Nothing)
+        Catch ex As Exception
+
+        End Try
+
+    End Sub
+
 End Module
+

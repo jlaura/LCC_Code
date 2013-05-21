@@ -7,6 +7,7 @@ Imports ESRI.ArcGIS.Geodatabase
 Imports ESRI.ArcGIS.Display
 Imports ESRI.ArcGIS.Framework
 Imports ESRI.ArcGIS.Geometry
+Imports ESRI.ArcGIS.DataSourcesGDB
 Imports System.Math
 Imports System.Drawing
 Imports ESRI.ArcGIS.DataManagementTools
@@ -284,8 +285,7 @@ Public Class frm_clustertool
 
         Dim pMxDoc As IMxDocument = My.ArcMap.Document 'This is an interface that allows access to the map document.  It is used to add the cluster layer to the ToC and update the ToC.
         Dim pMap As IMap = pMxDoc.FocusMap
-        Dim pFLayer As IFeatureLayer = GetFLayerByName(CAF.sFLAYER) 'The IFeatureLayer Interface provides access to the GetFLayerByName Method.  IFeatureLayer has been superceeded bt IFeatureLayer2.
-        'Dim pFlayer As IFeatureLayer = GetFLayerByName(CAF.sFLAYER) ' Updated to use V2 - GetFLayerByName access the public function in mod_public, which iterates over the ToC just like the Arc example.
+        Dim pFlayer As IFeatureLayer2 = GetFLayerByName(CAF.sFLAYER) ' Updated to use V2 - GetFLayerByName access the public function in mod_public, which iterates over the ToC just like the Arc example.
         Dim pFClass As IFeatureClass = pFlayer.FeatureClass 'A property - the datasource for the layer
         Dim pDataset As IDataset = pFClass
         Dim pFDataset As IFeatureDataset = pFClass.FeatureDataset
@@ -322,18 +322,6 @@ Public Class frm_clustertool
         Dim sSTime As String = Now.Hour.ToString & ":" & Now.Minute.ToString & _
                                ":" & ((CDbl(Now.Second + (Now.Millisecond / _
                                                           1000))).ToString)
-
-        'Create the output table to store the iteration statistics
-        Dim tName = "LCC_Statistics" + pFLayer.Name
-        Dim tTable = CreateTable(pWrkspc2, tName, Nothing)
-
-        'Add the table to the ToC.  If the table exists, this is the existing table.
-        Dim pStandAloneTable As IStandaloneTable = New StandaloneTable()
-        pStandAloneTable.Table = tTable
-        Dim pStandAloneColl As IStandaloneTableCollection = pMap
-        pStandAloneColl.AddStandaloneTable(pStandAloneTable)
-        pMxDoc.UpdateContents() 'See if this updates the TOC with the table...
-
         'SUMMARY PRINT: Progress header
         PRINTtxt += SumProgramHeader("Cluster Tool", _
                                      sSDate, sSTime)
@@ -361,6 +349,9 @@ Public Class frm_clustertool
         PRINTtxt += vbCrLf & vbCrLf
 
 
+        'Check for the license type
+        'Dim license = GetArcGISLicenseName()
+
         'Here the initial feature array is populated.  Each point in the input is copied to the output and the following fields are created:
 
         Dim pFCursor1 As IFeatureCursor = pFClass.Search(Nothing, False) 'The input layer is accessed viat pFClass, which is defined above via PFLayer, which is accessed via a global which stores the layer name.  From the input form.
@@ -382,7 +373,7 @@ Public Class frm_clustertool
 
         'PROGRESS UPDATE: 
         pProDlg.Description = "Extracting OID, X and Y values..."
-        PRINTtxt += vbCrLf & " [Extracting OID, X and Y values...]"
+        'PRINTtxt += vbCrLf & " [Extracting OID, X and Y values...]"
 
         'Populate array with AID,OID,X,Y from all records in feature class.
         Dim cnt As Integer = 0
@@ -412,14 +403,15 @@ Public Class frm_clustertool
 
         'PROGRESS UPDATE: 
         pProDlg.Description = "Calculating Nearest Neighbor distances..."
-        PRINTtxt += vbCrLf & " [Calculating Nearest Neighbor distances...]"
+        'PRINTtxt += vbCrLf & " [Calculating Nearest Neighbor distances...]"
 
         'Populate array with NDIST for all records in feature class
+        'TODO: This finds nearest twice, and can be 100% faster.
         Dim dFeature1(2, 0) As Double
         pTrkCan.Reset()
         For i As Integer = 0 To Ar.GetUpperBound(1) 'From row 0 to row n
             'Store the OID,X,Y of current feature
-            dFeature1(0, 0) = Ar(1, i) ' These are indices in the array, which appear to be 0 based.
+            dFeature1(0, 0) = Ar(1, i)
             dFeature1(1, 0) = Ar(2, i)
             dFeature1(2, 0) = Ar(3, i)
             'Assign the Nearest distance returned to the main table
@@ -436,29 +428,16 @@ Public Class frm_clustertool
             End If
         Next
 
-        'Compute statistics on the clusters and save the results as a table.
-        Dim lStats = CalcStats(Ar, CAF.sNQUERY)
+        'Compute statistics on the clusters.
+        PRINTtxt += CalcBufferStats(Ar, CAF.sNQUERY)
 
-        PRINTtxt += vbCrLf & " Threshold " & lStats(0)
-        PRINTtxt += vbCrLf & " Count " & pFClass.FeatureCount(Nothing)
-        PRINTtxt += vbCrLf & " Count without Outliers " & lStats(1)
-        PRINTtxt += vbCrLf & " % of Craters with neighbors within Threshold " & lStats(1) / pFClass.FeatureCount(Nothing) * 100
-        PRINTtxt += vbCrLf & " Mean: " & lStats(2)
-        PRINTtxt += vbCrLf & " Min: " & lStats(3)
-        PRINTtxt += vbCrLf & " Max: " & lStats(4)
-        PRINTtxt += vbCrLf & " Range: " & lStats(5)
-        PRINTtxt += vbCrLf & " STD: " & lStats(6)
-        PRINTtxt += vbCrLf & " Interquartile range: " & lStats(7)
-        PRINTtxt += vbCrLf & " Lower Quartile: " & lStats(8)
-        PRINTtxt += vbCrLf & " Upper Quartile: " & lStats(9)
-        PRINTtxt += vbCrLf & " Median: " & lStats(10)
         '********************************************************************************************
         'If the the clustering method is 'Same distance'
         If CAF.bCMS = True Then
 
             'PROGRESS UPDATE: 
             pProDlg.Description = "Clustering calculation 'Same distance'..."
-            PRINTtxt += vbCrLf & " [Clustering calculation 'Same distance'...]"
+            'PRINTtxt += vbCrLf & " [Clustering calculation 'Same distance'...]"
 
             Dim dGroup(3, 0) As Double
             'Main feature iteration
@@ -989,6 +968,13 @@ Public Class frm_clustertool
         Next
 
         'PROGRESS UPDATE: 
+        pProDlg.Description = "Computing Cluster Statistics..."
+        PRINTtxt += vbCrLf & " [Computing Cluster Statistics...]"
+
+        'Compute Cluster Statistics
+        PRINTtxt += CalcClusterStats(Ar, Ar2, Ar3)
+
+        'PROGRESS UPDATE: 
         pProDlg.Description = "Creating point feature class..."
         PRINTtxt += vbCrLf & " [Creating point feature class...]"
 
@@ -1015,21 +1001,23 @@ Public Class frm_clustertool
         'Update the features with the values computed above
         pTrkCan.Reset()
         For o As Integer = 0 To Ar.GetUpperBound(1)
-            pFeature1 = pFClass.GetFeature(Ar(1, o))
-            'Create the feature buffer
-            Dim pNewFeatureBuff As IFeatureBuffer = pNewFClass.CreateFeatureBuffer
-            pNewFeatureBuff.Shape = pFeature1.ShapeCopy
-            pNewFeatureBuff.Value(pNewFeatureBuff.Fields.FindField("cid")) = Ar2(Ar(0, o))
-            pNewFeatureBuff.Value(pNewFeatureBuff.Fields.FindField("cnt")) = Ar3(Ar(0, o))
-            pNewFCursor.InsertFeature(pNewFeatureBuff)
-            If Not pTrkCan.Continue Then
-                'SUMMARY PRINT: End program as interrupted
-                PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
-                                          sSDate, sSTime)
-                'Destroy the progress dialog
-                ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(CAF.sOUT, PRINTtxt)
-                Return
+            If Ar2(Ar(0, o)) <> -1 Then
+                pFeature1 = pFClass.GetFeature(Ar(1, o))
+                'Create the feature buffer
+                Dim pNewFeatureBuff As IFeatureBuffer = pNewFClass.CreateFeatureBuffer
+                pNewFeatureBuff.Shape = pFeature1.ShapeCopy
+                pNewFeatureBuff.Value(pNewFeatureBuff.Fields.FindField("cid")) = Ar2(Ar(0, o))
+                pNewFeatureBuff.Value(pNewFeatureBuff.Fields.FindField("cnt")) = Ar3(Ar(0, o))
+                pNewFCursor.InsertFeature(pNewFeatureBuff)
+                If Not pTrkCan.Continue Then
+                    'SUMMARY PRINT: End program as interrupted
+                    PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+                                              sSDate, sSTime)
+                    'Destroy the progress dialog
+                    ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                    SaveSummaryReport(CAF.sOUT, PRINTtxt)
+                    Return
+                End If
             End If
         Next
 
@@ -1054,25 +1042,103 @@ Public Class frm_clustertool
         SaveSummaryReport(CAF.sOUT, PRINTtxt)
 
     End Sub
+    Private Function CalcClusterStats(ByVal Ar, ByVal Ar2, ByVal Ar3)
+        Dim dCount, dCountout, n, dRange, dMean, dStd, dIqr, dMin, dMax, dSumsq, dArray(), _
+    dMedian, dLQ, dUQ As Double
 
-    Public Function GetArcGISLicenseName() As System.String
+        Dim clus As Dictionary(Of Integer, Integer) = New Dictionary(Of Integer, Integer)
 
-        Dim esriLicenseInfo As ESRI.ArcGIS.esriSystem.IESRILicenseInfo = New ESRI.ArcGIS.esriSystem.ESRILicenseInfoClass
-        Dim string_LicenseLevel As System.String = Nothing
+        dCount = 0
+        dMax = 0
+        dMin = 9999999
 
-        Select Case esriLicenseInfo.DefaultProduct
-            Case ESRI.ArcGIS.esriSystem.esriProductCode.esriProductCodeBasic
-                string_LicenseLevel = "Basic"
-            Case ESRI.ArcGIS.esriSystem.esriProductCode.esriProductCodeStandard
-                string_LicenseLevel = "Standard"
-            Case ESRI.ArcGIS.esriSystem.esriProductCode.esriProductCodeAdvanced
-                string_LicenseLevel = "Advanced"
-        End Select
+        For o As Integer = 0 To Ar.GetUpperBound(1) - 1
+            If Ar2(Ar(0, o)) <> -1 Then
+                Dim key = Ar2(Ar(0, o))
+                If clus.ContainsKey(key) Then
+                    clus([key]) = Ar3(Ar(0, o))
+                    If Ar3(Ar(0, o)) > dMax Then dMax = Ar3(Ar(0, o))
+                    If Ar3(Ar(0, o)) < dMin Then dMin = Ar3(Ar(0, o))
+                Else
+                    clus.Add(CStr(Ar2(Ar(0, o))), Ar3(Ar(0, o)))
+                    If Ar3(Ar(0, o)) > dMax Then dMax = Ar3(Ar(0, o))
+                    If Ar3(Ar(0, o)) < dMin Then dMin = Ar3(Ar(0, o))
+                    dCount += Ar3(Ar(0, o))
+                End If
+            End If
+        Next
 
-        Return string_LicenseLevel
+        dRange = dMax - dMin
+        dMean = dCount / clus.Count 'Total number of craters / total number clusters
+
+        'Variance and STD
+        dCountout = 0
+        dSumsq = 0
+        ReDim dArray(clus.Count)
+        'Iterate over keys to get values here
+        Dim pair As KeyValuePair(Of Integer, Integer)
+        n = 0
+        For Each pair In clus
+            If pair.Value > 10 Then dCountout += 1
+            dSumsq = dSumsq + (pair.Value - dMean) ^ 2
+            dArray(n) = pair.Value
+            n += 1 ' counter for index into the dArray
+
+        Next
+
+        dStd = Sqrt(dSumsq / clus.Count)
+
+        System.Array.Sort(dArray)
+
+        'Compute the quartiles
+        If IEEERemainder(clus.Count, 2) = 0 Then
+            dMedian = (dArray(Round(clus.Count * 0.5)) + _
+                       dArray(Round((clus.Count * 0.5) + 1))) / 2
+            dLQ = (dArray(Round(clus.Count * 0.25)) + _
+                   dArray(Round((clus.Count * 0.25) + 1))) / 2
+            dUQ = (dArray(Round(clus.Count * 0.75)) + _
+                   dArray(Round((clus.Count * 0.75) + 1))) / 2
+        Else
+            dMedian = dArray(Round(clus.Count * 0.5))
+            dLQ = dArray(Round(clus.Count * 0.25))
+            dUQ = dArray(Round(clus.Count * 0.75))
+        End If
+
+        'Approximate Interquartile range
+        dIqr = dUQ - dLQ
+
+
+        'Write the stats out
+        Dim sReport As String = ""
+        Dim f100 As String = Space(3) & "|" & "{0,-20}" & "{1}" & "{2,16:F4}" & "|"
+        Dim f300 As String = Space(3) & "|" & StrDup(37, "-") & "|"
+        Dim f400 As String = Space(3) & "|" & StrDup(37, "_") & "|"
+        Dim f500 As String = Space(3) & StrDup(39, "_")
+
+        sReport = vbCrLf & vbCrLf & _
+          Space(3) & "STATS: Clustering " & vbCrLf & _
+          (String.Format(f500, "_")) & vbCrLf & _
+          (String.Format(f100, "Population Total", "=", dCount)) & vbCrLf & _
+          (String.Format(f100, "Clus. > 10 Craters", "=", dCountout)) & vbCrLf & _
+          (String.Format(f100, "Percentage of Total", "=", dCountout / clus.Count * 100)) & vbCrLf & _
+          (String.Format(f300, "-")) & vbCrLf & _
+          (String.Format(f100, "  0% Min", "=", dMin)) & vbCrLf & _
+          (String.Format(f100, " 25% Lower quartile", "=", dLQ)) & vbCrLf & _
+          (String.Format(f100, " 50% Median", "=", dMedian)) & vbCrLf & _
+          (String.Format(f100, " 75% Upper quartile", "=", dUQ)) & vbCrLf & _
+          (String.Format(f100, "100% Max", "=", dMax)) & vbCrLf & _
+          (String.Format(f300, "-")) & vbCrLf & _
+          (String.Format(f100, "Range", "=", dRange)) & vbCrLf & _
+          (String.Format(f100, "Mean", "=", dMean)) & vbCrLf & _
+          (String.Format(f100, "St Dev", "=", dStd)) & vbCrLf & _
+          (String.Format(f100, "Interquartile range", "=", dIqr)) & vbCrLf & _
+          (String.Format(f400, "_")) & vbCrLf
+
+        Return sReport
 
     End Function
-    Private Function CalcStats(ByVal Ar, ByVal dThreshold)
+
+    Private Function CalcBufferStats(ByVal Ar, ByVal dThreshold)
         Dim dCount, dCountout, dRange, dSum, dMean, dStd, dIqr, dMin, dMax, dSumsq, dArray(), _
             dMedian, dLQ, dUQ As Double
 
@@ -1119,224 +1185,33 @@ Public Class frm_clustertool
         'Approximate Interquartile range
         dIqr = dUQ - dLQ
 
-        Dim lStats As New List(Of Double)
-        lStats.Add(dThreshold)
-        lStats.Add(dCountout)
-        lStats.Add(dMean)
-        lStats.Add(dMin)
-        lStats.Add(dMax)
-        lStats.Add(dRange)
-        lStats.Add(dStd)
-        lStats.Add(dIqr)
-        lStats.Add(dLQ)
-        lStats.Add(dUQ)
-        lStats.Add(dMedian)
+        'Write the stats out
+        Dim sReport As String = ""
+        Dim f100 As String = Space(3) & "|" & "{0,-20}" & "{1}" & "{2,16:F4}" & "|"
+        Dim f300 As String = Space(3) & "|" & StrDup(37, "-") & "|"
+        Dim f400 As String = Space(3) & "|" & StrDup(37, "_") & "|"
+        Dim f500 As String = Space(3) & StrDup(39, "_")
 
-        Return lStats
-    End Function
+        sReport = vbCrLf & vbCrLf & _
+          Space(3) & "STATS: K-Nearest Neighbors " & vbCrLf & _
+          (String.Format(f500, "_")) & vbCrLf & _
+          (String.Format(f100, "Population total", "=", Ar.GetUpperBound(1))) & vbCrLf & _
+          (String.Format(f100, "Population Sample", "=", dCountout)) & vbCrLf & _
+          (String.Format(f100, "Percentage of Total", "=", dCountout / Ar.GetUpperBound(1) * 100)) & vbCrLf & _
+          (String.Format(f300, "-")) & vbCrLf & _
+          (String.Format(f100, "  0% Min", "=", dMin)) & vbCrLf & _
+          (String.Format(f100, " 25% Lower quartile", "=", dLQ)) & vbCrLf & _
+          (String.Format(f100, " 50% Median", "=", dMedian)) & vbCrLf & _
+          (String.Format(f100, " 75% Upper quartile", "=", dUQ)) & vbCrLf & _
+          (String.Format(f100, "100% Max", "=", dMax)) & vbCrLf & _
+          (String.Format(f300, "-")) & vbCrLf & _
+          (String.Format(f100, "Range", "=", dRange)) & vbCrLf & _
+          (String.Format(f100, "Mean", "=", dMean)) & vbCrLf & _
+          (String.Format(f100, "St Dev", "=", dStd)) & vbCrLf & _
+          (String.Format(f100, "Interquartile range", "=", dIqr)) & vbCrLf & _
+          (String.Format(f400, "_")) & vbCrLf
 
-    Private Function CreateTable(ByVal workspace As IWorkspace2, ByVal tableName As System.String, ByVal fields As IFields) As ITable
-
-        ' Create the behavior clasid for the featureclass  
-        Dim uid As ESRI.ArcGIS.esriSystem.UID = New ESRI.ArcGIS.esriSystem.UIDClass
-
-        If workspace Is Nothing Then
-            Return Nothing ' valid feature workspace not passed in as an argument to the method
-        End If
-
-        Dim featureWorkspace As IFeatureWorkspace = CType(workspace, IFeatureWorkspace) ' Explicit Cast
-        Dim table As ITable
-
-        If workspace.NameExists(esriDatasetType.esriDTTable, tableName) Then
-
-            '  A table with that name already exists so return that table 
-            table = featureWorkspace.OpenTable(tableName)
-            Return table
-        End If
-
-        uid.Value = "esriGeoDatabase.Object"
-
-        Dim objectClassDescription As IObjectClassDescription = New ObjectClassDescriptionClass
-
-        ' If a fields collection is not passed in then supply our own
-        If fields Is Nothing Then
-
-            ' Create the fields using the required fields method
-            fields = New FieldsClass()
-
-            Dim fieldsEdit As IFieldsEdit = CType(fields, IFieldsEdit) ' Explicit Cast
-
-            'Threshold Field
-            Dim fDist As IField = New FieldClass()
-            Dim fDistEdit As IFieldEdit = CType(fDist, IFieldEdit)
-            fDistEdit.Name_2 = "ThreshDist"
-            fDistEdit.AliasName_2 = "Threshold Distance"
-            fDistEdit.Type_2 = esriFieldType.esriFieldTypeDouble
-            fDistEdit.Precision_2 = 12
-            fDistEdit.Scale_2 = 4
-            fDistEdit.Editable_2 = True
-            fDistEdit.IsNullable_2 = False
-            fieldsEdit.AddField(fDist)
-
-            'Count Field
-            Dim fCount As IField = New FieldClass()
-            Dim fCountEdit As IFieldEdit = CType(fCount, IFieldEdit)
-            fCountEdit.Name_2 = "Count"
-            fCountEdit.AliasName_2 = "Total Point Count"
-            fCountEdit.Length_2 = 8
-            fCountEdit.Type_2 = esriFieldType.esriFieldTypeInteger
-            fCountEdit.IsNullable_2 = False
-            fieldsEdit.AddField(fCount)
-
-            'Count with outliers removed
-            Dim fCountR As IField = New FieldClass()
-            Dim fCountEditR As IFieldEdit = CType(fCountR, IFieldEdit)
-            fCountEditR.Name_2 = "CountR"
-            fCountEditR.AliasName_2 = "Count w/o Outliers"
-            fCountEditR.Length_2 = 8
-            fCountEditR.Type_2 = esriFieldType.esriFieldTypeInteger
-            fCountEditR.IsNullable_2 = False
-            fieldsEdit.AddField(fCountR)
-
-            'Reduced Count percentage of total
-            Dim fPercTot As IField = New FieldClass()
-            Dim fpercTotEdit As IFieldEdit = CType(fPercTot, IFieldEdit)
-            fpercTotEdit.Name_2 = "PercTot"
-            fpercTotEdit.AliasName_2 = "RCount Percentage of Total"
-            fpercTotEdit.Type_2 = esriFieldType.esriFieldTypeDouble
-            fpercTotEdit.Precision_2 = 12
-            fpercTotEdit.Scale_2 = 4
-            fpercTotEdit.Editable_2 = True
-            fpercTotEdit.IsNullable_2 = False
-            fieldsEdit.AddField(fPercTot)
-
-            'Mean
-            Dim fMean As IField = New FieldClass()
-            Dim fMeanEdit As IFieldEdit = CType(fMean, IFieldEdit)
-            fMeanEdit.Name_2 = "Mean"
-            fMeanEdit.AliasName_2 = "Mean Distance"
-            fMeanEdit.Type_2 = esriFieldType.esriFieldTypeDouble
-            fMeanEdit.Precision_2 = 12
-            fMeanEdit.Scale_2 = 4
-            fMeanEdit.Editable_2 = True
-            fMeanEdit.IsNullable_2 = False
-            fieldsEdit.AddField(fMean)
-
-            'Median
-            Dim fMedian As IField = New FieldClass()
-            Dim fMedianEdit As IFieldEdit = CType(fMedian, IFieldEdit)
-            fMedianEdit.Name_2 = "Median"
-            fMedianEdit.AliasName_2 = "Median Distance"
-            fMedianEdit.Type_2 = esriFieldType.esriFieldTypeDouble
-            fMedianEdit.Precision_2 = 12
-            fMedianEdit.Scale_2 = 4
-            fMedianEdit.Editable_2 = True
-            fMedianEdit.IsNullable_2 = False
-            fieldsEdit.AddField(fMedian)
-
-            'Min
-            Dim fMin As IField = New FieldClass()
-            Dim fMinEdit As IFieldEdit = CType(fMin, IFieldEdit)
-            fMinEdit.Name_2 = "Min"
-            fMinEdit.AliasName_2 = "Minimum Distance"
-            fMinEdit.Type_2 = esriFieldType.esriFieldTypeDouble
-            fMinEdit.Precision_2 = 12
-            fMinEdit.Scale_2 = 4
-            fMinEdit.Editable_2 = True
-            fMinEdit.IsNullable_2 = False
-            fieldsEdit.AddField(fMin)
-
-            'Max
-            Dim fMax As IField = New FieldClass()
-            Dim fMaxEdit As IFieldEdit = CType(fMax, IFieldEdit)
-            fMaxEdit.Name_2 = "Max"
-            fMaxEdit.AliasName_2 = "Maximum Distance"
-            fMaxEdit.Type_2 = esriFieldType.esriFieldTypeDouble
-            fMaxEdit.Precision_2 = 12
-            fMaxEdit.Scale_2 = 4
-            fMaxEdit.Editable_2 = True
-            fMaxEdit.IsNullable_2 = False
-            fieldsEdit.AddField(fMax)
-
-            'Range
-            Dim fRange As IField = New FieldClass()
-            Dim fRangeEdit As IFieldEdit = CType(fRange, IFieldEdit)
-            fRangeEdit.Name_2 = "Range"
-            fRangeEdit.Type_2 = esriFieldType.esriFieldTypeDouble
-            fRangeEdit.Precision_2 = 12
-            fRangeEdit.Scale_2 = 4
-            fRangeEdit.Editable_2 = True
-            fRangeEdit.IsNullable_2 = False
-            fieldsEdit.AddField(fRange)
-
-            'Std
-            Dim fStd As IField = New FieldClass()
-            Dim fStdEdit As IFieldEdit = CType(fStd, IFieldEdit)
-            fStdEdit.Name_2 = "Std"
-            fStdEdit.AliasName_2 = "Standard Deviation"
-            fStdEdit.Type_2 = esriFieldType.esriFieldTypeDouble
-            fStdEdit.Precision_2 = 12
-            fStdEdit.Scale_2 = 4
-            fStdEdit.Editable_2 = True
-            fStdEdit.IsNullable_2 = False
-            fieldsEdit.AddField(fStd)
-
-            'IQR
-            Dim fIqr As IField = New FieldClass()
-            Dim fIqrEdit As IFieldEdit = CType(fIqr, IFieldEdit)
-            fIqrEdit.Name_2 = "Iqr"
-            fIqrEdit.AliasName_2 = "Interquartile Range"
-            fIqrEdit.Type_2 = esriFieldType.esriFieldTypeDouble
-            fIqrEdit.Precision_2 = 12
-            fIqrEdit.Scale_2 = 4
-            fIqrEdit.Editable_2 = True
-            fIqrEdit.IsNullable_2 = False
-            fieldsEdit.AddField(fIqr)
-
-            'qLQ
-            Dim fqLQ As IField = New FieldClass()
-            Dim fqLQEdit As IFieldEdit = CType(fqLQ, IFieldEdit)
-            fqLQEdit.Name_2 = "qLQ"
-            fqLQEdit.AliasName_2 = "Lower Quartile"
-            fqLQEdit.Type_2 = esriFieldType.esriFieldTypeDouble
-            fqLQEdit.Precision_2 = 12
-            fqLQEdit.Scale_2 = 4
-            fqLQEdit.Editable_2 = True
-            fqLQEdit.IsNullable_2 = False
-            fieldsEdit.AddField(fqLQ)
-
-            'qUQ
-            Dim fqUq As IField = New FieldClass()
-            Dim fqUqEdit As IFieldEdit = CType(fqUq, IFieldEdit)
-            fqUqEdit.Name_2 = "qUq"
-            fqUqEdit.AliasName_2 = "Upper Quartile"
-            fqUqEdit.Type_2 = esriFieldType.esriFieldTypeDouble
-            fqUqEdit.Precision_2 = 12
-            fqUqEdit.Scale_2 = 4
-            fqUqEdit.Editable_2 = True
-            fqUqEdit.IsNullable_2 = False
-            fieldsEdit.AddField(fqUq)
-
-
-
-        End If
-
-        ' Use IFieldChecker to create a validated fields collection.
-        Dim fieldChecker As IFieldChecker = New FieldCheckerClass()
-        Dim enumFieldError As IEnumFieldError = Nothing
-        Dim validatedFields As IFields = Nothing
-        fieldChecker.ValidateWorkspace = CType(workspace, IWorkspace)
-        fieldChecker.Validate(fields, enumFieldError, validatedFields)
-
-        ' The enumFieldError enumerator can be inspected at this point to determine 
-        ' which fields were modified during validation.
-
-
-        ' Create and return the table
-        table = featureWorkspace.CreateTable(tableName, validatedFields, uid, Nothing, "")
-
-        Return table
-
+        Return sReport
     End Function
 
 #Region "*** HELP CONTENT DISPLAY DYNAMICS ****************************************************"
@@ -1598,6 +1473,10 @@ Public Class frm_clustertool
     End Sub
 
     Private Sub Optimize_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnOptParam.Click
+
+    End Sub
+
+    Private Sub GroupBox1_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs)
 
     End Sub
 End Class

@@ -8,6 +8,7 @@ Imports ESRI.ArcGIS.Display
 Imports ESRI.ArcGIS.Geometry
 Imports ESRI.ArcGIS.ArcMapUI
 Imports ESRI.ArcGIS.Editor
+Imports System.Math
 
 Public Class frm_dirdistool
 
@@ -323,7 +324,7 @@ Public Class frm_dirdistool
         Next
 
         'Remove the invalid CID value: -1
-        ArCIDs.Remove(-1)
+        'ArCIDs.Remove(-1)
 
         '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         pStepPro.MaxRange = ArCIDs.Count
@@ -595,7 +596,9 @@ Public Class frm_dirdistool
             Next
         End If
 
-
+        'Write summary information about ellipses generation
+        PRINTtxt += CalcEllipStats(ArCDD)
+        PRINTtxt += CalcEllipInvStats(ArCDD)
         'Stop edit operation and session, save edits
         pEditor.StopOperation("Directional Distribution features")
         StopEditSession(True)
@@ -920,4 +923,143 @@ Public Class frm_dirdistool
 
     End Sub
 
+
+    Private Function CalcEllipStats(ByVal features)
+        Dim count, range, min, lq, median, uq, max, mean, std, iqr, sum, sumsq, array() As Double
+        count = 0
+        max = 0
+        min = 9999999
+        sum = 0
+        For Each feature In features
+            count += 1
+            If feature.MajAxis > max Then max = feature.MajAxis
+            If feature.MajAxis < min Then min = feature.MajAxis
+            sum += feature.MajAxis
+        Next
+        range = max - min
+        mean = sum / count
+        sumsq = 0
+        ReDim array(count)
+
+        Dim n As Integer = 0 'index counter
+        For Each feature In features
+            array(n) = feature.MajAxis
+            sumsq += (feature.MajAxis - mean) ^ 2
+            n += 1
+        Next
+
+        std = Sqrt(sumsq / count)
+
+        System.Array.Sort(array)
+        'Compute the quartiles
+        If IEEERemainder(count, 2) = 0 Then
+            median = (array(Round(count * 0.5)) + _
+                       array(Round((count * 0.5) + 1))) / 2
+            lq = (array(Round(count * 0.25)) + _
+                   array(Round((count * 0.25) + 1))) / 2
+            uq = (array(Round(count * 0.75)) + _
+                   array(Round((count * 0.75) + 1))) / 2
+        Else
+            median = array(Round(count * 0.5))
+            lq = array(Round(count * 0.25))
+            uq = array(Round(count * 0.75))
+        End If
+
+        'Approximate Interquartile range
+        iqr = uq - lq
+
+        'Write the stats out
+        Dim sReport As String = ""
+        Dim f100 As String = Space(3) & "|" & "{0,-20}" & "{1}" & "{2,16:F4}" & "|"
+        Dim f300 As String = Space(3) & "|" & StrDup(37, "-") & "|"
+        Dim f400 As String = Space(3) & "|" & StrDup(37, "_") & "|"
+        Dim f500 As String = Space(3) & StrDup(39, "_")
+
+        sReport = vbCrLf & vbCrLf & _
+          Space(3) & "STATS: Ellipse Major Axis " & vbCrLf & _
+          (String.Format(f500, "_")) & vbCrLf & _
+          (String.Format(f100, "  0% Min", "=", min)) & vbCrLf & _
+          (String.Format(f100, " 25% Lower quartile", "=", lq)) & vbCrLf & _
+          (String.Format(f100, " 50% Median", "=", median)) & vbCrLf & _
+          (String.Format(f100, " 75% Upper quartile", "=", uq)) & vbCrLf & _
+          (String.Format(f100, "100% Max", "=", max)) & vbCrLf & _
+          (String.Format(f300, "-")) & vbCrLf & _
+          (String.Format(f100, "Range", "=", range)) & vbCrLf & _
+          (String.Format(f100, "Mean", "=", mean)) & vbCrLf & _
+          (String.Format(f100, "St Dev", "=", std)) & vbCrLf & _
+          (String.Format(f100, "Interquartile range", "=", iqr)) & vbCrLf & _
+          (String.Format(f400, "_")) & vbCrLf
+
+        Return sReport
+    End Function
+
+    Private Function CalcEllipInvStats(ByVal features)
+        Dim count, range, min, lq, median, uq, max, mean, std, iqr, sum, sumsq, array() As Double
+
+        count = 0
+        max = 0
+        min = 9999999
+        sum = 0
+        For Each feature In features
+            count += 1
+            If feature.IFlat > max Then max = feature.IFlat
+            If feature.IFlat < min Then min = feature.IFlat
+            sum += feature.IFlat
+        Next
+        range = max - min
+        mean = sum / count
+        sumsq = 0
+        ReDim array(count)
+
+        Dim n As Integer = 0 'index counter
+        For Each feature In features
+            array(n) = feature.IFlat
+            sumsq += (feature.IFlat - mean) ^ 2
+            n += 1
+        Next
+
+        std = Sqrt(sumsq / count)
+
+        System.Array.Sort(array)
+        'Compute the quartiles
+        If IEEERemainder(count, 2) = 0 Then
+            median = (array(Round(count * 0.5)) + _
+                       array(Round((count * 0.5) + 1))) / 2
+            lq = (array(Round(count * 0.25)) + _
+                   array(Round((count * 0.25) + 1))) / 2
+            uq = (array(Round(count * 0.75)) + _
+                   array(Round((count * 0.75) + 1))) / 2
+        Else
+            median = array(Round(count * 0.5))
+            lq = array(Round(count * 0.25))
+            uq = array(Round(count * 0.75))
+        End If
+
+        'Approximate Interquartile range
+        iqr = uq - lq
+
+        'Write the stats out
+        Dim sReport As String = ""
+        Dim f100 As String = Space(3) & "|" & "{0,-20}" & "{1}" & "{2,16:F4}" & "|"
+        Dim f300 As String = Space(3) & "|" & StrDup(37, "-") & "|"
+        Dim f400 As String = Space(3) & "|" & StrDup(37, "_") & "|"
+        Dim f500 As String = Space(3) & StrDup(39, "_")
+
+        sReport = vbCrLf & vbCrLf & _
+          Space(3) & "STATS: Ellipse Inverse flattening " & vbCrLf & _
+          (String.Format(f500, "_")) & vbCrLf & _
+          (String.Format(f100, "  0% Min", "=", min)) & vbCrLf & _
+          (String.Format(f100, " 25% Lower quartile", "=", lq)) & vbCrLf & _
+          (String.Format(f100, " 50% Median", "=", median)) & vbCrLf & _
+          (String.Format(f100, " 75% Upper quartile", "=", uq)) & vbCrLf & _
+          (String.Format(f100, "100% Max", "=", max)) & vbCrLf & _
+          (String.Format(f300, "-")) & vbCrLf & _
+          (String.Format(f100, "Range", "=", range)) & vbCrLf & _
+          (String.Format(f100, "Mean", "=", mean)) & vbCrLf & _
+          (String.Format(f100, "St Dev", "=", std)) & vbCrLf & _
+          (String.Format(f100, "Interquartile range", "=", iqr)) & vbCrLf & _
+          (String.Format(f400, "_")) & vbCrLf
+
+        Return sReport
+    End Function
 End Class
