@@ -9,6 +9,7 @@ Imports ESRI.ArcGIS.DataSourcesGDB
 Imports ESRI.ArcGIS.Display
 Imports ESRI.ArcGIS.Framework
 Imports ESRI.ArcGIS.Geometry
+Imports System.Math
 
 Public Class frm_intersecttool
 
@@ -295,6 +296,10 @@ Public Class frm_intersecttool
 
     Private Sub RunPIA(ByVal IAF As IAPARAM)
 
+        Dim f100 As String = Space(3) & "|" & "{0,-20}" & "{1}" & "{2,16:F4}" & "|"
+        Dim f300 As String = Space(3) & "|" & StrDup(37, "-") & "|"
+        Dim f400 As String = Space(3) & "|" & StrDup(37, "_") & "|"
+        Dim f500 As String = Space(3) & StrDup(39, "_")
         Dim PRINTtxt As String = ""
 
         Dim pMxDoc As IMxDocument = My.ArcMap.Document
@@ -397,6 +402,8 @@ Public Class frm_intersecttool
             End If
         End While
 
+        Dim intersectioncount As Integer = ArOIDPairs.Count
+
         '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         pStepPro.MaxRange = ArOIDPairs.Count
         pStepPro.StepValue = 1
@@ -429,6 +436,20 @@ Public Class frm_intersecttool
             ArOIDPairs.Remove(OIDPair)
         Next
 
+        Dim sampleintersectioncount = ArOIDPairs.Count
+
+        'Log the intersection computation stats.
+        Dim report As String = ""
+        report = vbCrLf & vbCrLf & _
+          Space(3) & "STATS: Trajectory Intersection " & vbCrLf & _
+          (String.Format(f500, "_")) & vbCrLf & _
+          (String.Format(f100, "Total Intersections", "=", intersectioncount)) & vbCrLf & _
+          (String.Format(f100, "Coindicent Removed", "=", sampleintersectioncount)) & vbCrLf & _
+          (String.Format(f100, "Percentage of Total", "=", sampleintersectioncount / intersectioncount * 100)) & vbCrLf & _
+          (String.Format(f400, "_")) & vbCrLf
+
+        PRINTtxt += report
+
         '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         pStepPro.MaxRange = ArOIDPairs.Count
         pStepPro.StepValue = 1
@@ -437,7 +458,7 @@ Public Class frm_intersecttool
         'PROGRESS UPDATE: 
         pProDlg.Description = "Intersecting polylines..."
         PRINTtxt += vbCrLf & " [Intersecting polylines...]"
-
+        'This generates a list of intersection coordinates (points).
         Dim ArIntPts As New List(Of IPoint)
 
         pTrkCan.Reset()
@@ -508,6 +529,8 @@ Public Class frm_intersecttool
             End If
         Next
 
+        Dim potential_origin_count As Integer = Ar.GetLength(0)
+
         'PROGRESS UPDATE: 
         pProDlg.Description = "Calculating Nearest Neighbor distances..."
         PRINTtxt += vbCrLf & " [Calculating Nearest Neighbor distances...]"
@@ -533,6 +556,8 @@ Public Class frm_intersecttool
                 Return
             End If
         Next
+
+        PRINTtxt += compute_intersection_stats(Ar, IAF.sNQUERY)
 
         'If the the clustering method is 'Same distance'
         If IAF.bCMS = True Then
@@ -1039,8 +1064,8 @@ Public Class frm_intersecttool
         System.Array.Sort(dCIDList)
 
         'PROGRESS UPDATE: 
-        pProDlg.Description = "Counting number of features per cluster..."
-        PRINTtxt += vbCrLf & " [Counting number of features per cluster...]"
+        pProDlg.Description = "Counting number of intersections per cluster..."
+        PRINTtxt += vbCrLf & " [Counting number of intersections per cluster...]"
 
         'Get the number of CID occurances from the CID master list for each main feature CID
         pTrkCan.Reset()
@@ -1089,6 +1114,9 @@ Public Class frm_intersecttool
                 Return
             End If
         Next
+
+        'Get intersections per cluster statistics and write to log.
+        PRINTtxt += intersectionstats(Ar, Ar2, Ar3, IAF.sCPNUM)
 
         p_cPnum = IAF.sCPNUM
         ArCPoints.RemoveAll(AddressOf FindCPointByPntCount)
@@ -1629,5 +1657,173 @@ Public Class frm_intersecttool
         rtxtHELP_CNT.Refresh()
 
     End Sub
+
+    Private Function compute_intersection_stats(ByVal Ar, ByVal dist)
+        Dim count, sum, sample, range, mean, std, median, min, max, iqr, uq, lq, sumsq, array() As Double
+
+        count = 0
+        sample = 0
+        max = 0
+        min = 9999999
+        sum = 0
+        For i As Integer = 0 To Ar.GetUpperBound(1) - 1
+            count += 1
+            sum += Ar(4, i)
+            If Ar(4, i) > max Then max = Ar(4, i)
+            If Ar(4, i) < min Then min = Ar(4, i)
+            If Ar(4, i) <= dist Then sample += 1
+        Next
+        range = max - min
+        mean = sum / count
+
+        'Variance & STD
+        sumsq = 0
+        ReDim array(count)
+        For i As Integer = 0 To Ar.GetUpperBound(1) - 1
+            sumsq += (Ar(4, i) - mean) ^ 2
+            array(i) = Ar(4, i)
+        Next
+        std = Sqrt(sumsq / count)
+
+        System.Array.Sort(array)
+
+        If IEEERemainder(count, 2) = 0 Then
+            median = (array(Round(count * 0.5)) + array(Round((count * 0.5) + 1))) / 2
+            lq = (array(Round(count * 0.25)) + array(Round((count * 0.25) + 1))) / 2
+            uq = (array(Round(count * 0.75)) + array(Round((count * 0.75) + 1))) / 2
+        Else
+            median = array(Round(count * 0.5))
+            lq = array(Round(count * 0.25))
+            uq = array(Round(count * 0.75))
+        End If
+
+        iqr = uq - lq
+
+        'Write the stats out
+        Dim report As String = ""
+        Dim f100 As String = Space(3) & "|" & "{0,-20}" & "{1}" & "{2,16:F4}" & "|"
+        Dim f300 As String = Space(3) & "|" & StrDup(37, "-") & "|"
+        Dim f400 As String = Space(3) & "|" & StrDup(37, "_") & "|"
+        Dim f500 As String = Space(3) & StrDup(39, "_")
+
+        report = vbCrLf & vbCrLf & _
+          Space(3) & "STATS: Intersections " & vbCrLf & _
+          (String.Format(f500, "_")) & vbCrLf & _
+          (String.Format(f100, "Population Total", "=", count)) & vbCrLf & _
+          (String.Format(f100, "Inter. Within Dist.", "=", sample)) & vbCrLf & _
+          (String.Format(f100, "Percentage of Total", "=", sample / count * 100)) & vbCrLf & _
+          (String.Format(f300, "-")) & vbCrLf & _
+          (String.Format(f100, "  0% Min", "=", min)) & vbCrLf & _
+          (String.Format(f100, " 25% Lower quartile", "=", lq)) & vbCrLf & _
+          (String.Format(f100, " 50% Median", "=", median)) & vbCrLf & _
+          (String.Format(f100, " 75% Upper quartile", "=", uq)) & vbCrLf & _
+          (String.Format(f100, "100% Max", "=", max)) & vbCrLf & _
+          (String.Format(f300, "-")) & vbCrLf & _
+          (String.Format(f100, "Range", "=", range)) & vbCrLf & _
+          (String.Format(f100, "Mean", "=", mean)) & vbCrLf & _
+          (String.Format(f100, "St Dev", "=", std)) & vbCrLf & _
+          (String.Format(f100, "Interquartile range", "=", iqr)) & vbCrLf & _
+          (String.Format(f400, "_")) & vbCrLf
+
+
+        Return report
+    End Function
+
+    Private Function intersectionstats(ByVal Ar, ByVal Ar2, ByVal Ar3, ByVal cluster_threshold)
+        Dim dCount, dCountout, n, dRange, dMean, dStd, dIqr, dMin, dMax, dSumsq, dArray(), _
+     dMedian, dLQ, dUQ As Double
+
+        Dim clus As Dictionary(Of Integer, Integer) = New Dictionary(Of Integer, Integer)
+
+        dCount = 0
+        dMax = 0
+        dMin = 9999999
+
+        For o As Integer = 0 To Ar.GetUpperBound(1) - 1
+            If Ar2(Ar(0, o)) <> -1 Then
+                Dim key = Ar2(Ar(0, o))
+                If clus.ContainsKey(key) Then
+                    clus([key]) = Ar3(Ar(0, o))
+                    If Ar3(Ar(0, o)) > dMax Then dMax = Ar3(Ar(0, o))
+                    If Ar3(Ar(0, o)) < dMin Then dMin = Ar3(Ar(0, o))
+                Else
+                    clus.Add(CStr(Ar2(Ar(0, o))), Ar3(Ar(0, o)))
+                    If Ar3(Ar(0, o)) > dMax Then dMax = Ar3(Ar(0, o))
+                    If Ar3(Ar(0, o)) < dMin Then dMin = Ar3(Ar(0, o))
+                    dCount += Ar3(Ar(0, o))
+                End If
+            End If
+        Next
+
+        dRange = dMax - dMin
+        dMean = dCount / clus.Count 'Total number of craters / total number clusters
+
+        'Variance and STD
+
+        dSumsq = 0
+        ReDim dArray(clus.Count)
+        'Iterate over keys to get values here
+        Dim pair As KeyValuePair(Of Integer, Integer)
+        n = 0
+        For Each pair In clus
+            dSumsq = dSumsq + (pair.Value - dMean) ^ 2
+            dArray(n) = pair.Value
+            n += 1 ' counter for index into the dArray
+
+        Next
+
+        dStd = Sqrt(dSumsq / clus.Count)
+
+        System.Array.Sort(dArray)
+
+        'Compute the quartiles
+        If IEEERemainder(clus.Count, 2) = 0 Then
+            dMedian = (dArray(Round(clus.Count * 0.5)) + _
+                       dArray(Round((clus.Count * 0.5) + 1))) / 2
+            dLQ = (dArray(Round(clus.Count * 0.25)) + _
+                   dArray(Round((clus.Count * 0.25) + 1))) / 2
+            dUQ = (dArray(Round(clus.Count * 0.75)) + _
+                   dArray(Round((clus.Count * 0.75) + 1))) / 2
+        Else
+            dMedian = dArray(Round(clus.Count * 0.5))
+            dLQ = dArray(Round(clus.Count * 0.25))
+            dUQ = dArray(Round(clus.Count * 0.75))
+        End If
+
+        'Approximate Interquartile range
+        dIqr = dUQ - dLQ
+
+        dCountout = 0
+        For Each pair In clus
+            If pair.Value > cluster_threshold Then dCountout += 1
+        Next
+
+        'Write the stats out
+        Dim sReport As String = ""
+        Dim f100 As String = Space(3) & "|" & "{0,-20}" & "{1}" & "{2,16:F4}" & "|"
+        Dim f300 As String = Space(3) & "|" & StrDup(37, "-") & "|"
+        Dim f400 As String = Space(3) & "|" & StrDup(37, "_") & "|"
+        Dim f500 As String = Space(3) & StrDup(39, "_")
+
+        sReport = vbCrLf & vbCrLf & _
+          Space(3) & "STATS: Intersection Clusters " & vbCrLf & _
+          (String.Format(f500, "_")) & vbCrLf & _
+          (String.Format(f100, "Population Total", "=", dCount)) & vbCrLf & _
+          (String.Format(f100, "Clus. > 10 Craters", "=", dCountout)) & vbCrLf & _
+          (String.Format(f100, "Percentage of Total", "=", dCountout / clus.Count * 100)) & vbCrLf & _
+          (String.Format(f300, "-")) & vbCrLf & _
+          (String.Format(f100, "  0% Min", "=", dMin)) & vbCrLf & _
+          (String.Format(f100, " 25% Lower quartile", "=", dLQ)) & vbCrLf & _
+          (String.Format(f100, " 50% Median", "=", dMedian)) & vbCrLf & _
+          (String.Format(f100, " 75% Upper quartile", "=", dUQ)) & vbCrLf & _
+          (String.Format(f100, "100% Max", "=", dMax)) & vbCrLf & _
+          (String.Format(f300, "-")) & vbCrLf & _
+          (String.Format(f100, "Range", "=", dRange)) & vbCrLf & _
+          (String.Format(f100, "Mean", "=", dMean)) & vbCrLf & _
+          (String.Format(f100, "St Dev", "=", dStd)) & vbCrLf & _
+          (String.Format(f100, "Interquartile range", "=", dIqr)) & vbCrLf & _
+          (String.Format(f400, "_")) & vbCrLf
+        Return sReport
+    End Function
 
 End Class

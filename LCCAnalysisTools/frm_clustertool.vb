@@ -1043,7 +1043,7 @@ Public Class frm_clustertool
 
     End Sub
     Private Function CalcClusterStats(ByVal Ar, ByVal Ar2, ByVal Ar3)
-        Dim dCount, dCountout, n, dRange, dMean, dStd, dIqr, dMin, dMax, dSumsq, dArray(), _
+        Dim dCount, dCountout, cluster_count, sample, n, dRange, dMean, dStd, dIqr, dMin, dMax, dSumsq, dArray(), _
     dMedian, dLQ, dUQ As Double
 
         Dim clus As Dictionary(Of Integer, Integer) = New Dictionary(Of Integer, Integer)
@@ -1051,7 +1051,7 @@ Public Class frm_clustertool
         dCount = 0
         dMax = 0
         dMin = 9999999
-
+        Dim cluster_threshold As Integer = 10
         For o As Integer = 0 To Ar.GetUpperBound(1) - 1
             If Ar2(Ar(0, o)) <> -1 Then
                 Dim key = Ar2(Ar(0, o))
@@ -1064,6 +1064,8 @@ Public Class frm_clustertool
                     If Ar3(Ar(0, o)) > dMax Then dMax = Ar3(Ar(0, o))
                     If Ar3(Ar(0, o)) < dMin Then dMin = Ar3(Ar(0, o))
                     dCount += Ar3(Ar(0, o))
+                    cluster_count += 1
+                    If Ar3(Ar(0, o)) >= cluster_threshold Then sample += 1
                 End If
             End If
         Next
@@ -1118,9 +1120,9 @@ Public Class frm_clustertool
         sReport = vbCrLf & vbCrLf & _
           Space(3) & "STATS: Clustering " & vbCrLf & _
           (String.Format(f500, "_")) & vbCrLf & _
-          (String.Format(f100, "Population Total", "=", dCount)) & vbCrLf & _
-          (String.Format(f100, "Clus. > 10 Craters", "=", dCountout)) & vbCrLf & _
-          (String.Format(f100, "Percentage of Total", "=", dCountout / clus.Count * 100)) & vbCrLf & _
+          (String.Format(f100, "Population Total", "=", cluster_count)) & vbCrLf & _
+          (String.Format(f100, "Clus. > 10 Craters", "=", sample)) & vbCrLf & _
+          (String.Format(f100, "Percentage of Total", "=", sample / cluster_count * 100)) & vbCrLf & _
           (String.Format(f300, "-")) & vbCrLf & _
           (String.Format(f100, "  0% Min", "=", dMin)) & vbCrLf & _
           (String.Format(f100, " 25% Lower quartile", "=", dLQ)) & vbCrLf & _
