@@ -23,11 +23,14 @@ Public Module mod_public
     Public m_dirdisForm As frm_dirdistool
     Public m_trajectForm As frm_trajecttool
     Public m_intersectForm As frm_intersecttool
+    Public m_distanceForm As frm_distancetool
 
     Public m_sCAFLayer As String
     Public m_sDDFLayer As String
     Public m_sTAFLayer As String
     Public m_sIAFLayer As String
+    Public distlayer As String
+    Public distance_table As String
 
     'Structure to pass 'Cluster Analysis' parameters from 
     ''main form' to progress
@@ -415,6 +418,24 @@ Public Module mod_public
 
         Return Nothing
 
+    End Function
+
+    Public Function getTableByName(ByVal TableName As String) As ITable
+        If Not TableName <> "" Then Return Nothing
+        Dim mxdoc As IMxDocument = My.ArcMap.Document
+        Dim map = mxdoc.FocusMap
+        Dim tablecollections As ITableCollection = map
+        Dim table As ITable
+        Dim table_dataset As IDataset
+
+        For i = 0 To tablecollections.TableCount - 1
+            table = tablecollections.Table(i)
+            table_dataset = table
+            If UCase(TableName) = UCase(table_dataset.Name) Then
+                Return table
+            End If
+        Next
+        Return Nothing
     End Function
 
     Public Sub StopEditSession(ByVal SaveChanges As Boolean)
@@ -1499,6 +1520,15 @@ Public Module mod_public
 
         End Try
 
+    End Sub
+
+    Public Sub returnmessages(ByVal gp As Geoprocessor)
+        Dim count As Integer
+        If gp.MessageCount > 0 Then
+            For count = 0 To gp.MessageCount - 1
+                Console.WriteLine(gp.GetMessage(count))
+            Next
+        End If
     End Sub
 
 End Module

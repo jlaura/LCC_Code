@@ -32,6 +32,7 @@ Public Class frm_clustertool
 
     End Sub
 
+#Region "Layer Drop Down"
     Private Sub cboLAYER_DropDown(ByVal sender As Object, _
                                   ByVal e As System.EventArgs) _
                                   Handles cboLAYER.DropDown
@@ -92,6 +93,48 @@ Public Class frm_clustertool
         End If
 
     End Sub
+#End Region
+
+#Region "Distance Table Dropdown"
+    Private Sub DistTable_DropDown(ByVal sender As Object, ByVal e As System.EventArgs) Handles Disttable.DropDown
+        'Populate the dist table dropdown
+        Dim mxdoc As IMxDocument = My.ArcMap.Document
+        Dim map As IMap = mxdoc.FocusMap
+        Dim tablecollection As ITableCollection = map
+        Dim table As ITable
+        Dim dataset As IDataset
+
+        'Populate with tables
+        Try
+            'Clear the dropdown from previous launches
+            Disttable.Items.Clear()
+            'Populate the dropdown
+            For i = 0 To tablecollection.TableCount - 1
+                table = tablecollection.Table(i)
+                dataset = table
+                Disttable.Items.Add(dataset.Name)
+            Next
+        Catch ex As Exception
+            MsgBox("No distance tables available.  Run the distance table tool first.", MsgBoxStyle.Exclamation, "No Distance Tables")
+            Exit Sub
+        End Try
+    End Sub
+    Private Sub DistTable_DropdownClose(ByVal sender As Object, ByVal e As System.EventArgs) Handles Disttable.DropDownClosed
+        If Disttable.SelectedIndex = -1 Then
+            distance_table = Nothing
+        End If
+    End Sub
+    Private Sub Distance_Table_SelectedIndexChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles Disttable.SelectedIndexChanged
+        If Not Disttable.SelectedIndex = -1 Then
+            distance_table = Disttable.Text
+            MsgBox(distance_table, MsgBoxStyle.Exclamation, "Var?")
+        Else
+            distance_table = Nothing
+        End If
+
+    End Sub
+#End Region
+
 
     Private Sub TextBoxes_Update(ByVal sender As Object, _
                                  ByVal e As System.EventArgs) _
@@ -158,10 +201,9 @@ Public Class frm_clustertool
 
     End Sub
 
-    Private Sub FormErrorHandler()
-        'On form submission this method is called to validate all the form fields.
+    Private Sub Optimize_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles optimize.Click
+        'Make sure that we have an input layer..
         Dim pFLayer As IFeatureLayer = GetFLayerByName(m_sCAFLayer)
-
         'Make sure an input layer was selected and assigned to an object
         If cboLAYER.SelectedIndex = -1 Or pFLayer Is Nothing Then
             MsgBox("Please select an 'Input point layer'.", MsgBoxStyle.Exclamation, _
@@ -172,6 +214,62 @@ Public Class frm_clustertool
         Dim pFClass As IFeatureClass = pFLayer.FeatureClass
         Dim pDataset As IDataset = pFClass
         Dim pWrkspc2 As IWorkspace2 = DirectCast(pDataset.Workspace, IWorkspace2)
+
+        'Make sure that a distance table was selected.
+        If distance_table Is Nothing Then
+            MsgBox("Please select a 'Distance Table'.", MsgBoxStyle.Exclamation, _
+                   "Missing Parameter")
+            Return
+        End If
+
+        'Create an array that is the size of the input shapefile
+        'Each index store the nearest neighbor distance
+        Dim DistArray(pFClass.FeatureCount(Nothing) - 1) As Double
+
+        'Open the distance table
+        Dim table = getTableByName(distance_table)
+        Dim InFid As Integer = table.FindField("IN_FID")
+        Dim NearDist As Integer = table.FindField("Near_DIST")
+        Dim cursor As ICursor = table.Search(Nothing, True)
+        Dim row As IRow = cursor.NextRow() ' Get the first feature
+
+
+        'Iterate over the FID and find the Knearest Neighbor Distance
+        For i As Integer = 0 To pFClass.FeatureCount(Nothing) - 1
+            Dim dist As Double = 9999999
+            Do Until row.Value(InFid) <> i
+                If row.Value(NearDist) < dist Then
+                    DistArray(i) = row.Value(NearDist)
+                    dist = row.Value(NearDist)
+                End If
+                row = cursor.NextRow()
+            Loop
+        Next
+
+        MsgBox(DistArray(0), MsgBoxStyle.Information, "Distance")
+
+    End Sub
+
+    Private Sub FormErrorHandler()
+        'On form submission this method is called to validate all the form fields.
+        Dim pFLayer As IFeatureLayer = GetFLayerByName(m_sCAFLayer)
+        'Make sure an input layer was selected and assigned to an object
+        If cboLAYER.SelectedIndex = -1 Or pFLayer Is Nothing Then
+            MsgBox("Please select an 'Input point layer'.", MsgBoxStyle.Exclamation, _
+                   "Missing Parameter")
+            Return
+        End If
+
+        Dim pFClass As IFeatureClass = pFLayer.FeatureClass
+        Dim pDataset As IDataset = pFClass
+        Dim pWrkspc2 As IWorkspace2 = DirectCast(pDataset.Workspace, IWorkspace2)
+
+        'Make sure that a distance table was selected.
+        If distance_table Is Nothing Then
+            MsgBox("Please select a 'Distance Table'.", MsgBoxStyle.Exclamation, _
+                   "Missing Parameter")
+            Return
+        End If
 
         'Query points by nearest distance' distance number required
         If CInt(txtNQUERY.Text) <= 0 Then
@@ -348,9 +446,6 @@ Public Class frm_clustertool
         PRINTtxt += vbCrLf & " Output layer name: " & CAF.sOUT
         PRINTtxt += vbCrLf & vbCrLf
 
-
-        'Check for the license type
-        'Dim license = GetArcGISLicenseName()
 
         'Here the initial feature array is populated.  Each point in the input is copied to the output and the following fields are created:
 
@@ -1474,11 +1569,4 @@ Public Class frm_clustertool
 
     End Sub
 
-    Private Sub Optimize_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnOptParam.Click
-
-    End Sub
-
-    Private Sub GroupBox1_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs)
-
-    End Sub
 End Class

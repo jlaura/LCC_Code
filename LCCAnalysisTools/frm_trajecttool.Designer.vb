@@ -41,12 +41,13 @@ Partial Class frm_trajecttool
         Me.txtTDDISTVAL = New System.Windows.Forms.TextBox()
         Me.lblTDDISTUNITS = New System.Windows.Forms.Label()
         Me.grpCLUSTERREQ = New System.Windows.Forms.GroupBox()
+        Me.pnlIF = New System.Windows.Forms.Panel()
         Me.lblEIFUNITS = New System.Windows.Forms.Label()
-        Me.lblEMAUNITS = New System.Windows.Forms.Label()
         Me.txtEIFVAL = New System.Windows.Forms.TextBox()
-        Me.txtEMAVAL = New System.Windows.Forms.TextBox()
-        Me.cboEIFMOD = New System.Windows.Forms.ComboBox()
         Me.lblEIF = New System.Windows.Forms.Label()
+        Me.cboEIFMOD = New System.Windows.Forms.ComboBox()
+        Me.lblEMAUNITS = New System.Windows.Forms.Label()
+        Me.txtEMAVAL = New System.Windows.Forms.TextBox()
         Me.cboEMAMOD = New System.Windows.Forms.ComboBox()
         Me.lblEMA = New System.Windows.Forms.Label()
         Me.lblLAYER = New System.Windows.Forms.Label()
@@ -57,7 +58,6 @@ Partial Class frm_trajecttool
         Me.btnSHHELP = New System.Windows.Forms.Button()
         Me.btnOK = New System.Windows.Forms.Button()
         Me.btnCANCEL = New System.Windows.Forms.Button()
-        Me.pnlIF = New System.Windows.Forms.Panel()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
@@ -65,8 +65,8 @@ Partial Class frm_trajecttool
         Me.grpCOREFF.SuspendLayout()
         Me.grpTRAJDIST.SuspendLayout()
         Me.grpCLUSTERREQ.SuspendLayout()
-        Me.pnlMARGIN2.SuspendLayout()
         Me.pnlIF.SuspendLayout()
+        Me.pnlMARGIN2.SuspendLayout()
         Me.SuspendLayout()
         '
         'splcHELP
@@ -276,6 +276,17 @@ Partial Class frm_trajecttool
         Me.grpCLUSTERREQ.TabStop = False
         Me.grpCLUSTERREQ.Text = "Cluster requirements"
         '
+        'pnlIF
+        '
+        Me.pnlIF.Controls.Add(Me.lblEIFUNITS)
+        Me.pnlIF.Controls.Add(Me.txtEIFVAL)
+        Me.pnlIF.Controls.Add(Me.lblEIF)
+        Me.pnlIF.Controls.Add(Me.cboEIFMOD)
+        Me.pnlIF.Location = New System.Drawing.Point(6, 45)
+        Me.pnlIF.Name = "pnlIF"
+        Me.pnlIF.Size = New System.Drawing.Size(330, 26)
+        Me.pnlIF.TabIndex = 5
+        '
         'lblEIFUNITS
         '
         Me.lblEIFUNITS.AutoSize = True
@@ -284,15 +295,6 @@ Partial Class frm_trajecttool
         Me.lblEIFUNITS.Size = New System.Drawing.Size(29, 13)
         Me.lblEIFUNITS.TabIndex = 10
         Me.lblEIFUNITS.Text = "units"
-        '
-        'lblEMAUNITS
-        '
-        Me.lblEMAUNITS.AutoSize = True
-        Me.lblEMAUNITS.Location = New System.Drawing.Point(306, 22)
-        Me.lblEMAUNITS.Name = "lblEMAUNITS"
-        Me.lblEMAUNITS.Size = New System.Drawing.Size(18, 13)
-        Me.lblEMAUNITS.TabIndex = 9
-        Me.lblEMAUNITS.Text = "m."
         '
         'txtEIFVAL
         '
@@ -303,14 +305,14 @@ Partial Class frm_trajecttool
         Me.txtEIFVAL.Text = "1.4"
         Me.txtEIFVAL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
-        'txtEMAVAL
+        'lblEIF
         '
-        Me.txtEMAVAL.Location = New System.Drawing.Point(202, 19)
-        Me.txtEMAVAL.Name = "txtEMAVAL"
-        Me.txtEMAVAL.Size = New System.Drawing.Size(100, 20)
-        Me.txtEMAVAL.TabIndex = 1
-        Me.txtEMAVAL.Text = "20000"
-        Me.txtEMAVAL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.lblEIF.AutoSize = True
+        Me.lblEIF.Location = New System.Drawing.Point(9, 5)
+        Me.lblEIF.Name = "lblEIF"
+        Me.lblEIF.Size = New System.Drawing.Size(88, 13)
+        Me.lblEIF.TabIndex = 5
+        Me.lblEIF.Text = "Inverse flattening"
         '
         'cboEIFMOD
         '
@@ -322,14 +324,23 @@ Partial Class frm_trajecttool
         Me.cboEIFMOD.Size = New System.Drawing.Size(35, 21)
         Me.cboEIFMOD.TabIndex = 2
         '
-        'lblEIF
+        'lblEMAUNITS
         '
-        Me.lblEIF.AutoSize = True
-        Me.lblEIF.Location = New System.Drawing.Point(9, 5)
-        Me.lblEIF.Name = "lblEIF"
-        Me.lblEIF.Size = New System.Drawing.Size(88, 13)
-        Me.lblEIF.TabIndex = 5
-        Me.lblEIF.Text = "Inverse flattening"
+        Me.lblEMAUNITS.AutoSize = True
+        Me.lblEMAUNITS.Location = New System.Drawing.Point(306, 22)
+        Me.lblEMAUNITS.Name = "lblEMAUNITS"
+        Me.lblEMAUNITS.Size = New System.Drawing.Size(18, 13)
+        Me.lblEMAUNITS.TabIndex = 9
+        Me.lblEMAUNITS.Text = "m."
+        '
+        'txtEMAVAL
+        '
+        Me.txtEMAVAL.Location = New System.Drawing.Point(202, 19)
+        Me.txtEMAVAL.Name = "txtEMAVAL"
+        Me.txtEMAVAL.Size = New System.Drawing.Size(100, 20)
+        Me.txtEMAVAL.TabIndex = 1
+        Me.txtEMAVAL.Text = "20000"
+        Me.txtEMAVAL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'cboEMAMOD
         '
@@ -434,17 +445,6 @@ Partial Class frm_trajecttool
         Me.btnCANCEL.Text = "Close"
         Me.btnCANCEL.UseVisualStyleBackColor = True
         '
-        'pnlIF
-        '
-        Me.pnlIF.Controls.Add(Me.lblEIFUNITS)
-        Me.pnlIF.Controls.Add(Me.txtEIFVAL)
-        Me.pnlIF.Controls.Add(Me.lblEIF)
-        Me.pnlIF.Controls.Add(Me.cboEIFMOD)
-        Me.pnlIF.Location = New System.Drawing.Point(6, 45)
-        Me.pnlIF.Name = "pnlIF"
-        Me.pnlIF.Size = New System.Drawing.Size(330, 26)
-        Me.pnlIF.TabIndex = 5
-        '
         'frm_trajecttool
         '
         Me.AcceptButton = Me.btnOK
@@ -477,9 +477,9 @@ Partial Class frm_trajecttool
         Me.grpTRAJDIST.PerformLayout()
         Me.grpCLUSTERREQ.ResumeLayout(False)
         Me.grpCLUSTERREQ.PerformLayout()
-        Me.pnlMARGIN2.ResumeLayout(False)
         Me.pnlIF.ResumeLayout(False)
         Me.pnlIF.PerformLayout()
+        Me.pnlMARGIN2.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
