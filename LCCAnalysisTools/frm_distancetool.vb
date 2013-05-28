@@ -34,7 +34,7 @@ Public Class frm_distancetool
         'HELP_Form()
 
     End Sub
-
+#Region "Input Layer DropDown"
     Private Sub inputlayer_DropDown(ByVal sender As Object, _
                                  ByVal e As System.EventArgs) _
                                  Handles inputlayer.DropDown
@@ -95,6 +95,7 @@ Public Class frm_distancetool
         End If
 
     End Sub
+#End Region
 
     Private Sub TextBoxes_Update(ByVal sender As Object, ByVal e As System.EventArgs) Handles knn.Leave
 
@@ -140,6 +141,13 @@ Public Class frm_distancetool
             Return
         End If
 
+        'Check for measurement type (geo or planar)
+        Dim distance_measure As String
+        If planar_measure.Checked = True Then
+            distance_measure = "Planar"
+        Else
+            distance_measure = "Geodesic"
+        End If
 
         'Check for invalid output name
         If ValidateString(distanceTableOut.Text, "Output layer name", layer.Name) = False Then
@@ -156,28 +164,30 @@ Public Class frm_distancetool
         End If
 
         'If all errors are handled, load progress form
-        LoadProgressForm(distlayer, knn.Text, distanceTableOut.Text)
+        LoadProgressForm(distlayer, knn.Text, distance_measure, distanceTableOut.Text)
 
     End Sub
 
-    Private Sub LoadProgressForm(ByVal distlayer, ByVal knn, ByVal distanceTableOut)
+    Private Sub LoadProgressForm(ByVal distlayer, ByVal knn, ByVal distance_measure, ByVal distanceTableOut)
         'This method launches the progress form, packages the parameters from the form, and calls the RunClustering method to initiate processing.
 
         'Hide the Cluster Analysis form
         Me.Hide()
 
         'Check for the license type
-        'Check for the license type
         Dim license = GetArcGISLicenseName()
 
-        If license = "Advanced" Then
-            'Generate near table
+        If license = "Advanced" And distance_measure = "Planar" Then
+            'Generate near table using geoprocessing
             generateNearTable(distlayer, knn, distanceTableOut)
+        ElseIf distance_measure = "Geodesic" Then
+            'Generate a near table manually using geodesic distance
+            generateNearGeodesicTable(distlayer, knn, distanceTableOut)
         Else
-            'Run the cluster analysis program
-            generateKnn(distlayer, knn, distanceTableOut)
+            'Generate a near table manually using planar distance
+            generateNearTablePlanar(distlayer, knn, distanceTableOut)
         End If
-       
+
 
         'Close and dispose of form
         m_clusterForm = Nothing
@@ -186,8 +196,100 @@ Public Class frm_distancetool
 
     End Sub
 
-    Private Sub generateKnn(ByVal distlayer, ByVal knn, ByVal distanceTableOut)
+    Private Sub generateNearTablePlanar(ByVal distlayer, ByVal knn, ByVal distanceTableOut)
 
+
+    End Sub
+
+    Private Sub generateNearGeodesicTable(ByVal distlayer, ByVal knn, ByVal distanceTableOut)
+        'This method generates a geodesic KNN table.  This is signifigantly slower than using near in planar space due to the additional math involved.
+
+        'Access the feature class
+        Dim featurelayer = GetFLayerByName(distlayer)
+        Dim featureclass As IFeatureClass = featurelayer.FeatureClass
+
+        'Grab all the spatial reference information from the input shapefile
+        Dim gcs As IGeographicCoordinateSystem2 = Nothing
+        Dim semi_major_axis As Double = 0
+        Dim semi_minor_axis As Double = 0
+        Try
+            Dim spatial_reference As ISpatialReference = GetFLayerSpatRef(featurelayer)
+            gcs = GetGCS(spatial_reference)
+            semi_major_axis = gcs.Datum.Spheroid.SemiMajorAxis
+            semi_minor_axis = gcs.Datum.Spheroid.SemiMinorAxis
+        Catch ex As Exception
+            MsgBox("Unable to determine input data spatial reference.  Please ensure the file has a spatial reference associated with it", MsgBoxStyle.Exclamation, "Error")
+        End Try
+
+        'Create the output table with the necessary fields.
+
+
+
+
+        '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        ' Create a CancelTracker
+        Dim pTrkCan As ITrackCancel = New CancelTracker
+
+        ' Create the ProgressDialog. This automatically displays the dialog
+        Dim pProDlgFact As IProgressDialogFactory = New ProgressDialogFactory
+        Dim pProDlg As IProgressDialog2 = pProDlgFact.Create(pTrkCan, My.ArcMap.Application.hWnd)
+
+        ' Set the properties of the ProgressDialog
+        pProDlg.CancelEnabled = True
+        pProDlg.Title = "KNN Distance Table Generation - Geodesic Distances"
+        pProDlg.Animation = esriProgressAnimationTypes.esriProgressSpiral
+
+        ' Set the properties of the Step Progressor
+        Dim pStepPro As IStepProgressor = pProDlg
+        pStepPro.MinRange = 0
+        pStepPro.MaxRange = featureclass.FeatureCount(Nothing)
+        pStepPro.StepValue = 1
+        pStepPro.Message = "Progress:"
+        '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+        'Extract the OID, AID, Xcoord, Ycoord
+        pProDlg.Description = "Extracting OID, X and Y values..."
+
+        Dim count As Integer = 0
+        Dim Ar(4, featureclass.FeatureCount(Nothing) - 1) As Double
+        Dim cursor As IFeatureCursor = featureclass.Search(Nothing, False)
+        Dim row As IFeature = cursor.NextFeature
+        While Not row Is Nothing
+            Ar(0, count) = count
+            Ar(1, count) = row.OID
+            Dim point As IPoint = row.ShapeCopy
+            point.Project(gcs)
+            Ar(2, count) = point.X
+            Ar(3, count) = point.Y
+            row = cursor.NextFeature
+            count += 1
+        End While
+
+        'Progress Bar Cancel Options
+        If Not pTrkCan.Continue Then
+            ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+            Return
+        End If
+
+        'Find K-Nearest Neighbors to each input point
+        pProDlg.Description = "Extracting Nearest Neighbor distances..."
+
+        Dim feature(2, 0) As Double 'Indices are OID | xcoord | ycoord
+        For i As Integer = 0 To Ar.GetUpperBound(0) - 1
+            feature(0, 0) = Ar(1, i)
+            feature(1, 0) = Ar(2, i)
+            feature(2, 0) = Ar(3, i)
+            Dim dist(3, knn) As Double ' Indices are OID | xcoord | ycoord | distance
+
+            'Find the K-Nearest Neighbors in Geodesic space.
+            FindNearestGeo(Ar, feature, dist, semi_major_axis, semi_minor_axis, knn)
+            MsgBox(dist(0, 3), MsgBoxStyle.OkCancel, "Sample Distance")
+            If Not pTrkCan.Continue Then
+                ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                Return
+            End If
+
+        Next
 
     End Sub
 
@@ -215,7 +317,8 @@ Public Class frm_distancetool
         genneartable.near_features = "C:\Users\jlaura\Desktop\Zunil\Zunil_secondaries_proj.shp"
         genneartable.out_table = DistanceTableOut
         genneartable.closest = False
-        genneartable.closest_count = lcount 'This should be a parameter
+        genneartable.location = True
+        genneartable.closest_count = lcount
 
         'Execute
         Try

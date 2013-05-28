@@ -538,7 +538,7 @@ Public Class frm_clustertool
         End While
 
         'PROGRESS UPDATE: 
-        pProDlg.Description = "Calculating Nearest Neighbor distances..."
+        pProDlg.Description = "Extracting Nearest Neighbor distances..."
         'PRINTtxt += vbCrLf & " [Calculating Nearest Neighbor distances...]"
 
         'Populate array with NDIST for all records in feature class

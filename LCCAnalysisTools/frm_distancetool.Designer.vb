@@ -31,8 +31,12 @@ Partial Class frm_distancetool
         Me.btnSHHELP = New System.Windows.Forms.Button()
         Me.okay = New System.Windows.Forms.Button()
         Me.btnCANCEL = New System.Windows.Forms.Button()
+        Me.grpMEASSPACE = New System.Windows.Forms.GroupBox()
+        Me.planar_measure = New System.Windows.Forms.RadioButton()
+        Me.geodesic_measure = New System.Windows.Forms.RadioButton()
         Me.grpOUT.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
+        Me.grpMEASSPACE.SuspendLayout()
         Me.SuspendLayout()
         '
         'lblLAYER
@@ -40,9 +44,9 @@ Partial Class frm_distancetool
         Me.lblLAYER.AutoSize = True
         Me.lblLAYER.Location = New System.Drawing.Point(6, 11)
         Me.lblLAYER.Name = "lblLAYER"
-        Me.lblLAYER.Size = New System.Drawing.Size(94, 13)
+        Me.lblLAYER.Size = New System.Drawing.Size(87, 13)
         Me.lblLAYER.TabIndex = 2
-        Me.lblLAYER.Text = "Input polyline layer"
+        Me.lblLAYER.Text = "Input Point Layer"
         '
         'inputlayer
         '
@@ -50,22 +54,22 @@ Partial Class frm_distancetool
         Me.inputlayer.FormattingEnabled = True
         Me.inputlayer.Location = New System.Drawing.Point(9, 28)
         Me.inputlayer.Name = "inputlayer"
-        Me.inputlayer.Size = New System.Drawing.Size(338, 21)
+        Me.inputlayer.Size = New System.Drawing.Size(400, 21)
         Me.inputlayer.TabIndex = 1
         '
         'distanceTableOut
         '
         Me.distanceTableOut.Location = New System.Drawing.Point(18, 20)
         Me.distanceTableOut.Name = "distanceTableOut"
-        Me.distanceTableOut.Size = New System.Drawing.Size(303, 20)
+        Me.distanceTableOut.Size = New System.Drawing.Size(373, 20)
         Me.distanceTableOut.TabIndex = 0
         '
         'grpOUT
         '
         Me.grpOUT.Controls.Add(Me.distanceTableOut)
-        Me.grpOUT.Location = New System.Drawing.Point(12, 111)
+        Me.grpOUT.Location = New System.Drawing.Point(12, 170)
         Me.grpOUT.Name = "grpOUT"
-        Me.grpOUT.Size = New System.Drawing.Size(338, 50)
+        Me.grpOUT.Size = New System.Drawing.Size(397, 51)
         Me.grpOUT.TabIndex = 5
         Me.grpOUT.TabStop = False
         Me.grpOUT.Text = "Output layer name"
@@ -74,7 +78,7 @@ Partial Class frm_distancetool
         '
         Me.knn.Location = New System.Drawing.Point(18, 20)
         Me.knn.Name = "knn"
-        Me.knn.Size = New System.Drawing.Size(303, 20)
+        Me.knn.Size = New System.Drawing.Size(376, 20)
         Me.knn.TabIndex = 0
         Me.knn.Text = "10"
         Me.knn.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
@@ -84,7 +88,7 @@ Partial Class frm_distancetool
         Me.GroupBox1.Controls.Add(Me.knn)
         Me.GroupBox1.Location = New System.Drawing.Point(9, 55)
         Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Size = New System.Drawing.Size(338, 50)
+        Me.GroupBox1.Size = New System.Drawing.Size(400, 50)
         Me.GroupBox1.TabIndex = 5
         Me.GroupBox1.TabStop = False
         Me.GroupBox1.Text = "Number of nearest neighbors"
@@ -92,7 +96,7 @@ Partial Class frm_distancetool
         'btnSHHELP
         '
         Me.btnSHHELP.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnSHHELP.Location = New System.Drawing.Point(266, 177)
+        Me.btnSHHELP.Location = New System.Drawing.Point(325, 231)
         Me.btnSHHELP.Name = "btnSHHELP"
         Me.btnSHHELP.Size = New System.Drawing.Size(84, 23)
         Me.btnSHHELP.TabIndex = 8
@@ -102,7 +106,7 @@ Partial Class frm_distancetool
         'okay
         '
         Me.okay.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.okay.Location = New System.Drawing.Point(104, 177)
+        Me.okay.Location = New System.Drawing.Point(12, 231)
         Me.okay.Name = "okay"
         Me.okay.Size = New System.Drawing.Size(75, 23)
         Me.okay.TabIndex = 6
@@ -113,18 +117,55 @@ Partial Class frm_distancetool
         '
         Me.btnCANCEL.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.btnCANCEL.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.btnCANCEL.Location = New System.Drawing.Point(185, 177)
+        Me.btnCANCEL.Location = New System.Drawing.Point(93, 231)
         Me.btnCANCEL.Name = "btnCANCEL"
         Me.btnCANCEL.Size = New System.Drawing.Size(75, 23)
         Me.btnCANCEL.TabIndex = 7
         Me.btnCANCEL.Text = "Close"
         Me.btnCANCEL.UseVisualStyleBackColor = True
         '
+        'grpMEASSPACE
+        '
+        Me.grpMEASSPACE.Controls.Add(Me.planar_measure)
+        Me.grpMEASSPACE.Controls.Add(Me.geodesic_measure)
+        Me.grpMEASSPACE.Location = New System.Drawing.Point(9, 111)
+        Me.grpMEASSPACE.Name = "grpMEASSPACE"
+        Me.grpMEASSPACE.Size = New System.Drawing.Size(400, 53)
+        Me.grpMEASSPACE.TabIndex = 3
+        Me.grpMEASSPACE.TabStop = False
+        Me.grpMEASSPACE.Text = "Measurement space"
+        '
+        'planar_measure
+        '
+        Me.planar_measure.Appearance = System.Windows.Forms.Appearance.Button
+        Me.planar_measure.AutoSize = True
+        Me.planar_measure.Checked = True
+        Me.planar_measure.Location = New System.Drawing.Point(18, 19)
+        Me.planar_measure.Name = "planar_measure"
+        Me.planar_measure.Size = New System.Drawing.Size(47, 23)
+        Me.planar_measure.TabIndex = 0
+        Me.planar_measure.TabStop = True
+        Me.planar_measure.Text = "Planar"
+        Me.planar_measure.UseVisualStyleBackColor = True
+        '
+        'geodesic_measure
+        '
+        Me.geodesic_measure.Appearance = System.Windows.Forms.Appearance.Button
+        Me.geodesic_measure.AutoSize = True
+        Me.geodesic_measure.Location = New System.Drawing.Point(71, 19)
+        Me.geodesic_measure.Name = "geodesic_measure"
+        Me.geodesic_measure.Size = New System.Drawing.Size(62, 23)
+        Me.geodesic_measure.TabIndex = 1
+        Me.geodesic_measure.TabStop = True
+        Me.geodesic_measure.Text = "Geodesic"
+        Me.geodesic_measure.UseVisualStyleBackColor = True
+        '
         'frm_distancetool
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(357, 212)
+        Me.ClientSize = New System.Drawing.Size(414, 266)
+        Me.Controls.Add(Me.grpMEASSPACE)
         Me.Controls.Add(Me.btnSHHELP)
         Me.Controls.Add(Me.okay)
         Me.Controls.Add(Me.btnCANCEL)
@@ -138,6 +179,8 @@ Partial Class frm_distancetool
         Me.grpOUT.PerformLayout()
         Me.GroupBox1.ResumeLayout(False)
         Me.GroupBox1.PerformLayout()
+        Me.grpMEASSPACE.ResumeLayout(False)
+        Me.grpMEASSPACE.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -151,4 +194,7 @@ Partial Class frm_distancetool
     Friend WithEvents btnSHHELP As System.Windows.Forms.Button
     Friend WithEvents okay As System.Windows.Forms.Button
     Friend WithEvents btnCANCEL As System.Windows.Forms.Button
+    Friend WithEvents grpMEASSPACE As System.Windows.Forms.GroupBox
+    Friend WithEvents planar_measure As System.Windows.Forms.RadioButton
+    Friend WithEvents geodesic_measure As System.Windows.Forms.RadioButton
 End Class

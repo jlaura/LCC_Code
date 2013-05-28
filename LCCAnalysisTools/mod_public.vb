@@ -32,6 +32,7 @@ Public Module mod_public
     Public distlayer As String
     Public distance_table As String
 
+
     'Structure to pass 'Cluster Analysis' parameters from 
     ''main form' to progress
     Public Structure CAPARAM
@@ -1383,6 +1384,54 @@ Public Module mod_public
 
     End Function
 
+    Public Function FindNearestGeo(ByVal Ar(,) As Double, ByRef feature(,) As Double, ByRef dist(,) As Double, ByVal dSemiMajAxis As Double, ByVal dSemiMinAxis As Double, ByVal knn As Double) As Double 'Euclidean or Geodesic
+
+        Dim distance, dDistOld As Double
+        Dim maxdistance As Double = 0
+        Dim counter As Integer = 0
+        Dim index As Integer = 0
+
+        For i As Integer = 0 To Ar.GetUpperBound(1)
+            distance = GetDist(Ar(2, i), Ar(3, i), feature(1, 0), feature(2, 0), dSemiMajAxis, dSemiMinAxis, False)
+            If counter < knn Then
+                'Autoload the first n distances
+                dist(0, i) = Ar(1, i)
+                dist(1, i) = Ar(2, i)
+                dist(2, i) = Ar(3, i)
+                dist(3, i) = distance
+
+                If distance > maxdistance Then
+                    maxdistance = distance
+                    index = i
+                End If
+                counter += 1
+            Else
+                If distance < maxdistance Then
+                    dist(0, index) = Ar(1, i)
+                    dist(1, index) = Ar(2, i)
+                    dist(2, index) = Ar(3, i)
+                    dist(3, index) = distance
+                    'MsgBox(distance, MsgBoxStyle.OkCancel, "Distance")
+
+                    maxdistance = dist(3, index)
+                    For j As Integer = 0 To dist.GetUpperBound(0) - 1
+                        If dist(3, j) > maxdistance Then
+                            maxdistance = dist(3, j)
+                            index = j
+                        End If
+
+                    Next
+
+                End If
+
+            End If
+
+        Next
+
+        Return dDistOld
+
+    End Function
+
     Public Function GetDist(ByVal x2 As Double, ByVal y2 As Double, _
                             ByVal x1 As Double, ByVal y1 As Double, _
                             ByVal dSemiMajAxis As Double, _
@@ -1456,34 +1505,6 @@ Public Module mod_public
     End Sub
 
 
-    Public Sub FindNearestGeo(ByVal pFlayer, ByVal queryDistance, ByRef workspace)
-        'Setup the geoprocessor
-
-        Dim gp As Geoprocessor = New Geoprocessor()
-        'Run the near geoprocessing tool
-        Dim nearTool As Near = New Near()
-        nearTool.in_features = pFlayer
-        nearTool.near_features = pFlayer
-        nearTool.search_radius = queryDistance
-        'nearTool.out_feature_class = "in_memory\output"
-
-        Dim sev As Object = Nothing
-
-        Try
-            'Execute the tool
-            gp.Execute(nearTool, Nothing)
-
-            'Print the messages to the console
-            Console.WriteLine(gp.GetMessages(sev))
-
-        Catch ex As Exception
-            Console.WriteLine(gp.GetMessages(sev))
-
-        End Try
-
-
-    End Sub
-
     Public Function GetArcGISLicenseName() As System.String
 
         Dim esriLicenseInfo As ESRI.ArcGIS.esriSystem.IESRILicenseInfo = New ESRI.ArcGIS.esriSystem.ESRILicenseInfoClass
@@ -1502,34 +1523,6 @@ Public Module mod_public
 
     End Function
 
-    Public Sub GenNearTable(ByVal pFlayer, ByVal dist, ByVal count)
-        Dim GP As Geoprocessor = New Geoprocessor
-        Dim NearTable As GenerateNearTable = New GenerateNearTable()
-        NearTable.in_features = pFlayer
-        NearTable.near_features = pFlayer
-        NearTable.out_table = "OUTPUT"
-        NearTable.search_radius = dist
-        NearTable.location = "NO_LOCATION"
-        NearTable.angle = "No_Angle"
-        NearTable.closest = "ALL"
-        NearTable.closest_count = count
-
-        Try
-            GP.Execute(NearTable, Nothing)
-        Catch ex As Exception
-
-        End Try
-
-    End Sub
-
-    Public Sub returnmessages(ByVal gp As Geoprocessor)
-        Dim count As Integer
-        If gp.MessageCount > 0 Then
-            For count = 0 To gp.MessageCount - 1
-                Console.WriteLine(gp.GetMessage(count))
-            Next
-        End If
-    End Sub
 
 End Module
 
