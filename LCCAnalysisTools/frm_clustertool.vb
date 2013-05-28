@@ -127,7 +127,7 @@ Public Class frm_clustertool
     Private Sub Distance_Table_SelectedIndexChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles Disttable.SelectedIndexChanged
         If Not Disttable.SelectedIndex = -1 Then
             distance_table = Disttable.Text
-            MsgBox(distance_table, MsgBoxStyle.Exclamation, "Var?")
+
         Else
             distance_table = Nothing
         End If
@@ -222,31 +222,72 @@ Public Class frm_clustertool
             Return
         End If
 
+        '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        ' Create a CancelTracker
+        Dim pTrkCan As ITrackCancel = New CancelTracker
+
+        ' Create the ProgressDialog. This automatically displays the dialog
+        Dim pProDlgFact As IProgressDialogFactory = New ProgressDialogFactory
+        Dim pProDlg As IProgressDialog2 = pProDlgFact.Create(pTrkCan, My.ArcMap.Application.hWnd)
+
+        ' Set the properties of the ProgressDialog
+        pProDlg.CancelEnabled = True
+        pProDlg.Title = "Optimizing Threshold Distance"
+        pProDlg.Animation = esriProgressAnimationTypes.esriProgressSpiral
+
+        ' Set the properties of the Step Progressor
+        Dim pStepPro As IStepProgressor = pProDlg
+        pStepPro.MinRange = 0
+        pStepPro.MaxRange = pFClass.FeatureCount(Nothing)
+        pStepPro.StepValue = 1
+        pStepPro.Message = "Progress:"
+        '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+        'PROGRESS UPDATE: 
+        pProDlg.Description = "Computing optimized Threshold Distance..."
         'Create an array that is the size of the input shapefile
         'Each index store the nearest neighbor distance
-        Dim DistArray(pFClass.FeatureCount(Nothing) - 1) As Double
-
+        Dim DistArray(pFClass.FeatureCount(Nothing)) As Double
+        For i = 0 To DistArray.GetUpperBound(0) - 1
+            DistArray(i) = 9999999
+        Next
         'Open the distance table
         Dim table = getTableByName(distance_table)
         Dim InFid As Integer = table.FindField("IN_FID")
-        Dim NearDist As Integer = table.FindField("Near_DIST")
+        Dim NearDist As Integer = table.FindField("NEAR_DIST")
+
         Dim cursor As ICursor = table.Search(Nothing, True)
-        Dim row As IRow = cursor.NextRow() ' Get the first feature
+        Dim row As IRow = cursor.NextRow()
 
+        While Not row Is Nothing
+            If row.Value(NearDist) < DistArray(row.Value(InFid)) Then
+                DistArray(row.Value(InFid)) = row.Value(NearDist)
+            End If
+            row = cursor.NextRow()
+            If Not pTrkCan.Continue Then
+                ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                Return
+            End If
 
-        'Iterate over the FID and find the Knearest Neighbor Distance
-        For i As Integer = 0 To pFClass.FeatureCount(Nothing) - 1
-            Dim dist As Double = 9999999
-            Do Until row.Value(InFid) <> i
-                If row.Value(NearDist) < dist Then
-                    DistArray(i) = row.Value(NearDist)
-                    dist = row.Value(NearDist)
-                End If
-                row = cursor.NextRow()
-            Loop
-        Next
+        End While
 
-        MsgBox(DistArray(0), MsgBoxStyle.Information, "Distance")
+        'Get the lower quartile distance to populate the min distance box with.
+        Dim lowerquartile, dcount As Double
+        dcount = DistArray.GetUpperBound(0) - 1
+        System.Array.Sort(DistArray)
+
+        'Compute the quartiles
+        If IEEERemainder(dCount, 2) = 0 Then
+            lowerquartile = (DistArray(Round(dcount * 0.25)) + DistArray(Round((dcount * 0.25) + 1))) / 2
+        Else
+            lowerquartile = DistArray(Round(dcount * 0.25))
+        End If
+
+        'Populate the mininum distance text box with the optimized distance
+        txtNQUERY.Text = lowerquartile
+
+        'Destroy the progress dialog
+        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
 
     End Sub
 
@@ -1462,8 +1503,8 @@ Public Class frm_clustertool
 
         'Update help panel
         Dim strText As String = _
-            "Points without a neighbor within this distance are considered outluers and are not " & _
-            "considered during the cluster analysis process."
+            "Points without a neighbor within this distance are considered outliers and are not considered during the cluster analysis process. " & vbCrLf & vbCrLf & _
+            "Optimization of this distance sets the threshold to the approximate lower quartile distance of the entire sample."
 
         HELPCntUpdate("Threshold Distance", strText)
 

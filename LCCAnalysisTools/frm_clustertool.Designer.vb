@@ -182,7 +182,7 @@ Partial Class frm_clustertool
         '
         Me.btnCANCEL.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.btnCANCEL.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.btnCANCEL.Location = New System.Drawing.Point(102, 437)
+        Me.btnCANCEL.Location = New System.Drawing.Point(90, 437)
         Me.btnCANCEL.Name = "btnCANCEL"
         Me.btnCANCEL.Size = New System.Drawing.Size(75, 23)
         Me.btnCANCEL.TabIndex = 2
@@ -214,7 +214,7 @@ Partial Class frm_clustertool
         Me.btnSHHELP.Location = New System.Drawing.Point(325, 437)
         Me.btnSHHELP.Name = "btnSHHELP"
         Me.btnSHHELP.Size = New System.Drawing.Size(84, 23)
-        Me.btnSHHELP.TabIndex = 3
+        Me.btnSHHELP.TabIndex = 4
         Me.btnSHHELP.Text = "Show Help >>"
         Me.btnSHHELP.UseVisualStyleBackColor = True
         '
@@ -367,11 +367,12 @@ Partial Class frm_clustertool
         '
         'optimize
         '
-        Me.optimize.Location = New System.Drawing.Point(191, 437)
+        Me.optimize.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.optimize.Location = New System.Drawing.Point(176, 437)
         Me.optimize.Name = "optimize"
-        Me.optimize.Size = New System.Drawing.Size(119, 23)
-        Me.optimize.TabIndex = 4
-        Me.optimize.Text = "Optimize Parameters"
+        Me.optimize.Size = New System.Drawing.Size(139, 23)
+        Me.optimize.TabIndex = 3
+        Me.optimize.Text = "Optimize Threshold Dist."
         Me.optimize.UseVisualStyleBackColor = True
         '
         'Label2
