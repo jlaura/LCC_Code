@@ -1384,53 +1384,49 @@ Public Module mod_public
 
     End Function
 
-    Public Function FindNearestGeo(ByVal Ar(,) As Double, ByRef feature(,) As Double, ByRef dist(,) As Double, ByVal dSemiMajAxis As Double, ByVal dSemiMinAxis As Double, ByVal knn As Double) As Double 'Euclidean or Geodesic
+    Public Sub FindNearestGeo(ByVal Ar(,) As Double, ByRef feature(,) As Double, ByRef dist(,) As Double, ByVal dSemiMajAxis As Double, ByVal dSemiMinAxis As Double, ByVal knn As Double)
 
-        Dim distance, dDistOld As Double
+        Dim distance As Double
         Dim maxdistance As Double = 0
         Dim counter As Integer = 0
         Dim index As Integer = 0
 
         For i As Integer = 0 To Ar.GetUpperBound(1)
             distance = GetDist(Ar(2, i), Ar(3, i), feature(1, 0), feature(2, 0), dSemiMajAxis, dSemiMinAxis, False)
-            If counter < knn Then
-                'Autoload the first n distances
-                dist(0, i) = Ar(1, i)
-                dist(1, i) = Ar(2, i)
-                dist(2, i) = Ar(3, i)
-                dist(3, i) = distance
+            If distance <> 0 Then
+                If counter <= knn Then
+                    'Autoload the first n distances and track where the max distance is in the array
+                    dist(0, counter) = Ar(1, i)
+                    dist(1, counter) = Ar(2, i)
+                    dist(2, counter) = Ar(3, i)
+                    dist(3, counter) = distance
 
-                If distance > maxdistance Then
-                    maxdistance = distance
-                    index = i
+                    If distance > maxdistance Then
+                        maxdistance = distance
+                        index = counter
+                    End If
+                    counter += 1
+                Else
+                    'Array is loaded with n values.  Now replace the greatest distance with the new, lower distances.
+                    If distance < maxdistance Then
+                        dist(0, index) = Ar(1, i)
+                        dist(1, index) = Ar(2, i)
+                        dist(2, index) = Ar(3, i)
+                        dist(3, index) = distance
+
+                        ' Seed the new max distance and check to see which value actually is the max
+                        maxdistance = dist(3, index)
+                        For j As Integer = 0 To dist.GetUpperBound(1)
+                            If dist(3, j) > maxdistance Then
+                                maxdistance = dist(3, j)
+                                index = j
+                            End If
+                        Next
+                    End If
                 End If
-                counter += 1
-            Else
-                If distance < maxdistance Then
-                    dist(0, index) = Ar(1, i)
-                    dist(1, index) = Ar(2, i)
-                    dist(2, index) = Ar(3, i)
-                    dist(3, index) = distance
-                    'MsgBox(distance, MsgBoxStyle.OkCancel, "Distance")
-
-                    maxdistance = dist(3, index)
-                    For j As Integer = 0 To dist.GetUpperBound(0) - 1
-                        If dist(3, j) > maxdistance Then
-                            maxdistance = dist(3, j)
-                            index = j
-                        End If
-
-                    Next
-
-                End If
-
             End If
-
         Next
-
-        Return dDistOld
-
-    End Function
+    End Sub
 
     Public Function GetDist(ByVal x2 As Double, ByVal y2 As Double, _
                             ByVal x1 As Double, ByVal y1 As Double, _

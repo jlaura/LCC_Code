@@ -275,7 +275,7 @@ Public Class frm_distancetool
         pProDlg.Description = "Extracting Nearest Neighbor distances..."
 
         Dim feature(2, 0) As Double 'Indices are OID | xcoord | ycoord
-        For i As Integer = 0 To Ar.GetUpperBound(0) - 1
+        For i As Integer = 0 To Ar.GetUpperBound(1)
             feature(0, 0) = Ar(1, i)
             feature(1, 0) = Ar(2, i)
             feature(2, 0) = Ar(3, i)
@@ -283,7 +283,10 @@ Public Class frm_distancetool
 
             'Find the K-Nearest Neighbors in Geodesic space.
             FindNearestGeo(Ar, feature, dist, semi_major_axis, semi_minor_axis, knn)
-            MsgBox(dist(0, 3), MsgBoxStyle.OkCancel, "Sample Distance")
+            'For j As Integer = 0 To dist.GetUpperBound(1)
+            'MsgBox(dist(3, j), MsgBoxStyle.OkCancel, "Sample Distance")
+            'Next
+
             If Not pTrkCan.Continue Then
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
                 Return
