@@ -164,11 +164,11 @@ Public Class frm_distancetool
         End If
 
         'If all errors are handled, load progress form
-        LoadProgressForm(distlayer, knn.Text, distance_measure, distanceTableOut.Text)
+        LoadProgressForm(distlayer, knn.Text, distance_measure, distanceTableOut.Text, workspace2)
 
     End Sub
 
-    Private Sub LoadProgressForm(ByVal distlayer, ByVal knn, ByVal distance_measure, ByVal distanceTableOut)
+    Private Sub LoadProgressForm(ByVal distlayer, ByVal knn, ByVal distance_measure, ByVal distanceTableOut, ByRef workspace)
         'This method launches the progress form, packages the parameters from the form, and calls the RunClustering method to initiate processing.
 
         'Hide the Cluster Analysis form
@@ -182,10 +182,10 @@ Public Class frm_distancetool
             generateNearTable(distlayer, knn, distanceTableOut)
         ElseIf distance_measure = "Geodesic" Then
             'Generate a near table manually using geodesic distance
-            generateNearGeodesicTable(distlayer, knn, distanceTableOut)
+            generateNearGeodesicTable(distlayer, knn, distanceTableOut, workspace)
         Else
             'Generate a near table manually using planar distance
-            generateNearTablePlanar(distlayer, knn, distanceTableOut)
+            generateNearTablePlanar(distlayer, knn, distanceTableOut, workspace)
         End If
 
 
@@ -196,13 +196,17 @@ Public Class frm_distancetool
 
     End Sub
 
-    Private Sub generateNearTablePlanar(ByVal distlayer, ByVal knn, ByVal distanceTableOut)
+    Private Sub generateNearTablePlanar(ByVal distlayer, ByVal knn, ByVal distanceTableOut, ByRef workspace)
 
 
     End Sub
 
-    Private Sub generateNearGeodesicTable(ByVal distlayer, ByVal knn, ByVal distanceTableOut)
+    Private Sub generateNearGeodesicTable(ByVal distlayer, ByVal knn, ByVal distanceTableOut, ByRef workspace)
         'This method generates a geodesic KNN table.  This is signifigantly slower than using near in planar space due to the additional math involved.
+
+        'Get a hook into the application
+        Dim mxdoc As IMxDocument = My.ArcMap.Document 'This is an interface that allows access to the map document.  It is used to add the cluster layer to the ToC and update the ToC.
+        Dim map As IMap = mxdoc.FocusMap
 
         'Access the feature class
         Dim featurelayer = GetFLayerByName(distlayer)
@@ -222,8 +226,14 @@ Public Class frm_distancetool
         End Try
 
         'Create the output table with the necessary fields.
+        Dim tName = distanceTableOut
+        Dim tTable = CreateTable(workspace, tName, Nothing)
 
-
+        'Setup to insert into the table
+        Dim tablebuffer As IRowBuffer = tTable.CreateRowBuffer()
+        Dim tablerow As IRow = CType(tablebuffer, IRow)
+        Dim tablerowbuffer As IRowBuffer = tablebuffer
+        Dim tableinsert As ICursor = tTable.Insert(True)
 
 
         '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -245,6 +255,8 @@ Public Class frm_distancetool
         pStepPro.MaxRange = featureclass.FeatureCount(Nothing)
         pStepPro.StepValue = 1
         pStepPro.Message = "Progress:"
+
+
         '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         'Extract the OID, AID, Xcoord, Ycoord
@@ -283,9 +295,27 @@ Public Class frm_distancetool
 
             'Find the K-Nearest Neighbors in Geodesic space.
             FindNearestGeo(Ar, feature, dist, semi_major_axis, semi_minor_axis, knn)
-            'For j As Integer = 0 To dist.GetUpperBound(1)
-            'MsgBox(dist(3, j), MsgBoxStyle.OkCancel, "Sample Distance")
-            'Next
+
+
+
+            'Insert the returned distances into the distance table
+            Dim InFID = tTable.FindField("IN_FID")
+            Dim NearFID = tTable.FindField("NEAR_FID")
+            Dim DistField = tTable.FindField("NEAR_DIST")
+            Dim xCoord = tTable.FindField("XCOORD")
+            Dim yCoord = tTable.FindField("YCOORD")
+
+            For j As Integer = 0 To dist.GetUpperBound(1) - 1
+                tablerowbuffer.Value(InFID) = Ar(1, i)
+                tablerowbuffer.Value(NearFID) = dist(0, j)
+                tablerowbuffer.Value(DistField) = dist(3, j)
+                tablerowbuffer.Value(xCoord) = dist(1, j)
+                tablerowbuffer.Value(yCoord) = dist(2, j)
+
+                tableinsert.InsertRow(tablerowbuffer)
+
+            Next
+
 
             If Not pTrkCan.Continue Then
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
@@ -293,6 +323,16 @@ Public Class frm_distancetool
             End If
 
         Next
+
+        'Add the table to the ToC.  If the table exists, this is the existing table.
+        Dim pStandAloneTable As IStandaloneTable = New StandaloneTable()
+        pStandAloneTable.Table = tTable
+        Dim pStandAloneColl As IStandaloneTableCollection = map
+        pStandAloneColl.AddStandaloneTable(pStandAloneTable)
+        mxdoc.UpdateContents()
+
+        'Close the progress dialog.
+        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
 
     End Sub
 
@@ -334,5 +374,108 @@ Public Class frm_distancetool
 
     End Sub
 
+    Private Function CreateTable(ByVal workspace As IWorkspace2, ByVal tableName As System.String, ByVal fields As IFields) As ITable
+
+        ' Create the behavior clasid for the featureclass  
+        Dim uid As ESRI.ArcGIS.esriSystem.UID = New ESRI.ArcGIS.esriSystem.UIDClass
+
+        If workspace Is Nothing Then
+            Return Nothing ' valid feature workspace not passed in as an argument to the method
+        End If
+
+        Dim featureWorkspace As IFeatureWorkspace = CType(workspace, IFeatureWorkspace) ' Explicit Cast
+        Dim table As ITable
+
+        If workspace.NameExists(esriDatasetType.esriDTTable, tableName) Then
+
+            '  A table with that name already exists so return that table 
+            table = featureWorkspace.OpenTable(tableName)
+            Return table
+        End If
+
+        uid.Value = "esriGeoDatabase.Object"
+
+        Dim objectClassDescription As IObjectClassDescription = New ObjectClassDescriptionClass
+
+        ' If a fields collection is not passed in then supply our own
+        If fields Is Nothing Then
+
+            ' Create the fields using the required fields method
+            fields = New FieldsClass()
+
+            Dim fieldsEdit As IFieldsEdit = CType(fields, IFieldsEdit) ' Explicit Cast
+
+            'Threshold Field
+            Dim fDist As IField = New FieldClass()
+            Dim fDistEdit As IFieldEdit = CType(fDist, IFieldEdit)
+            fDistEdit.Name_2 = "IN_FID"
+
+            fDistEdit.Type_2 = esriFieldType.esriFieldTypeInteger
+            fDistEdit.Length_2 = 12
+            fDistEdit.Editable_2 = True
+            fDistEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fDist)
+
+            'FID
+            Dim fCount As IField = New FieldClass()
+            Dim fCountEdit As IFieldEdit = CType(fCount, IFieldEdit)
+            fCountEdit.Name_2 = "NEAR_FID"
+            fCountEdit.Length_2 = 12
+            fCountEdit.Type_2 = esriFieldType.esriFieldTypeInteger
+            fCountEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fCount)
+
+            'Near Distance
+            Dim fPercTot As IField = New FieldClass()
+            Dim fpercTotEdit As IFieldEdit = CType(fPercTot, IFieldEdit)
+            fpercTotEdit.Name_2 = "NEAR_DIST"
+            fpercTotEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fpercTotEdit.Precision_2 = 12
+            fpercTotEdit.Scale_2 = 4
+            fpercTotEdit.Editable_2 = True
+            fpercTotEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fPercTot)
+
+            'XCoord
+            Dim fMean As IField = New FieldClass()
+            Dim fMeanEdit As IFieldEdit = CType(fMean, IFieldEdit)
+            fMeanEdit.Name_2 = "XCOORD"
+            fMeanEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fMeanEdit.Precision_2 = 12
+            fMeanEdit.Scale_2 = 4
+            fMeanEdit.Editable_2 = True
+            fMeanEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fMean)
+
+            'YCoord
+            Dim fMedian As IField = New FieldClass()
+            Dim fMedianEdit As IFieldEdit = CType(fMedian, IFieldEdit)
+            fMedianEdit.Name_2 = "YCOORD"
+            fMedianEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+            fMedianEdit.Precision_2 = 12
+            fMedianEdit.Scale_2 = 4
+            fMedianEdit.Editable_2 = True
+            fMedianEdit.IsNullable_2 = False
+            fieldsEdit.AddField(fMedian)
+
+        End If
+
+        ' Use IFieldChecker to create a validated fields collection.
+        Dim fieldChecker As IFieldChecker = New FieldCheckerClass()
+        Dim enumFieldError As IEnumFieldError = Nothing
+        Dim validatedFields As IFields = Nothing
+        fieldChecker.ValidateWorkspace = CType(workspace, IWorkspace)
+        fieldChecker.Validate(fields, enumFieldError, validatedFields)
+
+        ' The enumFieldError enumerator can be inspected at this point to determine 
+        ' which fields were modified during validation.
+
+
+        ' Create and return the table
+        table = featureWorkspace.CreateTable(tableName, validatedFields, uid, Nothing, "")
+
+        Return table
+
+    End Function
 
 End Class

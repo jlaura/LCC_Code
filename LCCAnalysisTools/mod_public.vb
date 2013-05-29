@@ -1391,7 +1391,7 @@ Public Module mod_public
         Dim counter As Integer = 0
         Dim index As Integer = 0
 
-        For i As Integer = 0 To Ar.GetUpperBound(1)
+        For i As Integer = 0 To Ar.GetUpperBound(1) - 1
             distance = GetDist(Ar(2, i), Ar(3, i), feature(1, 0), feature(2, 0), dSemiMajAxis, dSemiMinAxis, False)
             If distance <> 0 Then
                 If counter <= knn Then
@@ -1416,7 +1416,7 @@ Public Module mod_public
 
                         ' Seed the new max distance and check to see which value actually is the max
                         maxdistance = dist(3, index)
-                        For j As Integer = 0 To dist.GetUpperBound(1)
+                        For j As Integer = 0 To dist.GetUpperBound(1) - 1
                             If dist(3, j) > maxdistance Then
                                 maxdistance = dist(3, j)
                                 index = j
@@ -1518,6 +1518,8 @@ Public Module mod_public
         Return string_LicenseLevel
 
     End Function
+    
+
 
 
 End Module
