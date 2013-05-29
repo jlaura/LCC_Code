@@ -1520,7 +1520,27 @@ Public Module mod_public
     End Function
     
 
+    Public Sub ExtractNearest(ByRef Ar, ByVal distance_table)
+        'Open the distance table
+        Dim table = getTableByName(distance_table)
+        Dim InFid As Integer = table.FindField("IN_FID")
+        Dim NearDist As Integer = table.FindField("NEAR_DIST")
 
+        'Generate the search curosr
+        Dim cursor As ICursor = table.Search(Nothing, True)
+        Dim row As IRow = cursor.NextRow()
+
+        'Iterate through the rows.
+        While Not row Is Nothing
+            If row.Value(NearDist) < Ar(4, row.Value(InFid)) Then
+                Ar(4, row.Value(InFid)) = row.Value(NearDist)
+            End If
+            row = cursor.NextRow()
+
+
+        End While
+
+    End Sub
 
 End Module
 

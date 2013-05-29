@@ -43,21 +43,18 @@ Partial Class frm_clustertool
         Me.Disttable = New System.Windows.Forms.ComboBox()
         Me.grpOUT = New System.Windows.Forms.GroupBox()
         Me.txtOUT = New System.Windows.Forms.TextBox()
-        Me.grpMEASSPACE = New System.Windows.Forms.GroupBox()
-        Me.radMEASPLAN = New System.Windows.Forms.RadioButton()
-        Me.radMEASGEO = New System.Windows.Forms.RadioButton()
         Me.grpNQUERY = New System.Windows.Forms.GroupBox()
         Me.Panel1 = New System.Windows.Forms.Panel()
         Me.rtxtHELP_CNT = New System.Windows.Forms.RichTextBox()
         Me.Panel2 = New System.Windows.Forms.Panel()
         Me.optimize = New System.Windows.Forms.Button()
         Me.Label2 = New System.Windows.Forms.Label()
+        Me.Label4 = New System.Windows.Forms.Label()
         Me.grpCLUSTER.SuspendLayout()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
         Me.grpOUT.SuspendLayout()
-        Me.grpMEASSPACE.SuspendLayout()
         Me.grpNQUERY.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.SuspendLayout()
@@ -86,9 +83,9 @@ Partial Class frm_clustertool
         '
         'txtNQUERY
         '
-        Me.txtNQUERY.Location = New System.Drawing.Point(18, 19)
+        Me.txtNQUERY.Location = New System.Drawing.Point(10, 19)
         Me.txtNQUERY.Name = "txtNQUERY"
-        Me.txtNQUERY.Size = New System.Drawing.Size(366, 20)
+        Me.txtNQUERY.Size = New System.Drawing.Size(212, 20)
         Me.txtNQUERY.TabIndex = 0
         Me.txtNQUERY.Text = "1500"
         Me.txtNQUERY.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
@@ -96,7 +93,7 @@ Partial Class frm_clustertool
         'radCMS
         '
         Me.radCMS.AutoSize = True
-        Me.radCMS.Location = New System.Drawing.Point(18, 19)
+        Me.radCMS.Location = New System.Drawing.Point(18, 18)
         Me.radCMS.Name = "radCMS"
         Me.radCMS.Size = New System.Drawing.Size(110, 17)
         Me.radCMS.TabIndex = 0
@@ -123,12 +120,12 @@ Partial Class frm_clustertool
         Me.grpCLUSTER.Controls.Add(Me.txtCMSVAL)
         Me.grpCLUSTER.Controls.Add(Me.txtCMBSVAL)
         Me.grpCLUSTER.Controls.Add(Me.txtCMBFVAL)
-        Me.grpCLUSTER.Location = New System.Drawing.Point(7, 211)
+        Me.grpCLUSTER.Location = New System.Drawing.Point(7, 225)
         Me.grpCLUSTER.Name = "grpCLUSTER"
         Me.grpCLUSTER.Size = New System.Drawing.Size(400, 141)
         Me.grpCLUSTER.TabIndex = 3
         Me.grpCLUSTER.TabStop = False
-        Me.grpCLUSTER.Text = "Cluster method"
+        Me.grpCLUSTER.Text = "Cluster Distance"
         '
         'Label3
         '
@@ -229,10 +226,10 @@ Partial Class frm_clustertool
         '
         'splcHELP.Panel1
         '
+        Me.splcHELP.Panel1.Controls.Add(Me.Label4)
         Me.splcHELP.Panel1.Controls.Add(Me.Label1)
         Me.splcHELP.Panel1.Controls.Add(Me.Disttable)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
-        Me.splcHELP.Panel1.Controls.Add(Me.grpMEASSPACE)
         Me.splcHELP.Panel1.Controls.Add(Me.grpNQUERY)
         Me.splcHELP.Panel1.Controls.Add(Me.grpCLUSTER)
         Me.splcHELP.Panel1.Controls.Add(Me.lblLAYER)
@@ -271,7 +268,7 @@ Partial Class frm_clustertool
         'grpOUT
         '
         Me.grpOUT.Controls.Add(Me.txtOUT)
-        Me.grpOUT.Location = New System.Drawing.Point(3, 366)
+        Me.grpOUT.Location = New System.Drawing.Point(3, 372)
         Me.grpOUT.Name = "grpOUT"
         Me.grpOUT.Size = New System.Drawing.Size(400, 50)
         Me.grpOUT.TabIndex = 4
@@ -285,51 +282,16 @@ Partial Class frm_clustertool
         Me.txtOUT.Size = New System.Drawing.Size(366, 20)
         Me.txtOUT.TabIndex = 0
         '
-        'grpMEASSPACE
-        '
-        Me.grpMEASSPACE.Controls.Add(Me.radMEASPLAN)
-        Me.grpMEASSPACE.Controls.Add(Me.radMEASGEO)
-        Me.grpMEASSPACE.Location = New System.Drawing.Point(7, 152)
-        Me.grpMEASSPACE.Name = "grpMEASSPACE"
-        Me.grpMEASSPACE.Size = New System.Drawing.Size(400, 53)
-        Me.grpMEASSPACE.TabIndex = 2
-        Me.grpMEASSPACE.TabStop = False
-        Me.grpMEASSPACE.Text = "Measurement space"
-        '
-        'radMEASPLAN
-        '
-        Me.radMEASPLAN.Appearance = System.Windows.Forms.Appearance.Button
-        Me.radMEASPLAN.AutoSize = True
-        Me.radMEASPLAN.Checked = True
-        Me.radMEASPLAN.Location = New System.Drawing.Point(18, 19)
-        Me.radMEASPLAN.Name = "radMEASPLAN"
-        Me.radMEASPLAN.Size = New System.Drawing.Size(47, 23)
-        Me.radMEASPLAN.TabIndex = 0
-        Me.radMEASPLAN.TabStop = True
-        Me.radMEASPLAN.Text = "Planar"
-        Me.radMEASPLAN.UseVisualStyleBackColor = True
-        '
-        'radMEASGEO
-        '
-        Me.radMEASGEO.Appearance = System.Windows.Forms.Appearance.Button
-        Me.radMEASGEO.AutoSize = True
-        Me.radMEASGEO.Location = New System.Drawing.Point(71, 19)
-        Me.radMEASGEO.Name = "radMEASGEO"
-        Me.radMEASGEO.Size = New System.Drawing.Size(60, 23)
-        Me.radMEASGEO.TabIndex = 1
-        Me.radMEASGEO.TabStop = True
-        Me.radMEASGEO.Text = "Geodetic"
-        Me.radMEASGEO.UseVisualStyleBackColor = True
-        '
         'grpNQUERY
         '
+        Me.grpNQUERY.Controls.Add(Me.optimize)
         Me.grpNQUERY.Controls.Add(Me.txtNQUERY)
-        Me.grpNQUERY.Location = New System.Drawing.Point(7, 95)
+        Me.grpNQUERY.Location = New System.Drawing.Point(7, 104)
         Me.grpNQUERY.Name = "grpNQUERY"
         Me.grpNQUERY.Size = New System.Drawing.Size(400, 51)
         Me.grpNQUERY.TabIndex = 1
         Me.grpNQUERY.TabStop = False
-        Me.grpNQUERY.Text = "Threshold Distance"
+        Me.grpNQUERY.Text = "Outlier Threshold Distance"
         '
         'Panel1
         '
@@ -368,11 +330,11 @@ Partial Class frm_clustertool
         'optimize
         '
         Me.optimize.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.optimize.Location = New System.Drawing.Point(176, 437)
+        Me.optimize.Location = New System.Drawing.Point(255, 17)
         Me.optimize.Name = "optimize"
         Me.optimize.Size = New System.Drawing.Size(139, 23)
         Me.optimize.TabIndex = 3
-        Me.optimize.Text = "Optimize Threshold Dist."
+        Me.optimize.Text = "Optimize"
         Me.optimize.UseVisualStyleBackColor = True
         '
         'Label2
@@ -384,6 +346,15 @@ Partial Class frm_clustertool
         Me.Label2.TabIndex = 0
         Me.Label2.Text = "Input point layer:"
         '
+        'Label4
+        '
+        Me.Label4.AutoSize = True
+        Me.Label4.Location = New System.Drawing.Point(133, 183)
+        Me.Label4.Name = "Label4"
+        Me.Label4.Size = New System.Drawing.Size(131, 13)
+        Me.Label4.TabIndex = 7
+        Me.Label4.Text = "Stats Here After Optimize?"
+        '
         'frm_clustertool
         '
         Me.AcceptButton = Me.btnOK
@@ -391,7 +362,6 @@ Partial Class frm_clustertool
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.btnCANCEL
         Me.ClientSize = New System.Drawing.Size(419, 462)
-        Me.Controls.Add(Me.optimize)
         Me.Controls.Add(Me.btnCANCEL)
         Me.Controls.Add(Me.btnOK)
         Me.Controls.Add(Me.btnSHHELP)
@@ -413,8 +383,6 @@ Partial Class frm_clustertool
         Me.splcHELP.ResumeLayout(False)
         Me.grpOUT.ResumeLayout(False)
         Me.grpOUT.PerformLayout()
-        Me.grpMEASSPACE.ResumeLayout(False)
-        Me.grpMEASSPACE.PerformLayout()
         Me.grpNQUERY.ResumeLayout(False)
         Me.grpNQUERY.PerformLayout()
         Me.Panel1.ResumeLayout(False)
@@ -438,11 +406,8 @@ Partial Class frm_clustertool
     Friend WithEvents btnSHHELP As System.Windows.Forms.Button
     Friend WithEvents splcHELP As System.Windows.Forms.SplitContainer
     Friend WithEvents Label2 As System.Windows.Forms.Label
-    Friend WithEvents radMEASPLAN As System.Windows.Forms.RadioButton
-    Friend WithEvents radMEASGEO As System.Windows.Forms.RadioButton
     Friend WithEvents txtOUT As System.Windows.Forms.TextBox
     Friend WithEvents grpOUT As System.Windows.Forms.GroupBox
-    Friend WithEvents grpMEASSPACE As System.Windows.Forms.GroupBox
     Friend WithEvents grpNQUERY As System.Windows.Forms.GroupBox
     Friend WithEvents Panel1 As System.Windows.Forms.Panel
     Friend WithEvents rtxtHELP_CNT As System.Windows.Forms.RichTextBox
@@ -450,4 +415,5 @@ Partial Class frm_clustertool
     Friend WithEvents optimize As System.Windows.Forms.Button
     Friend WithEvents Label1 As System.Windows.Forms.Label
     Friend WithEvents Disttable As System.Windows.Forms.ComboBox
+    Friend WithEvents Label4 As System.Windows.Forms.Label
 End Class
