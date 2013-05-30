@@ -31,6 +31,7 @@ Public Module mod_public
     Public m_sIAFLayer As String
     Public distlayer As String
     Public distance_table As String
+    Public c_method As String
 
 
     'Structure to pass 'Cluster Analysis' parameters from 

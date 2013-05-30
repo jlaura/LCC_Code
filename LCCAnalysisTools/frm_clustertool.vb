@@ -135,7 +135,7 @@ Public Class frm_clustertool
     End Sub
 #End Region
 
-
+#Region "Form Button Messages and Entry Validation"
     Private Sub TextBoxes_Update(ByVal sender As Object, _
                                  ByVal e As System.EventArgs) _
                                  Handles txtNQUERY.Leave, _
@@ -190,6 +190,30 @@ Public Class frm_clustertool
             txtCMBSVAL.Text = "1700"
         End Try
 
+    End Sub
+
+    Private Sub DBScan_Update(ByVal Sender As Object, ByVal e As System.EventArgs) Handles epsilon.Leave, minpts.Leave
+        'Distance Around point
+        Try
+            If CInt(epsilon.Text) > 0 Then epsilon.Text = _
+                                    CInt(epsilon.Text).ToString
+        Catch ex As Exception
+            MsgBox("Please enter a 'Search Distance'.  Points outside this distance cannot initiate cluster generation.", _
+                   MsgBoxStyle.Exclamation, _
+                   "Invalid Parameter")
+            epsilon.Text = "1500"
+        End Try
+
+        'Min Points
+        Try
+            If CInt(minpts.Text) > 0 Then minpts.Text = _
+                                    CInt(minpts.Text).ToString
+        Catch ex As Exception
+            MsgBox("Please enter a 'Minimum Number of Points'. Clusters must meet this threshold to be created.", _
+                   MsgBoxStyle.Exclamation, _
+                   "Invalid Parameter")
+            minpts.Text = "1500"
+        End Try
     End Sub
 
     Private Sub btnOK_Click(ByVal sender As System.Object, _
@@ -271,25 +295,85 @@ Public Class frm_clustertool
 
         End While
 
-        'Get the lower quartile distance to populate the min distance box with.
-        Dim lowerquartile, dcount As Double
-        dcount = DistArray.GetUpperBound(0) - 1
+        'Get the mean + std as the optimal max distance
+        Dim dCount, dRange, dSum, dMean, dStd, dMin, dMax, dSumsq, dMedian, dLQ, dUQ As Double
+
+        dCount = 0
+        dMax = DistArray(0)
+        dMin = DistArray(0)
+
+        'Ignore those points that are outliers in this computation.
+        For i As Integer = 0 To DistArray.GetUpperBound(0) - 1
+            dCount += 1
+            If DistArray(i) < dMin Then dMin = DistArray(i)
+            If DistArray(i) > dMax Then dMax = DistArray(i)
+            dSum = dSum + DistArray(i)
+        Next
+        dMean = dSum / dCount
+        dRange = dMax - dMin
+
+        'Variance and STD
+        dSumsq = 0
+        For i As Integer = 0 To DistArray.GetUpperBound(0) - 1
+            dSumsq = dSumsq + (DistArray(i) - dMean) ^ 2
+        Next
+
+        dStd = Sqrt(dSumsq / dCount)
+
+        Dim optimal_distance As Double = dMean + dStd
+
         System.Array.Sort(DistArray)
 
         'Compute the quartiles
         If IEEERemainder(dCount, 2) = 0 Then
-            lowerquartile = (DistArray(Round(dcount * 0.25)) + DistArray(Round((dcount * 0.25) + 1))) / 2
+            dMedian = (DistArray(Round(dCount * 0.5)) + _
+                       DistArray(Round((dCount * 0.5) + 1))) / 2
+            dLQ = (DistArray(Round(dCount * 0.25)) + _
+                   DistArray(Round((dCount * 0.25) + 1))) / 2
+            dUQ = (DistArray(Round(dCount * 0.75)) + _
+                   DistArray(Round((dCount * 0.75) + 1))) / 2
         Else
-            lowerquartile = DistArray(Round(dcount * 0.25))
+            dMedian = DistArray(Round(dCount * 0.5))
+            dLQ = DistArray(Round(dCount * 0.25))
+            dUQ = DistArray(Round(dCount * 0.75))
         End If
 
         'Populate the mininum distance text box with the optimized distance
-        txtNQUERY.Text = lowerquartile
 
+        txtNQUERY.Text = Math.Round(dMean + dStd, 0)
+        meanstats.Text = Math.Round(dMean, 3)
+        rangestats.Text = Math.Round(dRange, 3)
+        stdstats.Text = Math.Round(dStd, 3)
+        medianstats.Text = Math.Round(dMedian, 3)
+        lqstats.Text = Math.Round(dLQ, 3)
+        uqstats.Text = Math.Round(dUQ, 3)
+        minstats.Text = Math.Round(dMin, 3)
+        maxstats.Text = Math.Round(dMax, 3)
         'Destroy the progress dialog
         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
 
     End Sub
+
+    Private Sub btnSHHELP_Click(ByVal sender As System.Object,
+                            ByVal e As System.EventArgs) _
+                            Handles btnSHHELP.Click
+        'This method shows and hides the help dialog boxes.
+        If btnSHHELP.Text = "<< Hide Help" Then
+            splcHELP.Panel2Collapsed = True
+            Me.MaximumSize = New Size(Me.MinimumSize.Width, _
+                                      Me.MaximumSize.Height)
+            Me.Size = New Size(Me.MinimumSize.Width, Me.Size.Height)
+            btnSHHELP.Text = "Show Help >>"
+        Else
+            Me.MaximumSize = New Size(900, 495)
+            Me.Size = New Size(543, Me.Size.Height)
+            splcHELP.Panel2Collapsed = False
+            btnSHHELP.Text = "<< Hide Help"
+        End If
+
+    End Sub
+
+#End Region
 
     Private Sub FormErrorHandler()
         'On form submission this method is called to validate all the form fields.
@@ -362,27 +446,13 @@ Public Class frm_clustertool
             Return
         End If
 
+        'Check to see which tab is active to know which clustering method to use.
+        '0: Heirarchal, 1: S-Link, 2: D-Link, 3: DBScan
+        Dim clusteringmethod = New Dictionary(Of Integer, String) From {{0, "heirarchal"}, {1, "slink"}, {2, "dlink"}, {3, "dbscan"}}
+        Dim currenttab As Integer = tabcontrol.SelectedIndex
+        c_method = clusteringmethod(currenttab)
         'If all errors are handled, load progress form
         LoadProgressForm()
-
-    End Sub
-
-    Private Sub btnSHHELP_Click(ByVal sender As System.Object,
-                                ByVal e As System.EventArgs) _
-                                Handles btnSHHELP.Click
-        'This method shows and hides the help dialog boxes.
-        If btnSHHELP.Text = "<< Hide Help" Then
-            splcHELP.Panel2Collapsed = True
-            Me.MaximumSize = New Size(Me.MinimumSize.Width, _
-                                      Me.MaximumSize.Height)
-            Me.Size = New Size(Me.MinimumSize.Width, Me.Size.Height)
-            btnSHHELP.Text = "Show Help >>"
-        Else
-            Me.MaximumSize = New Size(900, 495)
-            Me.Size = New Size(543, Me.Size.Height)
-            splcHELP.Panel2Collapsed = False
-            btnSHHELP.Text = "<< Hide Help"
-        End If
 
     End Sub
 
@@ -397,6 +467,8 @@ Public Class frm_clustertool
         PARA.sFLAYER = m_sCAFLayer
         PARA.sNQUERY = txtNQUERY.Text
         PARA.bCMS = radCMS.Checked
+        PARA.bMEASPLAN = radMEASPLAN.Checked
+        PARA.bMEASGEO = radMEASGEO.Checked
         PARA.sCMSVAL = txtCMSVAL.Text
         PARA.bCMBNND = radCMBNND.Checked
         PARA.bCMBF = radCMBF.Checked
@@ -478,13 +550,12 @@ Public Class frm_clustertool
         ElseIf CAF.bCMBNND Then
             PRINTtxt += " Buffer option - Nearest Neighbor distance"
         ElseIf CAF.bCMBF Then
-            PRINTtxt += " Buffer option - Nearest Neighbor distance x " & CAF.sCMBFVAL & " units."
+            PRINTtxt += " Buffer  - Nearest Neighbor distance x " & CAF.sCMBFVAL & " units."
         ElseIf CAF.bCMBS Then
             PRINTtxt += " Buffer option - Fixed distance: " & CAF.sCMBSVAL & " m."
         End If
         PRINTtxt += vbCrLf & " Output layer name: " & CAF.sOUT
         PRINTtxt += vbCrLf & vbCrLf
-
 
         'Here the initial feature array is populated.  Each point in the input is copied to the output and the following fields are created:
 
@@ -511,17 +582,18 @@ Public Class frm_clustertool
 
         'Populate array with AID,OID,X,Y from all records in feature class.
         Dim cnt As Integer = 0
+        Dim pPoint As IPoint = Nothing
         While Not pFeature1 Is Nothing
             Ar(0, cnt) = cnt 'AID
             Ar(1, cnt) = pFeature1.OID 'OID
-            Dim pPoint As IPoint = pFeature1.ShapeCopy
+            pPoint = pFeature1.ShapeCopy
             Ar(2, cnt) = pPoint.X 'X
             Ar(3, cnt) = pPoint.Y 'Y
             Ar(4, cnt) = 9999999 ' Placeholder 'really large distance'
             Ar2(cnt) = -1 'CID
             Ar3(cnt) = -1 'CNT
             cnt += 1
-            pFeature1 = pFCursor1.NextFeature
+            pFeature1 = pFCursor1.NextFeature()
             If Not pTrkCan.Continue Then
                 'SUMMARY PRINT: End program as interrupted
                 PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
@@ -534,7 +606,7 @@ Public Class frm_clustertool
         End While
 
         'PROGRESS UPDATE: 
-        pProDlg.Description = "Extracting Nearest Neighbor distances..."
+        pProDlg.Description = "Extracting Nearest Neighbor Distances From Table..."
         'PRINTtxt += vbCrLf & " [Calculating Nearest Neighbor distances...]"
 
         'Populate array with NDIST for all records in feature class
@@ -544,9 +616,24 @@ Public Class frm_clustertool
 
         ExtractNearest(Ar, distance_table)
 
-            'Compute statistics on the clusters.
-            PRINTtxt += CalcBufferStats(Ar, CAF.sNQUERY)
+        If Not pTrkCan.Continue Then
+            'SUMMARY PRINT: End program as interrupted
+            PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+                                      sSDate, sSTime)
+            'Destroy the progress dialog
+            ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+            SaveSummaryReport(CAF.sOUT, PRINTtxt)
+            Return
+        End If
 
+        'Compute statistics on the clusters.
+        PRINTtxt += CalcBufferStats(Ar, CAF.sNQUERY)
+
+
+
+
+
+        If c_method = "heirarchal" Then
             '********************************************************************************************
             'If the the clustering method is 'Same distance'
             If CAF.bCMS = True Then
@@ -563,7 +650,7 @@ Public Class frm_clustertool
                 For j As Integer = 0 To Ar.GetUpperBound(1)
                     'If the main feature NDIST is less than or equal to the user
                     'distance query
-                    If Ar(4, j) <= CDbl(CAF.sNQUERY) Then 'Ar(4,j) = Ar(Ndist, n), where n is the nth point
+                    If Ar(4, j) <= CDbl(CAF.sNQUERY) Then
                         'Leave a single blank line in the group table
                         ReDim dGroup(3, 0)
                         'Add the record to the potential cluster group
@@ -574,7 +661,7 @@ Public Class frm_clustertool
                         'Current feature iteration: GROUP construction of features within Near distance
                         For k As Integer = 0 To Ar.GetUpperBound(1) ' Again this is iterating over the entire array...
                             'If the OID of current feature does not equal OID of main feature
-                            'and the distance threshold is that specified by user:
+                            'and the distance CAF.sNQUERY is that specified by user:
                             '1. If the OID of the main feature does not equal the OID the
                             '   current feature
                             '2. The distance between the main feature and the current feature
@@ -671,7 +758,7 @@ Public Class frm_clustertool
                 Next
                 '********************************************************************************************
                 'If the clustering method is 'Buffer: Nearest neighbor distance'
-            ElseIf CAF.bCMBNND = True Then
+            ElseIf CAF.bCMS = True Then
 
                 'PROGRESS UPDATE: 
                 pProDlg.Description = "Clustering calculation 'Buffer: Nearest neighbor distance'..."
@@ -1045,33 +1132,109 @@ Public Class frm_clustertool
                     End If
                 Next
             End If
-            '********************************************************************************************
+
+        ElseIf c_method = "slink" Then
+            MsgBox("S-Link Clustering", MsgBoxStyle.Information, "Clustering Method")
+        ElseIf c_method = "dlink" Then
+            MsgBox("D-Link", MsgBoxStyle.Information, "Clustering Method")
+        ElseIf c_method = "dbscan" Then
+            'DBSCAN
+            Dim Unvisited As New List(Of Integer)
+            For i As Integer = 0 To Ar.GetUpperBound(1) - 1
+                Unvisited.Add(i)
+            Next
+            Dim randomnumber As New Random
+            While Unvisited.Count > 0
+                Dim index As Integer = randomnumber.Next(0, Unvisited.Count - 1)
+                Dim node = Unvisited(index)
+                Unvisited.Remove(index)
+
+                Dim alsoremove = dbscan(Ar, epsilon.Text, minpts.Text, index, dSemiMajAxis, dSemiMinAxis, Ar2)
+
+            End While
+            MsgBox(Unvisited(0), MsgBoxStyle.Information, "True or False")
+        End If
+
+        '********************************************************************************************
 
 
-            'Add the CID of the main feature to the master CID list
-            Dim dCIDList(Ar.GetUpperBound(1)) As Double
-            System.Array.Copy(Ar2, 0, dCIDList, 0, Ar2.Length)
-            'Sort the CID master list
-            System.Array.Sort(dCIDList)
+        'Add the CID of the main feature to the master CID list
+        Dim dCIDList(Ar.GetUpperBound(1)) As Double
+        System.Array.Copy(Ar2, 0, dCIDList, 0, Ar2.Length)
+        'Sort the CID master list
+        System.Array.Sort(dCIDList)
 
-            'PROGRESS UPDATE: 
-            pProDlg.Description = "Counting number of features per cluster..."
-            PRINTtxt += vbCrLf & " [Counting number of features per cluster...]"
+        'PROGRESS UPDATE: 
+        pProDlg.Description = "Counting number of features per cluster..."
+        PRINTtxt += vbCrLf & " [Counting number of features per cluster...]"
 
-            'Get the number of CID occurances from the CID master list for each main feature CID
-            pTrkCan.Reset()
-            For n As Integer = 0 To Ar.GetUpperBound(1)
-                'If the main feature has no CID, skip it
-                If Ar2(Ar(0, n)) <> -1 Then
-                    'Get the first and last occurance of the main feature CID
-                    'from the CID master list
-                    Dim n1stIndex, nLastIndex As Integer
-                    n1stIndex = System.Array.IndexOf(dCIDList, Ar2(Ar(0, n))) + 1
-                    nLastIndex = System.Array.LastIndexOf(dCIDList, Ar2(Ar(0, n))) + 1
-                    'Calculate the number of main feature CID occurrances 
-                    'from the first and last index of that CID on the master CID list
-                    Ar3(Ar(0, n)) = (nLastIndex - n1stIndex) + 1
-                End If
+        'Get the number of CID occurances from the CID master list for each main feature CID
+        pTrkCan.Reset()
+        For n As Integer = 0 To Ar.GetUpperBound(1)
+            'If the main feature has no CID, skip it
+            If Ar2(Ar(0, n)) <> -1 Then
+                'Get the first and last occurance of the main feature CID
+                'from the CID master list
+                Dim n1stIndex, nLastIndex As Integer
+                n1stIndex = System.Array.IndexOf(dCIDList, Ar2(Ar(0, n))) + 1
+                nLastIndex = System.Array.LastIndexOf(dCIDList, Ar2(Ar(0, n))) + 1
+                'Calculate the number of main feature CID occurrances 
+                'from the first and last index of that CID on the master CID list
+                Ar3(Ar(0, n)) = (nLastIndex - n1stIndex) + 1
+            End If
+            If Not pTrkCan.Continue Then
+                'SUMMARY PRINT: End program as interrupted
+                PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+                                          sSDate, sSTime)
+                'Destroy the progress dialog
+                ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                SaveSummaryReport(CAF.sOUT, PRINTtxt)
+                Return
+            End If
+        Next
+
+        'PROGRESS UPDATE: 
+        pProDlg.Description = "Computing Cluster Statistics..."
+        PRINTtxt += vbCrLf & " [Computing Cluster Statistics...]"
+
+        'Compute Cluster Statistics
+        PRINTtxt += CalcClusterStats(Ar, Ar2, Ar3)
+
+        'PROGRESS UPDATE: 
+        pProDlg.Description = "Creating point feature class..."
+        PRINTtxt += vbCrLf & " [Creating point feature class...]"
+
+        Dim pNewReqFields As IFields = GetClusterReqFields(True)
+        Dim pNewFLayer As IFeatureLayer = New FeatureLayerClass()
+        pNewFLayer.FeatureClass = CreateFeatureClass(pWrkspc2, pFDataset, CAF.sOUT, _
+                                                     pNewReqFields, _
+                                                     esriGeometryType.esriGeometryPoint, _
+                                                     pSpatRef)
+        pNewFLayer.Name = pNewFLayer.FeatureClass.AliasName
+        Dim pNewFClass As IFeatureClass = pNewFLayer.FeatureClass
+
+        Dim pNewFCursor As IFeatureCursor = pNewFClass.Insert(True)
+
+        'Begin edit session and operation
+        Dim pEditor As IEditor = My.ArcMap.Editor
+        pEditor.StartEditing(pWrkspc2)
+        pEditor.StartOperation()
+
+        'PROGRESS UPDATE: 
+        pProDlg.Description = "Storing point features..."
+        PRINTtxt += vbCrLf & " [Storing point features...]"
+
+        'Update the features with the values computed above
+        pTrkCan.Reset()
+        For o As Integer = 0 To Ar.GetUpperBound(1)
+            If Ar2(Ar(0, o)) <> -1 Then
+                pFeature1 = pFClass.GetFeature(Ar(1, o))
+                'Create the feature buffer
+                Dim pNewFeatureBuff As IFeatureBuffer = pNewFClass.CreateFeatureBuffer
+                pNewFeatureBuff.Shape = pFeature1.ShapeCopy
+                pNewFeatureBuff.Value(pNewFeatureBuff.Fields.FindField("cid")) = Ar2(Ar(0, o))
+                pNewFeatureBuff.Value(pNewFeatureBuff.Fields.FindField("cnt")) = Ar3(Ar(0, o))
+                pNewFCursor.InsertFeature(pNewFeatureBuff)
                 If Not pTrkCan.Continue Then
                     'SUMMARY PRINT: End program as interrupted
                     PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
@@ -1081,81 +1244,28 @@ Public Class frm_clustertool
                     SaveSummaryReport(CAF.sOUT, PRINTtxt)
                     Return
                 End If
-            Next
+            End If
+        Next
 
-            'PROGRESS UPDATE: 
-            pProDlg.Description = "Computing Cluster Statistics..."
-            PRINTtxt += vbCrLf & " [Computing Cluster Statistics...]"
+        'Stop edit operation and session, save edits
+        pEditor.StopOperation("Cluster features")
+        StopEditSession(True)
 
-            'Compute Cluster Statistics
-            PRINTtxt += CalcClusterStats(Ar, Ar2, Ar3)
+        'Add the new layer to the map
+        Dim pNewLayer As ILayer = pNewFLayer
+        pMxDoc.ActiveView.FocusMap.AddLayer(pNewLayer)
 
-            'PROGRESS UPDATE: 
-            pProDlg.Description = "Creating point feature class..."
-            PRINTtxt += vbCrLf & " [Creating point feature class...]"
+        'Refresh the Toc and Map
+        pMxDoc.UpdateContents()
+        pMxDoc.ActiveView.Refresh()
 
-            Dim pNewReqFields As IFields = GetClusterReqFields(True)
-            Dim pNewFLayer As IFeatureLayer = New FeatureLayerClass()
-            pNewFLayer.FeatureClass = CreateFeatureClass(pWrkspc2, pFDataset, CAF.sOUT, _
-                                                         pNewReqFields, _
-                                                         esriGeometryType.esriGeometryPoint, _
-                                                         pSpatRef)
-            pNewFLayer.Name = pNewFLayer.FeatureClass.AliasName
-            Dim pNewFClass As IFeatureClass = pNewFLayer.FeatureClass
+        'SUMMARY PRINT: End program as complete
+        PRINTtxt += SumEndProgram("COMPLETE: Cluster process complete.", _
+                                  sSDate, sSTime)
 
-            Dim pNewFCursor As IFeatureCursor = pNewFClass.Insert(True)
-
-            'Begin edit session and operation
-            Dim pEditor As IEditor = My.ArcMap.Editor
-            pEditor.StartEditing(pWrkspc2)
-            pEditor.StartOperation()
-
-            'PROGRESS UPDATE: 
-            pProDlg.Description = "Storing point features..."
-            PRINTtxt += vbCrLf & " [Storing point features...]"
-
-            'Update the features with the values computed above
-            pTrkCan.Reset()
-            For o As Integer = 0 To Ar.GetUpperBound(1)
-                If Ar2(Ar(0, o)) <> -1 Then
-                    pFeature1 = pFClass.GetFeature(Ar(1, o))
-                    'Create the feature buffer
-                    Dim pNewFeatureBuff As IFeatureBuffer = pNewFClass.CreateFeatureBuffer
-                    pNewFeatureBuff.Shape = pFeature1.ShapeCopy
-                    pNewFeatureBuff.Value(pNewFeatureBuff.Fields.FindField("cid")) = Ar2(Ar(0, o))
-                    pNewFeatureBuff.Value(pNewFeatureBuff.Fields.FindField("cnt")) = Ar3(Ar(0, o))
-                    pNewFCursor.InsertFeature(pNewFeatureBuff)
-                    If Not pTrkCan.Continue Then
-                        'SUMMARY PRINT: End program as interrupted
-                        PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
-                                                  sSDate, sSTime)
-                        'Destroy the progress dialog
-                        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                        SaveSummaryReport(CAF.sOUT, PRINTtxt)
-                        Return
-                    End If
-                End If
-            Next
-
-            'Stop edit operation and session, save edits
-            pEditor.StopOperation("Cluster features")
-            StopEditSession(True)
-
-            'Add the new layer to the map
-            Dim pNewLayer As ILayer = pNewFLayer
-            pMxDoc.ActiveView.FocusMap.AddLayer(pNewLayer)
-
-            'Refresh the Toc and Map
-            pMxDoc.UpdateContents()
-            pMxDoc.ActiveView.Refresh()
-
-            'SUMMARY PRINT: End program as complete
-            PRINTtxt += SumEndProgram("COMPLETE: Cluster process complete.", _
-                                      sSDate, sSTime)
-
-            'Destroy the progress dialog
-            ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-            SaveSummaryReport(CAF.sOUT, PRINTtxt)
+        'Destroy the progress dialog
+        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+        SaveSummaryReport(CAF.sOUT, PRINTtxt)
 
     End Sub
     Private Function CalcClusterStats(ByVal Ar, ByVal Ar2, ByVal Ar3)
@@ -1330,6 +1440,50 @@ Public Class frm_clustertool
           (String.Format(f400, "_")) & vbCrLf
 
         Return sReport
+    End Function
+
+    Private Function dbscan(ByVal Ar, ByVal epsilon, ByVal minpts, ByVal index, ByVal semimajor, ByVal semiminor, ByRef Ar2)
+        'This function searchs for all points within epsilon and initiates cluster formation where appropriate
+        Dim C As Integer = 0
+        Dim visited As New List(Of Integer)
+        Dim neighbors As New List(Of Integer)
+        neighbors = getNeighbors(Ar(1, index), epsilon, index, semimajor, semiminor, visited)
+        If neighbors.Count >= minpts Then
+            C += 1
+            ExpandCluster(index, neighbors, epsilon, minpts, semimajor, semiminor, visited, Ar2, C)
+            'Ar2(index) = C
+            'For neigh As Integer = 0 To neighbors.Count - 1
+            'Ar2(neigh) = C
+            'visited.Add(neigh)
+        End If
+        Return visited
+    End Function
+
+    Private Function getNeighbors(ByVal Ar, ByVal epsilon, ByVal index, ByVal semimajor, ByVal semiminor, ByRef visited)
+        Dim neighbors As New List(Of Integer)
+
+        For i As Integer = 0 To Ar.GetUpperBound(0) - 1
+            Dim dist = GetDist(Ar(3, i), Ar(2, i), Ar(3, index), Ar(2, index), semimajor, semiminor, True)
+            If dist <= epsilon Then
+                neighbors.Add(i)
+            End If
+        Next
+
+        Return neighbors
+    End Function
+
+    Private Function ExpandCluster(ByVal index, ByVal neighbors, ByVal epsilon, ByVal minpts, ByVal semimajor, ByVal semiminor, ByRef visited, ByRef Ar2, ByVal c)
+        Ar2(index) = c ' Add p to the cluster
+        For neigh As Integer = 0 To neighbors.Count - 1
+            If Not visited.Contains(neigh) Then visited.Add(neigh) 'Add neighbor to visited if it isn't already there
+            Dim new_neighbors = getNeighbors()
+
+
+
+
+        Next
+
+        Return Nothing
     End Function
 
 #Region "*** HELP CONTENT DISPLAY DYNAMICS ****************************************************"
@@ -1584,6 +1738,7 @@ Public Class frm_clustertool
 
         rtxtHELP_CNT.Refresh()
 
+
     End Sub
 
     Private Sub btnCANCEL_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCANCEL.Click
@@ -1593,4 +1748,16 @@ Public Class frm_clustertool
     Private Sub grpCLUSTER_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles grpCLUSTER.Enter
 
     End Sub
+
+    Private Sub splcHELP_Panel1_Paint(ByVal sender As System.Object, ByVal e As System.Windows.Forms.PaintEventArgs) Handles splcHELP.Panel1.Paint
+
+    End Sub
+
+    Private Sub CheckBox1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs)
+
+    End Sub
+
+
+
+
 End Class
