@@ -1138,23 +1138,68 @@ Public Class frm_clustertool
         ElseIf c_method = "dlink" Then
             MsgBox("D-Link", MsgBoxStyle.Information, "Clustering Method")
         ElseIf c_method = "dbscan" Then
-            'DBSCAN
-            Dim Unvisited As New List(Of Integer)
-            For i As Integer = 0 To Ar.GetUpperBound(1) - 1
-                Unvisited.Add(i)
+            Dim counter As Integer = 0
+            Dim dist_lists As New List(Of List(Of Double))
+            For i As Integer = 0 To Ar.GetUpperBound(1)
+
+                If Ar(3, i) < epsilon.Text Then
+                    counter += 1
+                    Dim Arr As New List(Of Double)
+                    Arr.Add(Ar(0, i))
+                    Arr.Add(Ar(1, i))
+                    Arr.Add(Ar(2, i))
+                    Arr.Add(Ar(3, i))
+                    dist_lists.Add(Arr)
+                End If
             Next
+            MsgBox(counter, MsgBoxStyle.Information, "Sample Size")
+
+            pProDlg.Description = "Clustering using DBScan..."
+            'DBSCAN
+            'dbscan(Ar, epsilon.Text, minpts.Text, dSemiMajAxis, dSemiMinAxis, Ar2)
+            Dim cluster_id As Integer = 0
+            'Create a list of the unvisited nodes.  We iterate over these.
+            Dim Unvisited As New List(Of Integer)
+            For i As Integer = 0 To dist_lists.Count - 1
+                Unvisited.Add(dist_lists(i)(1))
+            Next
+
+            'Setup to start at a random node
             Dim randomnumber As New Random
+            Dim index As Integer = 0
+
+            'Iterate until we have visited all nodes.
             While Unvisited.Count > 0
-                Dim index As Integer = randomnumber.Next(0, Unvisited.Count - 1)
+                Debug.WriteLine(Unvisited.Count)
+                'MsgBox(Unvisited.Count, MsgBoxStyle.Information, "Current Count")
+                'Grab the index of the current node
+                index = randomnumber.Next(0, Unvisited.Count - 1)
                 Dim node = Unvisited(index)
+
+                'Remove the node from the unvisited list.
                 Unvisited.Remove(index)
 
-                Dim alsoremove = dbscan(Ar, epsilon.Text, minpts.Text, index, dSemiMajAxis, dSemiMinAxis, Ar2)
+                'Get the neighbors to the current node
+                Dim neighbors = getNeighbors(dist_lists, epsilon.Text, node, dSemiMajAxis, dSemiMinAxis)
+
+                'If we are greater than epsilon we have a cluster, otherwise we have noise.  Unmarked nodes are implicitly noise.
+                If neighbors.Count >= minpts.Text Then
+                    cluster_id += 1
+                    ExpandCluster(node, neighbors, cluster_id, epsilon.Text, minpts.Text, Ar2, Unvisited, dist_lists, dSemiMajAxis, dSemiMinAxis)
+                End If
+                If Not pTrkCan.Continue Then
+                    'SUMMARY PRINT: End program as interrupted
+                    PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+                                              sSDate, sSTime)
+                    'Destroy the progress dialog
+                    ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                    Return
+                End If
 
             End While
-            MsgBox(Unvisited(0), MsgBoxStyle.Information, "True or False")
+            
         End If
-
+        MsgBox("DBSCAN FINISHED", MsgBoxStyle.Exclamation, "DONE!")
         '********************************************************************************************
 
 
@@ -1442,49 +1487,92 @@ Public Class frm_clustertool
         Return sReport
     End Function
 
-    Private Function dbscan(ByVal Ar, ByVal epsilon, ByVal minpts, ByVal index, ByVal semimajor, ByVal semiminor, ByRef Ar2)
-        'This function searchs for all points within epsilon and initiates cluster formation where appropriate
-        Dim C As Integer = 0
-        Dim visited As New List(Of Integer)
-        Dim neighbors As New List(Of Integer)
-        neighbors = getNeighbors(Ar(1, index), epsilon, index, semimajor, semiminor, visited)
-        If neighbors.Count >= minpts Then
-            C += 1
-            ExpandCluster(index, neighbors, epsilon, minpts, semimajor, semiminor, visited, Ar2, C)
-            'Ar2(index) = C
-            'For neigh As Integer = 0 To neighbors.Count - 1
-            'Ar2(neigh) = C
-            'visited.Add(neigh)
-        End If
-        Return visited
-    End Function
+    'Private Sub dbscan(ByVal Ar, ByVal epsilon, ByVal minpts, ByVal semimajor, ByVal semiminor, ByRef Ar2)
+    '    Dim cluster_id As Integer = 0
+    '    'Create a list of the unvisited nodes.  We iterate over these.
+    '    Dim Unvisited As New List(Of Integer)
+    '    For i As Integer = 0 To Ar.GetUpperBound(1)
+    '        Unvisited.Add(i)
+    '    Next
 
-    Private Function getNeighbors(ByVal Ar, ByVal epsilon, ByVal index, ByVal semimajor, ByVal semiminor, ByRef visited)
-        Dim neighbors As New List(Of Integer)
+    '    'Setup to start at a random node
+    '    Dim randomnumber As New Random
+    '    Dim index As Integer = 0
 
-        For i As Integer = 0 To Ar.GetUpperBound(0) - 1
-            Dim dist = GetDist(Ar(3, i), Ar(2, i), Ar(3, index), Ar(2, index), semimajor, semiminor, True)
-            If dist <= epsilon Then
-                neighbors.Add(i)
+
+    '    'Iterate until we have visited all nodes.
+    '    While Unvisited.Count > 0
+    '        MsgBox(Unvisited.Count, MsgBoxStyle.Information, "Current Count")
+    '        'Grab the index of the current node
+    '        index = randomnumber.Next(0, Unvisited.Count - 1)
+    '        Dim node = Unvisited(index)
+
+    '        'Remove the node from the unvisited list.
+    '        Unvisited.Remove(index)
+
+    '        'Get the neighbors to the current node
+    '        Dim neighbors = getNeighbors(Ar, epsilon, node, semimajor, semiminor)
+
+    '        'If we are greater than epsilon we have a cluster, otherwise we have noise.  Unmarked nodes are implicitly noise.
+    '        If neighbors.Count >= minpts Then
+    '            cluster_id += 1
+    '            ExpandCluster(node, neighbors, cluster_id, epsilon, minpts, Ar2, Unvisited, Ar, semimajor, semiminor, pfClass)
+    '        End If
+    '    End While
+
+    'End Sub
+
+    Private Function getNeighbors(ByVal dist_lists, ByVal epsilon, ByVal index, ByVal semimajor, ByVal semiminor)
+        Dim neighbors As New Stack(Of Integer)
+
+        For i As Integer = 0 To dist_lists.Count
+            If Abs(dist_lists(i)(2) - dist_lists(index)(2)) < epsilon And Abs(dist_lists(i)(3) - dist_lists(index)(3)) < epsilon Then
+                Dim dist = GetDist(dist_lists(i)(2), dist_lists(i)(3), dist_lists(index)(2), dist_lists(index)(3), semimajor, semiminor, True)
+                If dist <= epsilon Then
+                    neighbors.Push(i)
+                End If
             End If
         Next
 
         Return neighbors
     End Function
 
-    Private Function ExpandCluster(ByVal index, ByVal neighbors, ByVal epsilon, ByVal minpts, ByVal semimajor, ByVal semiminor, ByRef visited, ByRef Ar2, ByVal c)
-        Ar2(index) = c ' Add p to the cluster
-        For neigh As Integer = 0 To neighbors.Count - 1
-            If Not visited.Contains(neigh) Then visited.Add(neigh) 'Add neighbor to visited if it isn't already there
-            Dim new_neighbors = getNeighbors()
+    Private Sub ExpandCluster(ByVal node, ByRef neighbors, ByVal cluster_id, ByVal epsilon, ByVal minpts, ByRef Ar2, ByRef Unvisited, ByVal dist_lists, ByVal semimajor, ByVal semiminor)
 
+        'Add the node to the cluster
+        Ar2(node) = cluster_id
+        'For each neighbor in neighbors
+        While neighbors.Count > 0
+            Dim neighbor_node As Integer = neighbors.Pop
+            If Unvisited.Contains(neighbor_node) Then
+                'Mark neighbor as visited
+                Unvisited.Remove(neighbor_node)
+                'Get the neighbors to the new neighbor, i.e. is the cluster expanding by epsilon
+                Dim new_neighbors = getNeighbors(dist_lists, epsilon, neighbor_node, semimajor, semiminor)
+                'If the number of new neighbors constitutes a new cluster, start adding that cluster as well.  Grow by density essentially.
+                If new_neighbors.Count >= minpts Then
+                    While new_neighbors.Count > 0
+                        neighbors.Push(new_neighbors.Pop)
+                    End While
+                End If
+            End If
+            'If the neighbor is not part of a cluster, add it to the current cluster.
+            If Ar2(neighbor_node) = -1 Then Ar2(neighbor_node) = cluster_id
+        End While
 
+        'For i As Integer = 0 To neighbors.Count - 1
+        '    If Unvisited.Contains(neighbors(i)) Then
+        '        'Mark neighbor as visited
+        '        Unvisited.Remove(neighbors(i))
+        '        'Get the neighbors to the new neighbor, i.e. is the cluster expanding by epsilon
+        '        Dim new_neighbors = getNeighbors(Ar, epsilon, neighbors(i), semimajor, semiminor)
+        '        If new_neighbors.Count >= epsilon Then neighbors.Concat(new_neighbors)
+        '    End If
+        '    'If the neighbor is not part of a cluster, add it to the current cluster.
+        '    If Ar2(neighbors(i)) = -1 Then Ar2(neighbors(i)) = cluster_id
+        'Next
 
-
-        Next
-
-        Return Nothing
-    End Function
+    End Sub
 
 #Region "*** HELP CONTENT DISPLAY DYNAMICS ****************************************************"
 #End Region

@@ -1443,6 +1443,22 @@ Public Module mod_public
 
     End Function
 
+    Public Function GetDist2(ByVal x2 As Double, ByVal y2 As Double, _
+                        ByVal x1 As Double, ByVal y1 As Double, _
+                        ByVal dSemiMajAxis As Double, _
+                        ByVal dSemiMinAxis As Double, _
+                        ByVal epsilon As Double, _
+                        ByVal bPlan As Boolean) As Double
+
+        If bPlan Then
+            Return Sqrt(((x2 - x1) ^ 2) + ((y2 - y1) ^ 2)) ' This is the Euclidean distance between 2 pts in 2-D space
+
+        Else
+            Return GetGeodeticDist(y1, x1, y2, x2, dSemiMajAxis, dSemiMinAxis) 'This returns the geodesic distance.
+        End If
+
+    End Function
+
     Public Sub ProgressDialogDispose(ByRef pProDlg As IProgressDialog2, _
                                      ByRef pStepPro As IStepProgressor, _
                                      ByRef pTrkCan As ITrackCancel, _
