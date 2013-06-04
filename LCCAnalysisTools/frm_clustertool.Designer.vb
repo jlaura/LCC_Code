@@ -77,8 +77,6 @@ Partial Class frm_clustertool
         Me.rtxtHELP_CNT = New System.Windows.Forms.RichTextBox()
         Me.Panel2 = New System.Windows.Forms.Panel()
         Me.Label2 = New System.Windows.Forms.Label()
-        Me.epsilon = New System.Windows.Forms.TextBox()
-        Me.GroupBox4 = New System.Windows.Forms.GroupBox()
         Me.grpCLUSTER.SuspendLayout()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
@@ -92,7 +90,6 @@ Partial Class frm_clustertool
         Me.TabPage4.SuspendLayout()
         Me.GroupBox3.SuspendLayout()
         Me.Panel1.SuspendLayout()
-        Me.GroupBox4.SuspendLayout()
         Me.SuspendLayout()
         '
         'radCMBNND
@@ -582,7 +579,6 @@ Partial Class frm_clustertool
         'TabPage4
         '
         Me.TabPage4.Controls.Add(Me.kgraph)
-        Me.TabPage4.Controls.Add(Me.GroupBox4)
         Me.TabPage4.Controls.Add(Me.GroupBox3)
         Me.TabPage4.Location = New System.Drawing.Point(4, 22)
         Me.TabPage4.Name = "TabPage4"
@@ -603,7 +599,7 @@ Partial Class frm_clustertool
         'GroupBox3
         '
         Me.GroupBox3.Controls.Add(Me.minpts)
-        Me.GroupBox3.Location = New System.Drawing.Point(8, 6)
+        Me.GroupBox3.Location = New System.Drawing.Point(8, 26)
         Me.GroupBox3.Name = "GroupBox3"
         Me.GroupBox3.Size = New System.Drawing.Size(360, 49)
         Me.GroupBox3.TabIndex = 0
@@ -662,25 +658,6 @@ Partial Class frm_clustertool
         Me.Label2.TabIndex = 0
         Me.Label2.Text = "Input point layer:"
         '
-        'epsilon
-        '
-        Me.epsilon.Location = New System.Drawing.Point(6, 19)
-        Me.epsilon.Name = "epsilon"
-        Me.epsilon.Size = New System.Drawing.Size(348, 20)
-        Me.epsilon.TabIndex = 0
-        Me.epsilon.Text = "1500"
-        Me.epsilon.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'GroupBox4
-        '
-        Me.GroupBox4.Controls.Add(Me.epsilon)
-        Me.GroupBox4.Location = New System.Drawing.Point(8, 59)
-        Me.GroupBox4.Name = "GroupBox4"
-        Me.GroupBox4.Size = New System.Drawing.Size(360, 48)
-        Me.GroupBox4.TabIndex = 4
-        Me.GroupBox4.TabStop = False
-        Me.GroupBox4.Text = "Search Distance"
-        '
         'frm_clustertool
         '
         Me.AcceptButton = Me.btnOK
@@ -720,8 +697,6 @@ Partial Class frm_clustertool
         Me.GroupBox3.ResumeLayout(False)
         Me.GroupBox3.PerformLayout()
         Me.Panel1.ResumeLayout(False)
-        Me.GroupBox4.ResumeLayout(False)
-        Me.GroupBox4.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -779,6 +754,4 @@ Partial Class frm_clustertool
     Friend WithEvents GroupBox3 As System.Windows.Forms.GroupBox
     Friend WithEvents minpts As System.Windows.Forms.TextBox
     Friend WithEvents kgraph As System.Windows.Forms.Button
-    Friend WithEvents GroupBox4 As System.Windows.Forms.GroupBox
-    Friend WithEvents epsilon As System.Windows.Forms.TextBox
 End Class
