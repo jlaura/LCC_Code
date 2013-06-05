@@ -1142,14 +1142,14 @@ Public Class frm_clustertool
             'DBSCAN
             Dim counter As Integer = 0
             For i As Integer = 0 To Ar.GetUpperBound(1) - 1
-                If Ar(4, i) < txtNQUERY.Text Then
-                    counter += 1
+                If Ar(4, i) < CDbl(txtNQUERY.Text) Then
                     Dim Arr As New List(Of Double)
                     Arr.Add(Ar(0, i))
                     Arr.Add(Ar(1, i))
                     Arr.Add(Ar(2, i))
                     Arr.Add(Ar(3, i))
                     dist_lists.Add(Arr)
+                    counter += 1
                 End If
             Next
 
@@ -1177,17 +1177,33 @@ Public Class frm_clustertool
                 index = randomnumber.Next(0, Unvisited.Count - 1)
                 Dim node = Unvisited(index)
                 old_count = Unvisited.Count
+                If node = 16477 Or node = 16475 Or node = 16476 Or node = 16480 Then MsgBox("here", MsgBoxStyle.OkOnly, "gotcha")
 
                 'Remove the node from the unvisited list and the node from the dist_lists
                 Unvisited.RemoveAt(index)
 
+                'Get the index from dist_lists from the node_id
+                Dim node_index As Integer = 0
+                node_index = GetNodeIndex(node)
+
                 'Get the neighbors to the current node
-                Dim neighbors = getNeighbors(txtNQUERY.Text, index, dSemiMajAxis, dSemiMinAxis)
+                Dim neighbors = getNeighbors(txtNQUERY.Text, node_index, dSemiMajAxis, dSemiMinAxis)
 
                 'If we are greater than epsilon we have a cluster, otherwise we have noise.  Unmarked nodes are implicitly noise.
-                If neighbors.Count >= CInt(minpts.Text) - 1 Then
+                If neighbors.Count >= CInt(minpts.Text) Then
+
+                    'Convert from index to dist_list index
+                    Dim neighbor_node_fids As New Stack(Of Integer)
+                    Do Until neighbors.Count = 0
+                        Dim n_index = neighbors.Pop
+                        For j As Integer = 0 To dist_lists.Count - 1
+                            If dist_lists(j)(1) = n_index Then neighbor_node_fids.Push(dist_lists(j)(1))
+                        Next
+                    Loop
+
                     'Attempt to expand the cluster
-                    Unvisited = ExpandCluster(node, neighbors, cluster_id, txtNQUERY.Text, minpts.Text, Ar2, Unvisited, dSemiMajAxis, dSemiMinAxis)
+                    Unvisited = ExpandCluster(node, neighbor_node_fids, cluster_id, txtNQUERY.Text, minpts.Text, Ar2, Unvisited, dSemiMajAxis, dSemiMinAxis)
+
                 End If
                 pStepPro.StepValue = old_count - Unvisited.Count
                 If Not pTrkCan.Continue Then
@@ -1495,11 +1511,10 @@ Public Class frm_clustertool
         Dim neighbors As New Stack(Of Integer)
 
         For i As Integer = 0 To dist_lists.Count - 1
-            If Abs(dist_lists(i)(2) - dist_lists(index)(2)) < epsilon And Abs(dist_lists(i)(3) - dist_lists(index)(3)) < epsilon Then
-                Dim dist = GetDist(dist_lists(i)(2), dist_lists(i)(3), dist_lists(index)(2), dist_lists(index)(3), semimajor, semiminor, True)
-                If dist <= epsilon Then
-                    neighbors.Push(dist_lists(i)(1)) 'By OID
-                End If
+            'If Abs(dist_lists(i)(2) - dist_lists(index)(2)) <= epsilon And Abs(dist_lists(i)(3) - dist_lists(index)(3)) <= epsilon Then
+            Dim dist = GetDist(dist_lists(index)(2), dist_lists(index)(3), dist_lists(i)(2), dist_lists(i)(3), semimajor, semiminor, True)
+            If dist <= epsilon Then
+                neighbors.Push(i) 'By OID
             End If
         Next
 
@@ -1508,19 +1523,27 @@ Public Class frm_clustertool
 
     Private Function ExpandCluster(ByVal node As Double, ByRef neighbors As Stack(Of Integer), ByRef cluster_id As Integer, ByVal epsilon As Double, ByVal minpts As Integer, _
                                    ByRef Ar2() As Double, ByRef Unvisited As List(Of Integer), ByVal semimajor As Double, ByVal semiminor As Double) As List(Of Integer)
+
         Dim new_neighbors As New Stack(Of Integer)
+        Dim neighbor_node As Integer = 0
         Dim node_index As Integer = 0
+        Dim new_neighbor As Integer = 0
+        Dim visited As New List(Of Integer)
+
         'Increment the cluster counter
         cluster_id = cluster_id + 1
 
-        'Add the node to the cluster
+        'Add the seed node to the cluster
         Ar2(node) = cluster_id
 
         'For each neighbor in neighbors
         While neighbors.Count > 0
 
             'Iterate over the neighbors, popping one at a time from the stack
-            Dim neighbor_node As Integer = neighbors.Pop
+            neighbor_node = neighbors.Pop
+
+            'Add node to the visited list
+            visited.Add(neighbor_node)
 
             'If we have not visited the node yet, check to see if the cluster extends
             If Unvisited.Contains(neighbor_node) Then
@@ -1529,39 +1552,41 @@ Public Class frm_clustertool
 
 
                 'Get the index of the neighbor_node in the dist_lists
-                For i As Integer = 0 To dist_lists.Count - 1
-                    If dist_lists(i)(1) = neighbor_node Then
-                        node_index = i
-                    End If
-                Next
+                node_index = GetNodeIndex(neighbor_node)
 
                 'Get the neighbors to the new neighbor, i.e. is the cluster expanding by epsilon
                 new_neighbors = getNeighbors(epsilon, node_index, semimajor, semiminor)
 
                 'If the number of new neighbors constitutes a new cluster, start adding that cluster as well.  Grow by density essentially.
                 If new_neighbors.Count >= minpts - 1 Then '-1 Because we include the source point in the cluster.
-                    While new_neighbors.Count > 0
-                        Dim addition = new_neighbors.Pop
-                        If neighbors.Contains(addition) Then
+                    Do Until new_neighbors.Count = 0
+                        new_neighbor = new_neighbors.Peek
+                        If visited.Contains(new_neighbor) Or neighbors.Contains(new_neighbor) Then
+                            new_neighbors.Pop()
                         Else
-                            neighbors.Push(addition)
+                            neighbors.Push(new_neighbors.Pop)
                         End If
+                    Loop
+                End If
 
-                    End While
+                'If the neighbor is not part of a cluster, add it to the current cluster.
+                If Ar2(neighbor_node) <> -1 Then
+                    MsgBox("Crap", MsgBoxStyle.Question, "Hmmm...")
+
+                Else
+                    Ar2(neighbor_node) = cluster_id
                 End If
             End If
-
-            'If the neighbor is not part of a cluster, add it to the current cluster.
-            If Ar2(neighbor_node) = -1 Then
-                Ar2(neighbor_node) = cluster_id
-            ElseIf Ar2(neighbor_node) = cluster_id Then
-                Debug.WriteLine("Same")
-            Else
-                Debug.WriteLine(cluster_id & " " & Ar2(neighbor_node))
-            End If
-
         End While
         Return Unvisited
+    End Function
+    Private Function GetNodeIndex(ByVal node As Integer) As Integer
+            For i As Integer = 0 To dist_lists.Count - 1
+                If dist_lists(i)(1) = node Then
+                node = i
+                End If
+            Next
+        Return node
     End Function
 
 #Region "*** HELP CONTENT DISPLAY DYNAMICS ****************************************************"
