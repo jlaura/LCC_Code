@@ -66,17 +66,18 @@ Partial Class frm_clustertool
         Me.optimize = New System.Windows.Forms.Button()
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
         Me.tabcontrol = New System.Windows.Forms.TabControl()
-        Me.TabPage1 = New System.Windows.Forms.TabPage()
-        Me.TabPage2 = New System.Windows.Forms.TabPage()
-        Me.TabPage3 = New System.Windows.Forms.TabPage()
         Me.TabPage4 = New System.Windows.Forms.TabPage()
         Me.kgraph = New System.Windows.Forms.Button()
         Me.GroupBox3 = New System.Windows.Forms.GroupBox()
         Me.minpts = New System.Windows.Forms.TextBox()
+        Me.TabPage1 = New System.Windows.Forms.TabPage()
+        Me.TabPage2 = New System.Windows.Forms.TabPage()
+        Me.TabPage3 = New System.Windows.Forms.TabPage()
         Me.Panel1 = New System.Windows.Forms.Panel()
         Me.rtxtHELP_CNT = New System.Windows.Forms.RichTextBox()
         Me.Panel2 = New System.Windows.Forms.Panel()
         Me.Label2 = New System.Windows.Forms.Label()
+        Me.TextBox1 = New System.Windows.Forms.TextBox()
         Me.grpCLUSTER.SuspendLayout()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
@@ -86,9 +87,9 @@ Partial Class frm_clustertool
         Me.grpNQUERY.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
         Me.tabcontrol.SuspendLayout()
-        Me.TabPage1.SuspendLayout()
         Me.TabPage4.SuspendLayout()
         Me.GroupBox3.SuspendLayout()
+        Me.TabPage1.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -536,15 +537,55 @@ Partial Class frm_clustertool
         '
         'tabcontrol
         '
+        Me.tabcontrol.Controls.Add(Me.TabPage4)
         Me.tabcontrol.Controls.Add(Me.TabPage1)
         Me.tabcontrol.Controls.Add(Me.TabPage2)
         Me.tabcontrol.Controls.Add(Me.TabPage3)
-        Me.tabcontrol.Controls.Add(Me.TabPage4)
         Me.tabcontrol.Location = New System.Drawing.Point(10, 19)
         Me.tabcontrol.Name = "tabcontrol"
         Me.tabcontrol.SelectedIndex = 0
         Me.tabcontrol.Size = New System.Drawing.Size(384, 185)
         Me.tabcontrol.TabIndex = 7
+        '
+        'TabPage4
+        '
+        Me.TabPage4.Controls.Add(Me.TextBox1)
+        Me.TabPage4.Controls.Add(Me.kgraph)
+        Me.TabPage4.Controls.Add(Me.GroupBox3)
+        Me.TabPage4.Location = New System.Drawing.Point(4, 22)
+        Me.TabPage4.Name = "TabPage4"
+        Me.TabPage4.Size = New System.Drawing.Size(376, 159)
+        Me.TabPage4.TabIndex = 3
+        Me.TabPage4.Text = "DBSCAN"
+        Me.TabPage4.UseVisualStyleBackColor = True
+        '
+        'kgraph
+        '
+        Me.kgraph.Location = New System.Drawing.Point(8, 122)
+        Me.kgraph.Name = "kgraph"
+        Me.kgraph.Size = New System.Drawing.Size(360, 23)
+        Me.kgraph.TabIndex = 5
+        Me.kgraph.Text = "Display K-Distance Graph"
+        Me.kgraph.UseVisualStyleBackColor = True
+        '
+        'GroupBox3
+        '
+        Me.GroupBox3.Controls.Add(Me.minpts)
+        Me.GroupBox3.Location = New System.Drawing.Point(8, 51)
+        Me.GroupBox3.Name = "GroupBox3"
+        Me.GroupBox3.Size = New System.Drawing.Size(360, 49)
+        Me.GroupBox3.TabIndex = 0
+        Me.GroupBox3.TabStop = False
+        Me.GroupBox3.Text = "Minimum Cluster Seed Size"
+        '
+        'minpts
+        '
+        Me.minpts.Location = New System.Drawing.Point(6, 20)
+        Me.minpts.Name = "minpts"
+        Me.minpts.Size = New System.Drawing.Size(347, 20)
+        Me.minpts.TabIndex = 0
+        Me.minpts.Text = "4"
+        Me.minpts.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'TabPage1
         '
@@ -575,45 +616,6 @@ Partial Class frm_clustertool
         Me.TabPage3.TabIndex = 2
         Me.TabPage3.Text = "D-Link"
         Me.TabPage3.UseVisualStyleBackColor = True
-        '
-        'TabPage4
-        '
-        Me.TabPage4.Controls.Add(Me.kgraph)
-        Me.TabPage4.Controls.Add(Me.GroupBox3)
-        Me.TabPage4.Location = New System.Drawing.Point(4, 22)
-        Me.TabPage4.Name = "TabPage4"
-        Me.TabPage4.Size = New System.Drawing.Size(376, 159)
-        Me.TabPage4.TabIndex = 3
-        Me.TabPage4.Text = "DBSCAN"
-        Me.TabPage4.UseVisualStyleBackColor = True
-        '
-        'kgraph
-        '
-        Me.kgraph.Location = New System.Drawing.Point(8, 122)
-        Me.kgraph.Name = "kgraph"
-        Me.kgraph.Size = New System.Drawing.Size(360, 23)
-        Me.kgraph.TabIndex = 5
-        Me.kgraph.Text = "Display K-Distance Graph"
-        Me.kgraph.UseVisualStyleBackColor = True
-        '
-        'GroupBox3
-        '
-        Me.GroupBox3.Controls.Add(Me.minpts)
-        Me.GroupBox3.Location = New System.Drawing.Point(8, 26)
-        Me.GroupBox3.Name = "GroupBox3"
-        Me.GroupBox3.Size = New System.Drawing.Size(360, 49)
-        Me.GroupBox3.TabIndex = 0
-        Me.GroupBox3.TabStop = False
-        Me.GroupBox3.Text = "Minimum Cluster Seed Size"
-        '
-        'minpts
-        '
-        Me.minpts.Location = New System.Drawing.Point(6, 20)
-        Me.minpts.Name = "minpts"
-        Me.minpts.Size = New System.Drawing.Size(347, 20)
-        Me.minpts.TabIndex = 0
-        Me.minpts.Text = "4"
-        Me.minpts.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'Panel1
         '
@@ -658,6 +660,19 @@ Partial Class frm_clustertool
         Me.Label2.TabIndex = 0
         Me.Label2.Text = "Input point layer:"
         '
+        'TextBox1
+        '
+        Me.TextBox1.BackColor = System.Drawing.SystemColors.Window
+        Me.TextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.TextBox1.Location = New System.Drawing.Point(8, 12)
+        Me.TextBox1.Multiline = True
+        Me.TextBox1.Name = "TextBox1"
+        Me.TextBox1.ReadOnly = True
+        Me.TextBox1.Size = New System.Drawing.Size(354, 33)
+        Me.TextBox1.TabIndex = 6
+        Me.TextBox1.Text = "A high speed density based clustering method.  Use the K-Distance graph to improv" & _
+            "e the optimized threshold distance we estimate."
+        '
         'frm_clustertool
         '
         Me.AcceptButton = Me.btnOK
@@ -692,10 +707,11 @@ Partial Class frm_clustertool
         Me.grpNQUERY.PerformLayout()
         Me.GroupBox2.ResumeLayout(False)
         Me.tabcontrol.ResumeLayout(False)
-        Me.TabPage1.ResumeLayout(False)
         Me.TabPage4.ResumeLayout(False)
+        Me.TabPage4.PerformLayout()
         Me.GroupBox3.ResumeLayout(False)
         Me.GroupBox3.PerformLayout()
+        Me.TabPage1.ResumeLayout(False)
         Me.Panel1.ResumeLayout(False)
         Me.ResumeLayout(False)
 
@@ -754,4 +770,5 @@ Partial Class frm_clustertool
     Friend WithEvents GroupBox3 As System.Windows.Forms.GroupBox
     Friend WithEvents minpts As System.Windows.Forms.TextBox
     Friend WithEvents kgraph As System.Windows.Forms.Button
+    Friend WithEvents TextBox1 As System.Windows.Forms.TextBox
 End Class
