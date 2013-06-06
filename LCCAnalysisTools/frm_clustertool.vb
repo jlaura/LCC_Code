@@ -225,7 +225,7 @@ Public Class frm_clustertool
 
     End Sub
 
-    Private Sub Optimize_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles optimize.Click
+    Private Sub Compute_DatasetStats()
         'Make sure that we have an input layer..
         Dim pFLayer As IFeatureLayer = GetFLayerByName(m_sCAFLayer)
         'Make sure an input layer was selected and assigned to an object
@@ -256,7 +256,7 @@ Public Class frm_clustertool
 
         ' Set the properties of the ProgressDialog
         pProDlg.CancelEnabled = True
-        pProDlg.Title = "Optimizing Threshold Distance"
+        pProDlg.Title = "Generating Statistics"
         pProDlg.Animation = esriProgressAnimationTypes.esriProgressSpiral
 
         ' Set the properties of the Step Progressor
@@ -268,10 +268,10 @@ Public Class frm_clustertool
         '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         'PROGRESS UPDATE: 
-        pProDlg.Description = "Computing optimized Threshold Distance..."
+        pProDlg.Description = "Computing Statistics..."
         'Create an array that is the size of the input shapefile
         'Each index store the nearest neighbor distance
-        Dim DistArray(pFClass.FeatureCount(Nothing)) As Double
+        Dim DistArray(pFClass.FeatureCount(Nothing))
         For i = 0 To DistArray.GetUpperBound(0) - 1
             DistArray(i) = 9999999
         Next
@@ -302,7 +302,6 @@ Public Class frm_clustertool
         dMax = DistArray(0)
         dMin = DistArray(0)
 
-        'Ignore those points that are outliers in this computation.
         For i As Integer = 0 To DistArray.GetUpperBound(0) - 1
             dCount += 1
             If DistArray(i) < dMin Then dMin = DistArray(i)
@@ -319,8 +318,6 @@ Public Class frm_clustertool
         Next
 
         dStd = Sqrt(dSumsq / dCount)
-
-        Dim optimal_distance As Double = dMean + dStd
 
         System.Array.Sort(DistArray)
 
@@ -352,6 +349,108 @@ Public Class frm_clustertool
         'Destroy the progress dialog
         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
 
+    End Sub
+
+    Private Sub Optimize_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles optimize.Click
+        Compute_DatasetStats()
+
+    End Sub
+    Private Sub kgraph_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles kgraph.Click
+        'Get the statistics, the distance, and the distance array matrix if it hasn't been computed.
+        'Make sure that we have an input layer..
+        Dim pFLayer As IFeatureLayer = GetFLayerByName(m_sCAFLayer)
+        'Make sure an input layer was selected and assigned to an object
+        If cboLAYER.SelectedIndex = -1 Or pFLayer Is Nothing Then
+            MsgBox("Please select an 'Input point layer'.", MsgBoxStyle.Exclamation, _
+                   "Missing Parameter")
+            Return
+        End If
+
+        Dim pFClass As IFeatureClass = pFLayer.FeatureClass
+        Dim pDataset As IDataset = pFClass
+        Dim pWrkspc2 As IWorkspace2 = DirectCast(pDataset.Workspace, IWorkspace2)
+
+        'Make sure that a distance table was selected.
+        If distance_table Is Nothing Then
+            MsgBox("Please select a 'Distance Table'.", MsgBoxStyle.Exclamation, _
+                   "Missing Parameter")
+            Return
+        End If
+
+        '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        ' Create a CancelTracker
+        Dim pTrkCan As ITrackCancel = New CancelTracker
+
+        ' Create the ProgressDialog. This automatically displays the dialog
+        Dim pProDlgFact As IProgressDialogFactory = New ProgressDialogFactory
+        Dim pProDlg As IProgressDialog2 = pProDlgFact.Create(pTrkCan, My.ArcMap.Application.hWnd)
+
+        ' Set the properties of the ProgressDialog
+        pProDlg.CancelEnabled = True
+        pProDlg.Title = "Generating Statistics"
+        pProDlg.Animation = esriProgressAnimationTypes.esriProgressSpiral
+
+        ' Set the properties of the Step Progressor
+        Dim pStepPro As IStepProgressor = pProDlg
+        pStepPro.MinRange = 0
+        pStepPro.MaxRange = pFClass.FeatureCount(Nothing)
+        pStepPro.StepValue = 1
+        pStepPro.Message = "Progress:"
+        '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+        'PROGRESS UPDATE: 
+        pProDlg.Description = "Computing Statistics..."
+        'Create an array that is the size of the input shapefile
+        'Each index store the nearest neighbor distance
+        ReDim kdist(pFClass.FeatureCount(Nothing))
+
+        'Open the distance table
+        Dim table = getTableByName(distance_table)
+        Dim InFid As Integer = table.FindField("IN_FID")
+        Dim NearDist As Integer = table.FindField("NEAR_DIST")
+
+        Dim cursor As ICursor = table.Search(Nothing, True)
+        Dim row As IRow = cursor.NextRow()
+        Dim epsilon_list As New List(Of Double)
+        Dim sum As Double = 0
+        Dim counter As Integer = 0
+
+        While Not row Is Nothing
+            Try
+                While row.Value(InFid) = counter
+                    epsilon_list.Add(row.Value(NearDist))
+                    row = cursor.NextRow()
+                End While
+
+                epsilon_list.Sort()
+                For i As Integer = 0 To (minpts.Text - 1)
+                    sum += epsilon_list(i)
+                Next
+                kdist(counter) = sum / minpts.Text
+                Debug.WriteLine(sum / minpts.Text)
+                sum = 0
+                epsilon_list.Clear()
+
+                counter += 1
+            Catch ex As Exception
+
+            End Try
+
+            If Not pTrkCan.Continue Then
+                ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                Return
+            End If
+
+        End While
+
+        'Destroy the progress dialog
+        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+
+        'Draw the graph using a windows form.
+        Dim distanceform As kDistance
+        distanceform = New kDistance()
+        distanceform.Show()
+        distanceform = Nothing
     End Sub
 
     Private Sub btnSHHELP_Click(ByVal sender As System.Object,
@@ -448,7 +547,7 @@ Public Class frm_clustertool
 
         'Check to see which tab is active to know which clustering method to use.
         '0: Heirarchal, 1: S-Link, 2: D-Link, 3: DBScan
-        Dim clusteringmethod = New Dictionary(Of Integer, String) From {{0, "heirarchal"}, {1, "slink"}, {2, "dlink"}, {3, "dbscan"}}
+        Dim clusteringmethod = New Dictionary(Of Integer, String) From {{0, "dbscan"}, {1, "heirarchal"}, {2, "slink"}, {3, "dlink"}}
         Dim currenttab As Integer = tabcontrol.SelectedIndex
         c_method = clusteringmethod(currenttab)
         'If all errors are handled, load progress form
@@ -1838,4 +1937,7 @@ Public Class frm_clustertool
 
     End Sub
 
+
+
+    
 End Class

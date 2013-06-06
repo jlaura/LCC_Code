@@ -33,6 +33,7 @@ Public Module mod_public
     Public distance_table As String
     Public c_method As String
     Public dist_lists As New List(Of List(Of Double))
+    Public kdist(1) As Double
 
     'Structure to pass 'Cluster Analysis' parameters from 
     ''main form' to progress
