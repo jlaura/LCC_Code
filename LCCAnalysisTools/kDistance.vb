@@ -10,7 +10,7 @@ Public Class kDistance
         Chart1.ChartAreas(0).CursorY.IsUserSelectionEnabled = True
 
         System.Array.Sort(kdist)
-        System.Array.Reverse(kdist)
+
         For i As Integer = 1 To kdist.GetUpperBound(0) - 1
             Dim DataPoint As New DataPoint(i, kdist(i))
             Chart1.Series(0).Points.AddXY(i, kdist(i))

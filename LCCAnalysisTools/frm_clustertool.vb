@@ -423,12 +423,7 @@ Public Class frm_clustertool
                 End While
 
                 epsilon_list.Sort()
-                For i As Integer = 0 To (minpts.Text - 1)
-                    sum += epsilon_list(i)
-                Next
-                kdist(counter) = sum / minpts.Text
-                Debug.WriteLine(sum / minpts.Text)
-                sum = 0
+                kdist(counter) = epsilon_list(minpts.Text)
                 epsilon_list.Clear()
 
                 counter += 1
@@ -1639,7 +1634,7 @@ Public Class frm_clustertool
                 'Get the neighbors to the new neighbor, i.e. is the cluster expanding by epsilon
                 new_neighbors = getNeighbors(epsilon, neighbor_node, semimajor, semiminor)
                 'If the number of new neighbors constitutes a new cluster, start adding that cluster as well.  Grow by density essentially.
-                If new_neighbors.Count >= minpts - 2 Then
+                If new_neighbors.Count >= minpts - 1 Then
                     Do Until new_neighbors.Count = 0
                         new_neighbor = new_neighbors.Peek
                         If visited.Contains(new_neighbor) Or neighbors.Contains(new_neighbor) Then
