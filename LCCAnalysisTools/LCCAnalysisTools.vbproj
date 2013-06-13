@@ -277,6 +277,11 @@
   <ItemGroup>
     <AddInContent Include="Images\distanceMatrix.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\minus.png" />
+    <Content Include="Images\plus.png" />
+    <Content Include="Images\Plus__Orange.png" />
+  </ItemGroup>
   <PropertyGroup>
     <ZipFileExtension>esriAddIn</ZipFileExtension>
     <AddInTargetProduct>Desktop</AddInTargetProduct>

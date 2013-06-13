@@ -50,8 +50,12 @@ Partial Class frm_trajecttool
         Me.txtEMAVAL = New System.Windows.Forms.TextBox()
         Me.cboEMAMOD = New System.Windows.Forms.ComboBox()
         Me.lblEMA = New System.Windows.Forms.Label()
-        Me.lblLAYER = New System.Windows.Forms.Label()
         Me.cboLAYER = New System.Windows.Forms.ComboBox()
+        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.DataGridView1 = New System.Windows.Forms.DataGridView()
+        Me.inputds = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.remove_layer = New System.Windows.Forms.Button()
+        Me.AddData = New System.Windows.Forms.Button()
         Me.pnlMARGIN2 = New System.Windows.Forms.Panel()
         Me.rtxtHELP_CNT = New System.Windows.Forms.RichTextBox()
         Me.pnlMARGIN1 = New System.Windows.Forms.Panel()
@@ -66,6 +70,8 @@ Partial Class frm_trajecttool
         Me.grpTRAJDIST.SuspendLayout()
         Me.grpCLUSTERREQ.SuspendLayout()
         Me.pnlIF.SuspendLayout()
+        Me.GroupBox1.SuspendLayout()
+        CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.pnlMARGIN2.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -84,8 +90,8 @@ Partial Class frm_trajecttool
         Me.splcHELP.Panel1.Controls.Add(Me.grpCOREFF)
         Me.splcHELP.Panel1.Controls.Add(Me.grpTRAJDIST)
         Me.splcHELP.Panel1.Controls.Add(Me.grpCLUSTERREQ)
-        Me.splcHELP.Panel1.Controls.Add(Me.lblLAYER)
         Me.splcHELP.Panel1.Controls.Add(Me.cboLAYER)
+        Me.splcHELP.Panel1.Controls.Add(Me.GroupBox1)
         Me.splcHELP.Panel1MinSize = 354
         '
         'splcHELP.Panel2
@@ -102,7 +108,7 @@ Partial Class frm_trajecttool
         'grpOUT
         '
         Me.grpOUT.Controls.Add(Me.txtOUT)
-        Me.grpOUT.Location = New System.Drawing.Point(7, 269)
+        Me.grpOUT.Location = New System.Drawing.Point(7, 366)
         Me.grpOUT.Name = "grpOUT"
         Me.grpOUT.Size = New System.Drawing.Size(338, 50)
         Me.grpOUT.TabIndex = 4
@@ -124,7 +130,7 @@ Partial Class frm_trajecttool
         Me.grpCOREFF.Controls.Add(Me.chkCEEJV)
         Me.grpCOREFF.Controls.Add(Me.txtCEEJVVAL)
         Me.grpCOREFF.Controls.Add(Me.lblCEEJVUNITS)
-        Me.grpCOREFF.Location = New System.Drawing.Point(7, 187)
+        Me.grpCOREFF.Location = New System.Drawing.Point(7, 284)
         Me.grpCOREFF.Name = "grpCOREFF"
         Me.grpCOREFF.Size = New System.Drawing.Size(338, 76)
         Me.grpCOREFF.TabIndex = 3
@@ -196,7 +202,7 @@ Partial Class frm_trajecttool
         Me.grpTRAJDIST.Controls.Add(Me.cboTDDEGVAL)
         Me.grpTRAJDIST.Controls.Add(Me.txtTDDISTVAL)
         Me.grpTRAJDIST.Controls.Add(Me.lblTDDISTUNITS)
-        Me.grpTRAJDIST.Location = New System.Drawing.Point(7, 131)
+        Me.grpTRAJDIST.Location = New System.Drawing.Point(7, 228)
         Me.grpTRAJDIST.Name = "grpTRAJDIST"
         Me.grpTRAJDIST.Size = New System.Drawing.Size(338, 50)
         Me.grpTRAJDIST.TabIndex = 2
@@ -269,7 +275,7 @@ Partial Class frm_trajecttool
         Me.grpCLUSTERREQ.Controls.Add(Me.txtEMAVAL)
         Me.grpCLUSTERREQ.Controls.Add(Me.cboEMAMOD)
         Me.grpCLUSTERREQ.Controls.Add(Me.lblEMA)
-        Me.grpCLUSTERREQ.Location = New System.Drawing.Point(7, 49)
+        Me.grpCLUSTERREQ.Location = New System.Drawing.Point(7, 146)
         Me.grpCLUSTERREQ.Name = "grpCLUSTERREQ"
         Me.grpCLUSTERREQ.Size = New System.Drawing.Size(338, 76)
         Me.grpCLUSTERREQ.TabIndex = 1
@@ -361,23 +367,70 @@ Partial Class frm_trajecttool
         Me.lblEMA.TabIndex = 3
         Me.lblEMA.Text = "Cluster length"
         '
-        'lblLAYER
-        '
-        Me.lblLAYER.AutoSize = True
-        Me.lblLAYER.Location = New System.Drawing.Point(4, 5)
-        Me.lblLAYER.Name = "lblLAYER"
-        Me.lblLAYER.Size = New System.Drawing.Size(94, 13)
-        Me.lblLAYER.TabIndex = 0
-        Me.lblLAYER.Text = "Input polyline layer"
-        '
         'cboLAYER
         '
         Me.cboLAYER.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cboLAYER.FormattingEnabled = True
         Me.cboLAYER.Location = New System.Drawing.Point(7, 22)
         Me.cboLAYER.Name = "cboLAYER"
-        Me.cboLAYER.Size = New System.Drawing.Size(338, 21)
+        Me.cboLAYER.Size = New System.Drawing.Size(335, 21)
         Me.cboLAYER.TabIndex = 0
+        '
+        'GroupBox1
+        '
+        Me.GroupBox1.Controls.Add(Me.DataGridView1)
+        Me.GroupBox1.Controls.Add(Me.remove_layer)
+        Me.GroupBox1.Controls.Add(Me.AddData)
+        Me.GroupBox1.Location = New System.Drawing.Point(4, 3)
+        Me.GroupBox1.Name = "GroupBox1"
+        Me.GroupBox1.Size = New System.Drawing.Size(341, 137)
+        Me.GroupBox1.TabIndex = 10
+        Me.GroupBox1.TabStop = False
+        Me.GroupBox1.Text = "Input Data"
+        '
+        'DataGridView1
+        '
+        Me.DataGridView1.AllowUserToDeleteRows = False
+        Me.DataGridView1.AllowUserToResizeColumns = False
+        Me.DataGridView1.AllowUserToResizeRows = False
+        Me.DataGridView1.BackgroundColor = System.Drawing.SystemColors.Control
+        Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.DataGridView1.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.inputds})
+        Me.DataGridView1.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically
+        Me.DataGridView1.GridColor = System.Drawing.Color.Maroon
+        Me.DataGridView1.Location = New System.Drawing.Point(3, 46)
+        Me.DataGridView1.Name = "DataGridView1"
+        Me.DataGridView1.ReadOnly = True
+        Me.DataGridView1.RightToLeft = System.Windows.Forms.RightToLeft.No
+        Me.DataGridView1.RowHeadersVisible = False
+        Me.DataGridView1.Size = New System.Drawing.Size(306, 85)
+        Me.DataGridView1.TabIndex = 5
+        '
+        'inputds
+        '
+        Me.inputds.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill
+        Me.inputds.FillWeight = 300.0!
+        Me.inputds.HeaderText = "Source"
+        Me.inputds.Name = "inputds"
+        Me.inputds.ReadOnly = True
+        '
+        'remove_layer
+        '
+        Me.remove_layer.Image = CType(resources.GetObject("remove_layer.Image"), System.Drawing.Image)
+        Me.remove_layer.Location = New System.Drawing.Point(315, 75)
+        Me.remove_layer.Name = "remove_layer"
+        Me.remove_layer.Size = New System.Drawing.Size(23, 23)
+        Me.remove_layer.TabIndex = 1
+        Me.remove_layer.UseVisualStyleBackColor = True
+        '
+        'AddData
+        '
+        Me.AddData.Image = CType(resources.GetObject("AddData.Image"), System.Drawing.Image)
+        Me.AddData.Location = New System.Drawing.Point(315, 46)
+        Me.AddData.Name = "AddData"
+        Me.AddData.Size = New System.Drawing.Size(23, 23)
+        Me.AddData.TabIndex = 0
+        Me.AddData.UseVisualStyleBackColor = True
         '
         'pnlMARGIN2
         '
@@ -466,7 +519,6 @@ Partial Class frm_trajecttool
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
         Me.Text = "Trajectory Tool"
         Me.splcHELP.Panel1.ResumeLayout(False)
-        Me.splcHELP.Panel1.PerformLayout()
         Me.splcHELP.Panel2.ResumeLayout(False)
         Me.splcHELP.ResumeLayout(False)
         Me.grpOUT.ResumeLayout(False)
@@ -479,6 +531,8 @@ Partial Class frm_trajecttool
         Me.grpCLUSTERREQ.PerformLayout()
         Me.pnlIF.ResumeLayout(False)
         Me.pnlIF.PerformLayout()
+        Me.GroupBox1.ResumeLayout(False)
+        CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.pnlMARGIN2.ResumeLayout(False)
         Me.ResumeLayout(False)
 
@@ -506,7 +560,6 @@ Partial Class frm_trajecttool
     Friend WithEvents lblEIF As System.Windows.Forms.Label
     Friend WithEvents cboEMAMOD As System.Windows.Forms.ComboBox
     Friend WithEvents lblEMA As System.Windows.Forms.Label
-    Friend WithEvents lblLAYER As System.Windows.Forms.Label
     Friend WithEvents cboLAYER As System.Windows.Forms.ComboBox
     Friend WithEvents pnlMARGIN2 As System.Windows.Forms.Panel
     Friend WithEvents rtxtHELP_CNT As System.Windows.Forms.RichTextBox
@@ -518,4 +571,9 @@ Partial Class frm_trajecttool
     Friend WithEvents Label2 As System.Windows.Forms.Label
     Friend WithEvents lblCEPROTP As System.Windows.Forms.Label
     Friend WithEvents pnlIF As System.Windows.Forms.Panel
+    Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
+    Friend WithEvents DataGridView1 As System.Windows.Forms.DataGridView
+    Friend WithEvents AddData As System.Windows.Forms.Button
+    Friend WithEvents inputds As System.Windows.Forms.DataGridViewTextBoxColumn
+    Friend WithEvents remove_layer As System.Windows.Forms.Button
 End Class

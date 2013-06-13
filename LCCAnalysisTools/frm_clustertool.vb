@@ -1250,6 +1250,8 @@ Public Class frm_clustertool
             Dim cluster_id As Integer = 0
             'Create a list of the unvisited nodes.  We iterate over these.
             Dim Unvisited As New List(Of Integer)
+            Unvisited.Clear()
+            MsgBox(Unvisited.Count, MsgBoxStyle.OkOnly, "Unvisited Count")
             For i As Integer = 0 To dist_lists.Count - 1
                 Unvisited.Add(dist_lists(i)(1))
             Next
@@ -1301,10 +1303,11 @@ Public Class frm_clustertool
                 End If
 
             Loop
-
+            'Cleanup
+            dist_lists.Clear()
             MsgBox(cluster_id, MsgBoxStyle.OkCancel, "Cluster Count")
-        End If
 
+        End If
         '********************************************************************************************
 
 

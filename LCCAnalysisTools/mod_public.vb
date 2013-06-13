@@ -34,6 +34,7 @@ Public Module mod_public
     Public c_method As String
     Public dist_lists As New List(Of List(Of Double))
     Public kdist(1) As Double
+    Public traj_selected_layer As Integer = -1
 
     'Structure to pass 'Cluster Analysis' parameters from 
     ''main form' to progress

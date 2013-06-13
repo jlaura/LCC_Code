@@ -372,14 +372,47 @@ Public Class frm_trajecttool
 
         Dim PRINTtxt As String = ""
 
+        'Check to see if we are working on a single layer, not added to the layer list, or to one or more layers in the
+        ' layer list
+        Dim featurelayerlist As New List(Of String)
+        Dim featuredict As New Dictionary(Of Object, String)
+        If DataGridView1.RowCount = 0 Then
+            featurelayerlist.Add(cboLAYER.Text)
+        Else
+            For row As Integer = 0 To DataGridView1.Rows.Count - 1
+                If Not DataGridView1.Rows(row).Cells(0).Value = Nothing Then
+                    featurelayerlist.Add(DataGridView1.Rows(row).Cells(0).Value)
+                End If
+            Next
+        End If
+
+        'Grab the map document
         Dim pMxDoc As IMxDocument = My.ArcMap.Document
-        Dim pFLayer As IFeatureLayer = GetFLayerByName(m_sTAFLayer)
-        Dim pFClass As IFeatureClass = pFLayer.FeatureClass
+        Dim pFLayer As IFeatureLayer = Nothing
+        Dim pFClass As IFeatureClass = Nothing
+        Dim pSpatRef As ISpatialReference = Nothing
+        Dim pGCS As IGeographicCoordinateSystem = Nothing
+        Dim initialGCS As String
+        Dim totalRecordCounter As Integer = 0
+
+        'Iterate through the layers, get a count of the features for the tracker and confirm that the spatial reference is valid.
+        For i As Integer = 0 To featurelayerlist.Count - 1
+            pFLayer = GetFLayerByName(featurelayerlist(i))
+            pFClass = pFLayer.FeatureClass
+            pSpatRef = GetFLayerSpatRef(pFLayer)
+            pGCS = GetGCS(pSpatRef)
+
+            If i = 0 Then initialGCS = pGCS.Name
+            If Not pGCS.Name.Equals(initialGCS) Then
+                MsgBox("Spatial References do not match for one or more input files.", MsgBoxStyle.Exclamation, "Spatial Reference Error")
+            End If
+            totalRecordCounter = totalRecordCounter + pFClass.FeatureCount(Nothing)
+        Next
+
+        'We assume that all the datasets are in the same workspace.  This is only used to create the output later in the tool.
         Dim pDataset As IDataset = pFClass
         Dim pFDataset As IFeatureDataset = pFClass.FeatureDataset
         Dim pWrkspc2 As IWorkspace2 = DirectCast(pDataset.Workspace, IWorkspace2)
-        Dim pSpatRef As ISpatialReference = GetFLayerSpatRef(pFLayer)
-        Dim pGCS As IGeographicCoordinateSystem = GetGCS(pSpatRef)
 
         '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         ' Create a CancelTracker
@@ -412,12 +445,20 @@ Public Class frm_trajecttool
         'SUMMARY PRINT: Progress header
         PRINTtxt += SumProgramHeader("Trajectory Tool", _
                                      sSDate, sSTime)
+        Dim layertxt As String
+        For layer As Integer = 0 To featurelayerlist.Count - 1
+            If layer = 0 Then
+                layertxt += featurelayerlist(layer)
+            Else
+                layertxt += ", " & featurelayerlist(layer)
+            End If
 
+        Next
         'Print parameters
         PRINTtxt += vbCrLf
         PRINTtxt += vbCrLf & " INPUT PARAMETERS"
         PRINTtxt += vbCrLf & " ----------------"
-        PRINTtxt += vbCrLf & " Input polyline layer: " & TAF.sFLAYER
+        PRINTtxt += vbCrLf & " Input polyline layer(s): " & layertxt
         PRINTtxt += vbCrLf & " Cluster distribution filters:"
         PRINTtxt += vbCrLf & vbTab & " Cluster length: " & TAF.sEMAMOD & " " & TAF.sEMAVAL & " m."
         Dim invFlatString As String = "N/A"
@@ -442,108 +483,147 @@ Public Class frm_trajecttool
         pProDlg.Description = "Extracting field data..."
         PRINTtxt += vbCrLf & " [Extracting field data...]"
 
-        Dim pFCursor1 As IFeatureCursor = pFClass.Search(Nothing, False)
-        Dim pFeature1 As IFeature = pFCursor1.NextFeature
+        Dim pFCursor1 As IFeatureCursor = Nothing 'pFClass.Search(Nothing, False)
+        Dim pFeature1 As IFeature = Nothing ' pFCursor1.NextFeature
 
         Dim ArInDDs As New List(Of ClusterDD)
 
-        Select Case p_inGeometry
-            Case "line"
-                pTrkCan.Reset()
-                While Not pFeature1 Is Nothing
-                    Dim iCID As Integer = pFeature1.Value(pFeature1.Fields.FindField("cid"))
-                    Dim dIFlat As Double = pFeature1.Value(pFeature1.Fields.FindField("iflat"))
-                    Dim dMajAxis As Double = pFeature1.Value(pFeature1.Fields.FindField("majaxis"))
-                    'Get the major axis line end-point segments for trajectory azimuth computations
-                    Dim pLSPointColl As IPointCollection = TryCast(pFeature1.ShapeCopy, IPointCollection)
-                    Dim pFP As IPoint = pLSPointColl.Point(0)
-                    Dim pTP As IPoint = pLSPointColl.Point(pLSPointColl.PointCount - 1)
-                    Dim pFPp As IPoint = Nothing
-                    Dim pTPp As IPoint = Nothing
-                    If pLSPointColl.PointCount > 2 Then
-                        pFPp = pLSPointColl.Point(1)
-                        pTPp = pLSPointColl.Point(pLSPointColl.PointCount - 2)
-                    Else
-                        pFPp = pTP
-                        pTPp = pFP
-                    End If
-                    ArInDDs.Add(New ClusterDD(Nothing, iCID, Nothing, dIFlat, dMajAxis, _
-                                              pFPp.X, pFPp.Y, pFP.X, pFP.Y, _
-                                              pTPp.X, pTPp.Y, pTP.X, pTP.Y))
-                    pFeature1 = pFCursor1.NextFeature
-                    If Not pTrkCan.Continue Then
-                        'SUMMARY PRINT: End program as interrupted
-                        PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
-                                                  sSDate, sSTime)
-                        'Destroy the progress dialog
-                        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                        SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
-                        Return
-                    End If
-                End While
-            Case "line no fields"
-                pTrkCan.Reset()
-                While Not pFeature1 Is Nothing
-                    'Get the line end-point segments for trajectory azimuth computations
-                    Dim pLSPointColl As IPointCollection = TryCast(pFeature1.ShapeCopy, IPointCollection)
-                    Dim pFP As IPoint = pLSPointColl.Point(0)
-                    Dim pTP As IPoint = pLSPointColl.Point(pLSPointColl.PointCount - 1)
-                    Dim pFPp As IPoint = Nothing
-                    Dim pTPp As IPoint = Nothing
-                    If pLSPointColl.PointCount > 2 Then
-                        pFPp = pLSPointColl.Point(1)
-                        pTPp = pLSPointColl.Point(pLSPointColl.PointCount - 2)
-                    Else
-                        pFPp = pTP
-                        pTPp = pFP
-                    End If
-                    'Get the geodesic lenght of the line in m
-                    Dim pPolycurveGeodeticMaj As IPolycurveGeodetic = pFeature1.ShapeCopy
-                    Dim lengthMaj As Double = pPolycurveGeodeticMaj.LengthGeodetic( _
-                                              esriGeodeticType.esriGeodeticTypeGeodesic, Nothing)
-                    ArInDDs.Add(New ClusterDD(Nothing, pFeature1.OID, Nothing, Nothing, lengthMaj, _
-                                              pFPp.X, pFPp.Y, pFP.X, pFP.Y, _
-                                              pTPp.X, pTPp.Y, pTP.X, pTP.Y))
-                    pFeature1 = pFCursor1.NextFeature
-                    If Not pTrkCan.Continue Then
-                        'SUMMARY PRINT: End program as interrupted
-                        PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
-                                                  sSDate, sSTime)
-                        'Destroy the progress dialog
-                        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                        SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
-                        Return
-                    End If
-                End While
-            Case "ellipse"
-                pTrkCan.Reset()
-                While Not pFeature1 Is Nothing
-                    Dim iCID As Integer = pFeature1.Value(pFeature1.Fields.FindField("cid"))
-                    Dim dIFlat As Double = pFeature1.Value(pFeature1.Fields.FindField("iflat"))
-                    Dim dMajAxis As Double = pFeature1.Value(pFeature1.Fields.FindField("majaxis"))
-                    Dim dFFX As Integer = pFeature1.Value(pFeature1.Fields.FindField("ffx"))
-                    Dim dFFY As Integer = pFeature1.Value(pFeature1.Fields.FindField("ffy"))
-                    Dim dFTX As Integer = pFeature1.Value(pFeature1.Fields.FindField("ftx"))
-                    Dim dFTY As Integer = pFeature1.Value(pFeature1.Fields.FindField("fty"))
-                    Dim dTFX As Integer = pFeature1.Value(pFeature1.Fields.FindField("tfx"))
-                    Dim dTFY As Integer = pFeature1.Value(pFeature1.Fields.FindField("tfy"))
-                    Dim dTTX As Integer = pFeature1.Value(pFeature1.Fields.FindField("ttx"))
-                    Dim dTTY As Integer = pFeature1.Value(pFeature1.Fields.FindField("tty"))
-                    ArInDDs.Add(New ClusterDD(Nothing, iCID, Nothing, dIFlat, dMajAxis, _
-                                              dFFX, dFFY, dFTX, dFTY, _
-                                              dTFX, dTFY, dTTX, dTTY))
-                    pFeature1 = pFCursor1.NextFeature
-                    If Not pTrkCan.Continue Then
-                        'SUMMARY PRINT: End program as interrupted
-                        PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
-                                                  sSDate, sSTime)
-                        'Destroy the progress dialog
-                        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                        SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
-                        Return
-                    End If
-                End While
-        End Select
+        'Reset the tracker
+        pTrkCan.Reset()
+
+        For i As Integer = 0 To featurelayerlist.Count - 1
+            pFLayer = GetFLayerByName(featurelayerlist(i))
+            pFClass = pFLayer.FeatureClass
+            pFCursor1 = pFClass.Search(Nothing, False)
+            pFeature1 = pFCursor1.NextFeature
+
+            'Determine the geometry type for the input.
+            Dim iIFlat As Integer = pFClass.Fields.FindField("iflat")
+            Dim iMajAxis As Integer = pFClass.Fields.FindField("majaxis")
+            Dim iFFX As Integer = pFClass.Fields.FindField("ffx")
+            Dim iFFY As Integer = pFClass.Fields.FindField("ffy")
+            Dim iFTX As Integer = pFClass.Fields.FindField("ftx")
+            Dim iFTY As Integer = pFClass.Fields.FindField("fty")
+            Dim iTFX As Integer = pFClass.Fields.FindField("tfx")
+            Dim iTFY As Integer = pFClass.Fields.FindField("tfy")
+            Dim iTTX As Integer = pFClass.Fields.FindField("ttx")
+            Dim iTTY As Integer = pFClass.Fields.FindField("tty")
+
+            If Not iFFX = -1 And Not iFFY = -1 And Not iFTX = -1 And Not iFTY = -1 And _
+               Not iTFX = -1 And Not iTFY = -1 And Not iTTX = -1 And Not iTTY = -1 And _
+               Not iIFlat = -1 And Not iMajAxis = -1 Then
+                p_inGeometry = "ellipse"
+                pnlIF.Enabled = True
+            ElseIf Not iIFlat = -1 And Not iMajAxis = -1 Then
+                p_inGeometry = "line"
+                pnlIF.Enabled = True
+            Else
+                p_inGeometry = "line no fields"
+                pnlIF.Enabled = False
+            End If
+
+            'Add the featureclass and the geometry type to the featuredict
+            featuredict(pFClass) = p_inGeometry
+
+            Select Case p_inGeometry
+                Case "line"
+                    While Not pFeature1 Is Nothing
+                        Dim iCID As Integer = pFeature1.Value(pFeature1.Fields.FindField("cid"))
+                        Dim dIFlat As Double = pFeature1.Value(pFeature1.Fields.FindField("iflat"))
+
+                        Dim dMajAxis As Double = pFeature1.Value(pFeature1.Fields.FindField("majaxis"))
+                        'Get the major axis line end-point segments for trajectory azimuth computations
+                        Dim pLSPointColl As IPointCollection = TryCast(pFeature1.ShapeCopy, IPointCollection)
+                        Dim pFP As IPoint = pLSPointColl.Point(0)
+                        Dim pTP As IPoint = pLSPointColl.Point(pLSPointColl.PointCount - 1)
+                        Dim pFPp As IPoint = Nothing
+                        Dim pTPp As IPoint = Nothing
+                        If pLSPointColl.PointCount > 2 Then
+                            pFPp = pLSPointColl.Point(1)
+                            pTPp = pLSPointColl.Point(pLSPointColl.PointCount - 2)
+                        Else
+                            pFPp = pTP
+                            pTPp = pFP
+                        End If
+                        ArInDDs.Add(New ClusterDD(Nothing, iCID, Nothing, dIFlat, dMajAxis, _
+                                                  pFPp.X, pFPp.Y, pFP.X, pFP.Y, _
+                                                  pTPp.X, pTPp.Y, pTP.X, pTP.Y))
+                        pFeature1 = pFCursor1.NextFeature
+                        If Not pTrkCan.Continue Then
+                            'SUMMARY PRINT: End program as interrupted
+                            PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+                                                      sSDate, sSTime)
+                            'Destroy the progress dialog
+                            ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                            SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
+                            Return
+                        End If
+                    End While
+                Case "line no fields"
+                    pTrkCan.Reset()
+                    While Not pFeature1 Is Nothing
+                        'Get the line end-point segments for trajectory azimuth computations
+                        Dim pLSPointColl As IPointCollection = TryCast(pFeature1.ShapeCopy, IPointCollection)
+                        Dim pFP As IPoint = pLSPointColl.Point(0)
+                        Dim pTP As IPoint = pLSPointColl.Point(pLSPointColl.PointCount - 1)
+                        Dim pFPp As IPoint = Nothing
+                        Dim pTPp As IPoint = Nothing
+                        If pLSPointColl.PointCount > 2 Then
+                            pFPp = pLSPointColl.Point(1)
+                            pTPp = pLSPointColl.Point(pLSPointColl.PointCount - 2)
+                        Else
+                            pFPp = pTP
+                            pTPp = pFP
+                        End If
+                        'Get the geodesic lenght of the line in m
+                        Dim pPolycurveGeodeticMaj As IPolycurveGeodetic = pFeature1.ShapeCopy
+                        Dim lengthMaj As Double = pPolycurveGeodeticMaj.LengthGeodetic( _
+                                                  esriGeodeticType.esriGeodeticTypeGeodesic, Nothing)
+                        ArInDDs.Add(New ClusterDD(Nothing, pFeature1.OID, Nothing, Nothing, lengthMaj, _
+                                                  pFPp.X, pFPp.Y, pFP.X, pFP.Y, _
+                                                  pTPp.X, pTPp.Y, pTP.X, pTP.Y))
+                        pFeature1 = pFCursor1.NextFeature
+                        If Not pTrkCan.Continue Then
+                            'SUMMARY PRINT: End program as interrupted
+                            PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+                                                      sSDate, sSTime)
+                            'Destroy the progress dialog
+                            ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                            SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
+                            Return
+                        End If
+                    End While
+                Case "ellipse"
+                    pTrkCan.Reset()
+                    While Not pFeature1 Is Nothing
+                        Dim iCID As Integer = pFeature1.Value(pFeature1.Fields.FindField("cid"))
+                        Dim dIFlat As Double = pFeature1.Value(pFeature1.Fields.FindField("iflat"))
+                        Dim dMajAxis As Double = pFeature1.Value(pFeature1.Fields.FindField("majaxis"))
+                        Dim dFFX As Integer = pFeature1.Value(pFeature1.Fields.FindField("ffx"))
+                        Dim dFFY As Integer = pFeature1.Value(pFeature1.Fields.FindField("ffy"))
+                        Dim dFTX As Integer = pFeature1.Value(pFeature1.Fields.FindField("ftx"))
+                        Dim dFTY As Integer = pFeature1.Value(pFeature1.Fields.FindField("fty"))
+                        Dim dTFX As Integer = pFeature1.Value(pFeature1.Fields.FindField("tfx"))
+                        Dim dTFY As Integer = pFeature1.Value(pFeature1.Fields.FindField("tfy"))
+                        Dim dTTX As Integer = pFeature1.Value(pFeature1.Fields.FindField("ttx"))
+                        Dim dTTY As Integer = pFeature1.Value(pFeature1.Fields.FindField("tty"))
+                        ArInDDs.Add(New ClusterDD(Nothing, iCID, Nothing, dIFlat, dMajAxis, _
+                                                  dFFX, dFFY, dFTX, dFTY, _
+                                                  dTFX, dTFY, dTTX, dTTY))
+                        pFeature1 = pFCursor1.NextFeature
+                        If Not pTrkCan.Continue Then
+                            'SUMMARY PRINT: End program as interrupted
+                            PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+                                                      sSDate, sSTime)
+                            'Destroy the progress dialog
+                            ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                            SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
+                            Return
+                        End If
+                    End While
+            End Select
+        Next
+
 
         'Get total number of features
         Dim population = ArInDDs.Count
@@ -885,8 +965,8 @@ Public Class frm_trajecttool
 #Region "***** LAYER ********"
 #End Region
     Private Sub lblLAYER_Click(ByVal sender As System.Object, _
-                              ByVal e As System.EventArgs) _
-                              Handles lblLAYER.Click
+                              ByVal e As System.EventArgs)
+
         HELP_Layer()
     End Sub
 
@@ -1083,6 +1163,20 @@ Public Class frm_trajecttool
 
         rtxtHELP_CNT.Refresh()
 
+    End Sub
+
+    Private Sub AddData_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles AddData.Click
+        'Add the selected polyline shapefile to the data viewer.
+        For row As Integer = 0 To DataGridView1.Rows.Count - 1
+            If DataGridView1.Rows(row).Cells(0).Value = cboLAYER.Text Then Return
+        Next
+        DataGridView1.Rows.Add(cboLAYER.Text)
+    End Sub
+
+    Private Sub Button1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles remove_layer.Click
+        If Not DataGridView1.CurrentRow.IsNewRow Then
+            DataGridView1.Rows.Remove(DataGridView1.CurrentRow)
+        End If
     End Sub
 
 End Class
