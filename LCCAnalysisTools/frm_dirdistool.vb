@@ -501,7 +501,7 @@ Public Class frm_dirdistool
                                      pFPp.X, pFPp.Y, _
                                      pFP.X, pFP.Y, _
                                      pTPp.X, pTPp.Y, _
-                                     pTP.X, pTP.Y)
+                                     pTP.X, pTP.Y, Nothing)
             Else
                 pDDC = New ClusterDD(pLengthPolyline, iCID, newCPoints.Item(0).Count, _
                                      dInverseFlat, newLengthMaj)

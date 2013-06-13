@@ -206,6 +206,8 @@ Public Module mod_public
         Private m_TFy As Double
         Private m_TTx As Double
         Private m_TTy As Double
+        Private m_ParentFeature As String
+
         Public Sub New(ByVal Shape As IGeometry, ByVal CID As Integer, _
                        ByVal Count As Integer, _
                        ByVal IFlat As Double, ByVal MajAxis As Double)
@@ -221,7 +223,7 @@ Public Module mod_public
                        ByVal FromFX As Double, ByVal FromFY As Double, _
                        ByVal FromTX As Double, ByVal FromTY As Double, _
                        ByVal ToFX As Double, ByVal ToFY As Double, _
-                       ByVal ToTX As Double, ByVal ToTY As Double)
+                       ByVal ToTX As Double, ByVal ToTY As Double, ByVal ParentFeature As String)
             Me.m_Shape = Shape
             Me.m_CID = CID
             Me.m_Count = Count
@@ -235,6 +237,7 @@ Public Module mod_public
             Me.m_TFy = ToFY
             Me.m_TTx = ToTX
             Me.m_TTy = ToTY
+            Me.m_ParentFeature = ParentFeature
         End Sub
         Public Property Shape() As IGeometry
             Get
@@ -340,14 +343,27 @@ Public Module mod_public
                 m_TTy = value
             End Set
         End Property
+
+        Property ParentFeature As String
+            Get
+                Return m_ParentFeature
+            End Get
+            Set(ByVal value As String)
+                m_ParentFeature = value
+            End Set
+        End Property
+
     End Class
 
     Public Class TrajectoryLine
         Private m_Shape As IGeometry
         Private m_CID As Integer
-        Public Sub New(ByVal Shape As IGeometry, ByVal CID As Integer)
+        Private m_Parent As String
+
+        Public Sub New(ByVal Shape As IGeometry, ByVal CID As Integer, ByVal Parent As String)
             Me.m_Shape = Shape
             Me.m_CID = CID
+            Me.m_Parent = Parent
         End Sub
         Public Property Shape() As IGeometry
             Get
@@ -365,6 +381,16 @@ Public Module mod_public
                 m_CID = value
             End Set
         End Property
+
+        Property ParentFeature As Object
+            Get
+                Return m_Parent
+            End Get
+            Set(ByVal value As Object)
+                m_Parent = value
+            End Set
+        End Property
+
     End Class
 
     Public Class PLineOIDPair
@@ -1350,6 +1376,17 @@ Public Module mod_public
         fieldEdit.AliasName_2 = "cid"
         fieldEdit.Editable_2 = True
         fieldsEdit.AddField(field)
+
+        '2. Parent Shapefile
+        Dim parfield As IField = New FieldClass
+        Dim parFieldEdit As IFieldEdit = CType(field, IFieldEdit)
+        parFieldEdit.Name_2 = "ParentFeat"
+        parFieldEdit.AliasName_2 = "Parent Feature"
+        parFieldEdit.Type_2 = esriFieldType.esriFieldTypeString
+        parFieldEdit.IsNullable_2 = True
+        parFieldEdit.Length_2 = 100
+        parFieldEdit.Editable_2 = True
+        fieldsEdit.AddField(parfield)
 
         'Pass to fields
         fields = CType(fieldsEdit, IFields)

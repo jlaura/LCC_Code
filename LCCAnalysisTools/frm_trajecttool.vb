@@ -496,6 +496,7 @@ Public Class frm_trajecttool
             pFClass = pFLayer.FeatureClass
             pFCursor1 = pFClass.Search(Nothing, False)
             pFeature1 = pFCursor1.NextFeature
+            Dim ParentFeature As String = featurelayerlist(i) ' To tracl which featurelayer seeded this trajectory
 
             'Determine the geometry type for the input.
             Dim iIFlat As Integer = pFClass.Fields.FindField("iflat")
@@ -547,7 +548,7 @@ Public Class frm_trajecttool
                         End If
                         ArInDDs.Add(New ClusterDD(Nothing, iCID, Nothing, dIFlat, dMajAxis, _
                                                   pFPp.X, pFPp.Y, pFP.X, pFP.Y, _
-                                                  pTPp.X, pTPp.Y, pTP.X, pTP.Y))
+                                                  pTPp.X, pTPp.Y, pTP.X, pTP.Y, ParentFeature))
                         pFeature1 = pFCursor1.NextFeature
                         If Not pTrkCan.Continue Then
                             'SUMMARY PRINT: End program as interrupted
@@ -581,7 +582,7 @@ Public Class frm_trajecttool
                                                   esriGeodeticType.esriGeodeticTypeGeodesic, Nothing)
                         ArInDDs.Add(New ClusterDD(Nothing, pFeature1.OID, Nothing, Nothing, lengthMaj, _
                                                   pFPp.X, pFPp.Y, pFP.X, pFP.Y, _
-                                                  pTPp.X, pTPp.Y, pTP.X, pTP.Y))
+                                                  pTPp.X, pTPp.Y, pTP.X, pTP.Y, ParentFeature))
                         pFeature1 = pFCursor1.NextFeature
                         If Not pTrkCan.Continue Then
                             'SUMMARY PRINT: End program as interrupted
@@ -607,9 +608,10 @@ Public Class frm_trajecttool
                         Dim dTFY As Integer = pFeature1.Value(pFeature1.Fields.FindField("tfy"))
                         Dim dTTX As Integer = pFeature1.Value(pFeature1.Fields.FindField("ttx"))
                         Dim dTTY As Integer = pFeature1.Value(pFeature1.Fields.FindField("tty"))
+
                         ArInDDs.Add(New ClusterDD(Nothing, iCID, Nothing, dIFlat, dMajAxis, _
                                                   dFFX, dFFY, dFTX, dFTY, _
-                                                  dTFX, dTFY, dTTX, dTTY))
+                                                  dTFX, dTFY, dTTX, dTTY, ParentFeature))
                         pFeature1 = pFCursor1.NextFeature
                         If Not pTrkCan.Continue Then
                             'SUMMARY PRINT: End program as interrupted
@@ -833,7 +835,7 @@ Public Class frm_trajecttool
 
             pFinalPLine.SpatialReference = pGCS
             pFinalPLine.Project(pSpatRef)
-            ArTrajs.Add(New TrajectoryLine(pFinalPLine, inDD.CID))
+            ArTrajs.Add(New TrajectoryLine(pFinalPLine, inDD.CID, inDD.ParentFeature))
             If Not pTrkCan.Continue Then
                 'SUMMARY PRINT: End program as interrupted
                 PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
@@ -875,6 +877,8 @@ Public Class frm_trajecttool
             Dim pTRFBuffer As IFeatureBuffer = pTRFClass.CreateFeatureBuffer
             pTRFBuffer.Shape = trFeature.Shape
             pTRFBuffer.Value(pTRFBuffer.Fields.FindField("cid")) = trFeature.CID
+            pTRFBuffer.Value(pTRFBuffer.Fields.FindField("ParentFeat")) = trFeature.ParentFeature
+
             pTRFCursor.InsertFeature(pTRFBuffer)
             If Not pTrkCan.Continue Then
                 'SUMMARY PRINT: End program as interrupted
