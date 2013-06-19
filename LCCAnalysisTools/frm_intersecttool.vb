@@ -376,17 +376,21 @@ Public Class frm_intersecttool
         Dim pFeature1 As IFeature = pFCursor1.NextFeature
 
         Dim ArOIDPairs As New List(Of PLineOIDPair)
+        Dim iflat1 As Double
+        Dim iflat2 As Double
 
         pTrkCan.Reset()
         While Not pFeature1 Is Nothing
-            Dim pPLine1 As IPolyline = pFeature1.ShapeCopy
-            Dim pRelOp As IRelationalOperator = pPLine1
+            Dim pPLine1 As IPolyline = CType(pFeature1.ShapeCopy, ESRI.ArcGIS.Geometry.IPolyline)
+            Dim pRelOp As IRelationalOperator = CType(pPLine1, ESRI.ArcGIS.Geometry.IRelationalOperator)
             Dim pFCursor2 As IFeatureCursor = pFClass.Search(Nothing, False)
             Dim pFeature2 As IFeature = pFCursor2.NextFeature
             While Not pFeature2 Is Nothing
-                Dim pPLine2 As IPolyline = pFeature2.ShapeCopy
+                Dim pPLine2 As IPolyline = CType(pFeature2.ShapeCopy, ESRI.ArcGIS.Geometry.IPolyline)
                 If Not pFeature1.OID = pFeature2.OID AndAlso Not pRelOp.Disjoint(pPLine2) Then
-                    ArOIDPairs.Add(New PLineOIDPair(pFeature1.OID, pFeature2.OID))
+                    iflat1 = CType(pFeature1.Value(pFeature1.Fields.FindField("iflat")), Double)
+                    iflat2 = CType(pFeature1.Value(pFeature2.Fields.FindField("iflat")), Double)
+                    ArOIDPairs.Add(New PLineOIDPair(pFeature1.OID, pFeature2.OID, iflat1, iflat2))
                 End If
                 pFeature2 = pFCursor2.NextFeature
             End While
@@ -407,7 +411,7 @@ Public Class frm_intersecttool
         '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         pStepPro.MaxRange = ArOIDPairs.Count
         pStepPro.StepValue = 1
-        '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        '<<<<<<<<<q<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         'PROGRESS UPDATE: 
         pProDlg.Description = "Removing duplicate intersections..."
@@ -459,16 +463,22 @@ Public Class frm_intersecttool
         pProDlg.Description = "Intersecting polylines..."
         PRINTtxt += vbCrLf & " [Intersecting polylines...]"
         'This generates a list of intersection coordinates (points).
-        Dim ArIntPts As New List(Of IPoint)
+        Dim ArIntPts As New List(Of IntersectionPoint)
+        Dim Weight As Double
 
         pTrkCan.Reset()
         For Each OIDPair In ArOIDPairs
-            Dim pF1 As IFeature = pFClass.GetFeature(OIDPair.OID1)
-            Dim pF2 As IFeature = pFClass.GetFeature(OIDPair.OID2)
-            Dim pTopoOp As ITopologicalOperator = pF1.ShapeCopy
-            Dim pGC As IGeometryCollection = pTopoOp.Intersect(pF2.ShapeCopy, _
-                                                               esriGeometryDimension.esriGeometry0Dimension)
-            ArIntPts.Add(pGC.Geometry(0))
+            Try
+                Dim pF1 As IFeature = pFClass.GetFeature(OIDPair.OID1)
+                Dim pF2 As IFeature = pFClass.GetFeature(OIDPair.OID2)
+                Weight = 1 / (OIDPair.iflat1 * OIDPair.iflat2)
+                Dim pTopoOp As ITopologicalOperator = CType(pF1.ShapeCopy, ESRI.ArcGIS.Geometry.ITopologicalOperator)
+                Dim pGC As IGeometryCollection = CType(pTopoOp.Intersect(pF2.ShapeCopy, esriGeometryDimension.esriGeometry0Dimension), ESRI.ArcGIS.Geometry.IGeometryCollection)
+                ArIntPts.Add(New IntersectionPoint(CType(pGC.Geometry(0), ESRI.ArcGIS.Geometry.IPoint), Weight))
+            Catch ex As Exception
+                'MsgBox("Failure on OID Pair" & OIDPair.OID1 & ", " & OIDPair.OID2, MsgBoxStyle.OkOnly, "Failure")
+            End Try
+
             If Not pTrkCan.Continue Then
                 'SUMMARY PRINT: End program as interrupted
                 PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
@@ -492,9 +502,10 @@ Public Class frm_intersecttool
         '   Y   =   The y coordinate value
         '   CID =   Cluster ID
         '   CNT =   Number of points in cluster.
+        '   W   =   The sum of the weights of each intersecting trajectory
 
         'Create an array with fields: AID,OID,X,Y,NDIST.
-        Dim Ar(4, ArIntPts.Count - 1) As Double
+        Dim Ar(5, ArIntPts.Count - 1) As Double
         'Create an array with field: CID
         Dim Ar2(ArIntPts.Count - 1) As Double
         'Create an array with field: CNT
@@ -515,6 +526,7 @@ Public Class frm_intersecttool
             End If
             Ar(2, cnt) = pPoint.X 'X
             Ar(3, cnt) = pPoint.Y 'Y
+            Ar(5, cnt) = interPt.Weight
             Ar2(cnt) = -1 'CID
             Ar3(cnt) = -1 'CNT
             cnt += 1
@@ -557,7 +569,7 @@ Public Class frm_intersecttool
             End If
         Next
 
-        PRINTtxt += compute_intersection_stats(Ar, IAF.sNQUERY)
+        PRINTtxt = compute_intersection_stats(Ar, IAF.sNQUERY)
 
         'If the the clustering method is 'Same distance'
         If IAF.bCMS = True Then

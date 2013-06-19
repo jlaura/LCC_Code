@@ -835,7 +835,7 @@ Public Class frm_trajecttool
 
             pFinalPLine.SpatialReference = pGCS
             pFinalPLine.Project(pSpatRef)
-            ArTrajs.Add(New TrajectoryLine(pFinalPLine, inDD.CID, inDD.ParentFeature))
+            ArTrajs.Add(New TrajectoryLine(pFinalPLine, inDD.CID, inDD.ParentFeature, inDD.IFlat))
             If Not pTrkCan.Continue Then
                 'SUMMARY PRINT: End program as interrupted
                 PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
@@ -878,6 +878,7 @@ Public Class frm_trajecttool
             pTRFBuffer.Shape = trFeature.Shape
             pTRFBuffer.Value(pTRFBuffer.Fields.FindField("cid")) = trFeature.CID
             pTRFBuffer.Value(pTRFBuffer.Fields.FindField("ParentFeat")) = trFeature.ParentFeature
+            pTRFBuffer.Value(pTRFBuffer.Fields.FindField("iflat")) = trFeature.iflat
 
             pTRFCursor.InsertFeature(pTRFBuffer)
             If Not pTrkCan.Continue Then

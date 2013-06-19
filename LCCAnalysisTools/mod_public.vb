@@ -359,11 +359,13 @@ Public Module mod_public
         Private m_Shape As IGeometry
         Private m_CID As Integer
         Private m_Parent As String
+        Private m_iflat As Double
 
-        Public Sub New(ByVal Shape As IGeometry, ByVal CID As Integer, ByVal Parent As String)
+        Public Sub New(ByVal Shape As IGeometry, ByVal CID As Integer, ByVal Parent As String, ByVal iflat As Double)
             Me.m_Shape = Shape
             Me.m_CID = CID
             Me.m_Parent = Parent
+            Me.m_iflat = iflat
         End Sub
         Public Property Shape() As IGeometry
             Get
@@ -391,14 +393,55 @@ Public Module mod_public
             End Set
         End Property
 
+        Property iflat As Object
+            Get
+                Return m_iflat
+            End Get
+            Set(ByVal value As Object)
+                m_iflat = value
+            End Set
+        End Property
+
+    End Class
+    Public Class IntersectionPoint
+        Private m_pt As IPoint
+        Private m_weight As Double
+
+        Public Sub New(ByVal Point As IPoint, ByVal Weight As Double)
+            Me.m_pt = Point
+            Me.m_weight = Weight
+        End Sub
+
+        Public Property Point() As IPoint
+            Get
+                Return m_pt
+            End Get
+            Set(ByVal value As IPoint)
+                m_pt = value
+            End Set
+        End Property
+
+        Public Property Weight() As Double
+            Get
+                Return m_weight
+            End Get
+            Set(ByVal value As Double)
+                m_weight = value
+            End Set
+        End Property
     End Class
 
     Public Class PLineOIDPair
         Private m_OID1 As Integer
         Private m_OID2 As Integer
-        Public Sub New(ByVal OID1 As Integer, ByVal OID2 As Integer)
+        Private m_iflat1 As Double
+        Private m_iflat2 As Double
+
+        Public Sub New(ByVal OID1 As Integer, ByVal OID2 As Integer, ByVal iflat1 As Double, ByVal iflat2 As Double)
             Me.m_OID1 = OID1
             Me.m_OID2 = OID2
+            Me.m_iflat1 = iflat1
+            Me.m_iflat2 = iflat2
         End Sub
         Public Property OID1() As Integer
             Get
@@ -414,6 +457,22 @@ Public Module mod_public
             End Get
             Set(ByVal value As Integer)
                 m_OID2 = value
+            End Set
+        End Property
+        Public Property iflat1() As Double
+            Get
+                Return m_iflat1
+            End Get
+            Set(ByVal value As Double)
+                m_iflat1 = value
+            End Set
+        End Property
+        Public Property iflat2() As Double
+            Get
+                Return m_iflat2
+            End Get
+            Set(ByVal value As Double)
+                m_iflat2 = value
             End Set
         End Property
     End Class
@@ -1378,15 +1437,26 @@ Public Module mod_public
         fieldsEdit.AddField(field)
 
         '2. Parent Shapefile
-        Dim parfield As IField = New FieldClass
-        Dim parFieldEdit As IFieldEdit = CType(field, IFieldEdit)
-        parFieldEdit.Name_2 = "ParentFeat"
-        parFieldEdit.AliasName_2 = "Parent Feature"
-        parFieldEdit.Type_2 = esriFieldType.esriFieldTypeString
-        parFieldEdit.IsNullable_2 = True
-        parFieldEdit.Length_2 = 100
-        parFieldEdit.Editable_2 = True
-        fieldsEdit.AddField(parfield)
+        field = New FieldClass
+        fieldEdit = CType(field, IFieldEdit)
+        fieldEdit.Name_2 = "ParentFeat"
+        fieldEdit.AliasName_2 = "Parent Feature"
+        fieldEdit.Type_2 = esriFieldType.esriFieldTypeString
+        fieldEdit.IsNullable_2 = True
+        fieldEdit.Length_2 = 100
+        fieldEdit.Editable_2 = True
+        fieldsEdit.AddField(field)
+
+        '3. Inverse flattening
+        field = New FieldClass
+        fieldEdit = CType(field, IFieldEdit)
+        fieldEdit.Name_2 = "iflat"
+        fieldEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+        fieldEdit.IsNullable_2 = True
+        fieldEdit.AliasName_2 = "iflat"
+        fieldEdit.Editable_2 = True
+        fieldsEdit.AddField(field)
+
 
         'Pass to fields
         fields = CType(fieldsEdit, IFields)
