@@ -272,8 +272,9 @@ Public Class frm_dirdistool
         While Not pFeature1 Is Nothing
             Dim iCID As Integer = pFeature1.Value(pFeature1.Fields.FindField("cid"))
             Dim iCnt As Integer = pFeature1.Value(pFeature1.Fields.FindField("cnt"))
+            Dim weight As Double = pFeature1.Value(pFeature1.Fields.FindField("iflat"))
             Dim pPoint As IPoint = pFeature1.ShapeCopy
-            ArCPoints.Add(New ClusterPoint(pPoint.X, pPoint.Y, iCID, iCnt))
+            ArCPoints.Add(New ClusterPoint(pPoint.X, pPoint.Y, iCID, iCnt, weight))
             pFeature1 = pFCursor1.NextFeature
             If Not pTrkCan.Continue Then
                 'SUMMARY PRINT: End program as interrupted

@@ -121,22 +121,26 @@ Public Module mod_public
         Private m_cnt As Integer
         Private m_mean As Double
         Private m_std As Double
+        Private m_weight As Double
+
         Public Sub New(ByVal x As Double, ByVal y As Double, _
-                       ByVal cid As Integer, ByVal cnt As Integer)
+                       ByVal cid As Integer, ByVal cnt As Integer, ByVal weight As Double)
             Me.m_x = x
             Me.m_y = y
             Me.m_cid = cid
             Me.m_cnt = cnt
+            Me.m_weight = weight
         End Sub
         Public Sub New(ByVal x As Double, ByVal y As Double, _
                        ByVal cid As Integer, ByVal cnt As Integer, _
-                       ByVal mean As Double, ByVal std As Double)
+                       ByVal mean As Double, ByVal std As Double, ByVal weight As Double)
             Me.m_x = x
             Me.m_y = y
             Me.m_cid = cid
             Me.m_cnt = cnt
             Me.m_std = std
             Me.m_mean = mean
+            Me.m_weight = weight
         End Sub
         Public Property X() As Double
             Get
@@ -186,6 +190,15 @@ Public Module mod_public
                 m_mean = value
             End Set
         End Property
+        Public Property Weight() As Double
+            Get
+                Return m_weight
+            End Get
+            Set(ByVal value As Double)
+                m_weight = value
+            End Set
+        End Property
+
     End Class
 
     Public Class ClusterDD
@@ -1275,6 +1288,15 @@ Public Module mod_public
             fieldEdit.Editable_2 = True
             fieldsEdit.AddField(field)
         End If
+        'Mean iflat
+        field = New FieldClass
+        fieldEdit = CType(field, IFieldEdit)
+        fieldEdit.Name_2 = "mean_iflat"
+        fieldEdit.Type_2 = esriFieldType.esriFieldTypeDouble
+        fieldEdit.IsNullable_2 = True
+        fieldEdit.AliasName_2 = "mran_iflat"
+        fieldEdit.Editable_2 = True
+        fieldsEdit.AddField(field)
         'Pass to fields
         fields = CType(fieldsEdit, IFields)
 

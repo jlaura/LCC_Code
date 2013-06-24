@@ -471,7 +471,7 @@ Public Class frm_intersecttool
             Try
                 Dim pF1 As IFeature = pFClass.GetFeature(OIDPair.OID1)
                 Dim pF2 As IFeature = pFClass.GetFeature(OIDPair.OID2)
-                Weight = 1 / (OIDPair.iflat1 * OIDPair.iflat2)
+                Weight = 1 / (OIDPair.iflat1 * OIDPair.iflat2) 'inverse product of each ellipsoid iflat
                 Dim pTopoOp As ITopologicalOperator = CType(pF1.ShapeCopy, ESRI.ArcGIS.Geometry.ITopologicalOperator)
                 Dim pGC As IGeometryCollection = CType(pTopoOp.Intersect(pF2.ShapeCopy, esriGeometryDimension.esriGeometry0Dimension), ESRI.ArcGIS.Geometry.IGeometryCollection)
                 ArIntPts.Add(New IntersectionPoint(CType(pGC.Geometry(0), ESRI.ArcGIS.Geometry.IPoint), Weight))
@@ -520,7 +520,7 @@ Public Class frm_intersecttool
         For Each interPt In ArIntPts
             Ar(0, cnt) = cnt 'AID
             Ar(1, cnt) = cnt  'OID
-            Dim pPoint As IPoint = interPt
+            Dim pPoint As IPoint = interPt.Point
             If radMEASGEO.Checked Then
                 pPoint.Project(pGCS)
             End If
@@ -1114,8 +1114,9 @@ Public Class frm_intersecttool
         For o As Integer = 0 To Ar.GetUpperBound(1)
             Dim iCID As Integer = Ar2(Ar(0, o))
             Dim iCnt As Integer = Ar3(Ar(0, o))
-            Dim pPoint As IPoint = ArIntPts.Item(Ar(1, o))
-            ArCPoints.Add(New ClusterPoint(pPoint.X, pPoint.Y, iCID, iCnt))
+            Dim pPoint As IPoint = ArIntPts.Item(Ar(1, o)).Point
+            Dim pt_weights As Double = ArIntPts.Item(Ar(1, o)).Weight
+            ArCPoints.Add(New ClusterPoint(pPoint.X, pPoint.Y, iCID, iCnt, pt_weights))
             If Not pTrkCan.Continue Then
                 'SUMMARY PRINT: End program as interrupted
                 PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
@@ -1130,7 +1131,7 @@ Public Class frm_intersecttool
         'Get intersections per cluster statistics and write to log.
         PRINTtxt += intersectionstats(Ar, Ar2, Ar3, IAF.sCPNUM)
 
-        p_cPnum = IAF.sCPNUM
+        p_cPnum = CInt(IAF.sCPNUM)
         ArCPoints.RemoveAll(AddressOf FindCPointByPntCount)
 
         If ArCPoints.Count <= 0 Then
@@ -1183,24 +1184,29 @@ Public Class frm_intersecttool
         Dim ArCentroids As New List(Of ClusterPoint)
 
         pTrkCan.Reset()
+        Dim mean_weight As Double
         For Each iCID In ArCIDs
+            mean_weight = 0
             'Get points with current CID
             p_CID = iCID
             Dim newCPoints As List(Of ClusterPoint) = ArCPoints.FindAll(AddressOf FindCPointByCID)
             'Add points to a point collection
             Dim pPColl4 As IPointCollection4 = New MultipointClass()
+            Dim cluster_weights As New List(Of Double)
             For Each newCPoint In newCPoints
                 Dim pPoint As New PointClass()
                 pPoint.PutCoords(newCPoint.X, newCPoint.Y)
                 pPColl4.AddPoint(pPoint)
+                cluster_weights.Add(newCPoint.Weight)
             Next
             'Get the centroid for the point collection
-            Dim dCentCoord As Lat2BLon2B = GetCentroid(pPColl4)
+
+            Dim dCentCoord As Lat2BLon2B = GetCentroid(pPColl4, cluster_weights)
             Dim dStats As Lat2BLon2B = GetClusterPointsFromCentroidStats(pPColl4, dCentCoord, _
                                                                          dSemiMajAxis, dSemiMinAxis, _
-                                                                         IAF.bMEASPLAN)
+                                                                         IAF.bMEASPLAN, cluster_weights, mean_weight)
             ArCentroids.Add(New ClusterPoint(dCentCoord.Lon2B, dCentCoord.Lat2B, _
-                                             iCID, pPColl4.PointCount, dStats.Lat2B, dStats.Lon2B))
+                                             iCID, pPColl4.PointCount, dStats.Lat2B, dStats.Lon2B, mean_weight))
             If Not pTrkCan.Continue Then
                 'SUMMARY PRINT: End program as interrupted
                 PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
@@ -1259,6 +1265,7 @@ Public Class frm_intersecttool
             pNewFeatureBuff.Value(pNewFeatureBuff.Fields.FindField("cnt")) = Centroid.Count
             pNewFeatureBuff.Value(pNewFeatureBuff.Fields.FindField("distmean")) = Centroid.Mean
             pNewFeatureBuff.Value(pNewFeatureBuff.Fields.FindField("diststdev")) = Centroid.Stdev
+            pNewFeatureBuff.Value(pNewFeatureBuff.Fields.FindField("mean_iflat")) = Centroid.Weight
             pNewFCursor.InsertFeature(pNewFeatureBuff)
             If Not pTrkCan.Continue Then
                 'SUMMARY PRINT: End program as interrupted
@@ -1298,11 +1305,15 @@ Public Class frm_intersecttool
                                                      ByVal dCentroid As Lat2BLon2B, _
                                                      ByVal dSemiMajAxis As Double, _
                                                      ByVal dSemiMinAxis As Double, _
-                                                     ByVal bPlan As Boolean) As Lat2BLon2B
+                                                     ByVal bPlan As Boolean, _
+                                                     ByVal weights As List(Of Double), _
+                                                     ByRef mean_weight As Double) As Lat2BLon2B
 
         Dim ArDists(pPtColl.PointCount - 1) As Double
         Dim dDistSum As Double = 0
+        Dim sum_weights As Double = 0
         For i As Integer = 0 To pPtColl.PointCount - 1
+            sum_weights = sum_weights + weights(i)
             Dim pPoint As IPoint = pPtColl.Point(i)
             ArDists(i) = GetDist(dCentroid.Lon2B, dCentroid.Lat2B, _
                                 pPoint.X, pPoint.Y, _
@@ -1313,6 +1324,9 @@ Public Class frm_intersecttool
 
         'Calculate mean
         Dim dDistMean As Double = dDistSum / pPtColl.PointCount
+
+        'Calculate mean weight
+        mean_weight = sum_weights / pPtColl.PointCount
 
         'Get the sum of the deviations
         Dim dSumStds As Double = 0
@@ -1332,25 +1346,34 @@ Public Class frm_intersecttool
 
     End Function
 
-    Private Function GetCentroid(pPointCollection As IPointCollection) As Lat2BLon2B
+    Private Function GetCentroid(ByVal pPointCollection As IPointCollection, ByVal weights As List(Of Double)) As Lat2BLon2B
+        'Computes the weighted centroid for each cluster of points.
 
         Dim i As Integer
         Dim dX As Double
         Dim dY As Double
         Dim dXSum As Double
         Dim dYSum As Double
+        Dim W As Integer
+        Dim counter As Integer
         'Sum Xs and Ys
         For i = 0 To pPointCollection.PointCount - 1
             dX = pPointCollection.Point(i).X
             dY = pPointCollection.Point(i).Y
-            dXSum = dXSum + dX
-            dYSum = dYSum + dY
+            W = CInt(weights(i) * 100) 'Scale to nondecimal.
+            counter = counter + W
+            Do Until W = 0
+                dXSum = dXSum + dX
+                dYSum = dYSum + dY
+                W = W - 1
+            Loop
+
         Next
 
         'Calculate Mean Centers for X and Y
         Dim dCenterX, dCenterY As Double
-        dCenterX = dXSum / pPointCollection.PointCount
-        dCenterY = dYSum / pPointCollection.PointCount
+        dCenterX = dXSum / counter
+        dCenterY = dYSum / counter
 
         Dim pReturnPair As New Lat2BLon2B
         pReturnPair.Lon2B = dCenterX
