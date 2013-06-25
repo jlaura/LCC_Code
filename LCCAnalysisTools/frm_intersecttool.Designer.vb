@@ -50,6 +50,8 @@ Partial Class frm_intersecttool
         Me.btnSHHELP = New System.Windows.Forms.Button()
         Me.btnCANCEL = New System.Windows.Forms.Button()
         Me.btnOK = New System.Windows.Forms.Button()
+        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.weightedCentroids = New System.Windows.Forms.CheckBox()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
@@ -59,6 +61,7 @@ Partial Class frm_intersecttool
         Me.grpMEASSPACE.SuspendLayout()
         Me.grpNQUERY.SuspendLayout()
         Me.pnlMARGIN2.SuspendLayout()
+        Me.GroupBox2.SuspendLayout()
         Me.SuspendLayout()
         '
         'splcHELP
@@ -72,6 +75,7 @@ Partial Class frm_intersecttool
         '
         'splcHELP.Panel1
         '
+        Me.splcHELP.Panel1.Controls.Add(Me.GroupBox2)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
         Me.splcHELP.Panel1.Controls.Add(Me.grpCPNUM)
         Me.splcHELP.Panel1.Controls.Add(Me.lblLAYER)
@@ -250,7 +254,7 @@ Partial Class frm_intersecttool
         Me.grpMEASSPACE.Controls.Add(Me.radMEASGEO)
         Me.grpMEASSPACE.Location = New System.Drawing.Point(7, 108)
         Me.grpMEASSPACE.Name = "grpMEASSPACE"
-        Me.grpMEASSPACE.Size = New System.Drawing.Size(338, 53)
+        Me.grpMEASSPACE.Size = New System.Drawing.Size(167, 53)
         Me.grpMEASSPACE.TabIndex = 2
         Me.grpMEASSPACE.TabStop = False
         Me.grpMEASSPACE.Text = "Measurement space"
@@ -365,6 +369,28 @@ Partial Class frm_intersecttool
         Me.btnOK.Text = "OK"
         Me.btnOK.UseVisualStyleBackColor = True
         '
+        'GroupBox2
+        '
+        Me.GroupBox2.Controls.Add(Me.weightedCentroids)
+        Me.GroupBox2.Location = New System.Drawing.Point(180, 108)
+        Me.GroupBox2.Name = "GroupBox2"
+        Me.GroupBox2.Size = New System.Drawing.Size(165, 53)
+        Me.GroupBox2.TabIndex = 3
+        Me.GroupBox2.TabStop = False
+        Me.GroupBox2.Text = "Weight Centroid"
+        '
+        'weightedCentroids
+        '
+        Me.weightedCentroids.AutoSize = True
+        Me.weightedCentroids.Checked = True
+        Me.weightedCentroids.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.weightedCentroids.Location = New System.Drawing.Point(11, 24)
+        Me.weightedCentroids.Name = "weightedCentroids"
+        Me.weightedCentroids.Size = New System.Drawing.Size(107, 17)
+        Me.weightedCentroids.TabIndex = 0
+        Me.weightedCentroids.Text = "Weight Centroids"
+        Me.weightedCentroids.UseVisualStyleBackColor = True
+        '
         'frm_intersecttool
         '
         Me.AcceptButton = Me.btnOK
@@ -400,6 +426,8 @@ Partial Class frm_intersecttool
         Me.grpNQUERY.ResumeLayout(False)
         Me.grpNQUERY.PerformLayout()
         Me.pnlMARGIN2.ResumeLayout(False)
+        Me.GroupBox2.ResumeLayout(False)
+        Me.GroupBox2.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -430,4 +458,6 @@ Partial Class frm_intersecttool
     Friend WithEvents txtCPNUM As System.Windows.Forms.TextBox
     Friend WithEvents grpOUT As System.Windows.Forms.GroupBox
     Friend WithEvents txtOUT As System.Windows.Forms.TextBox
+    Friend WithEvents GroupBox2 As System.Windows.Forms.GroupBox
+    Friend WithEvents weightedCentroids As System.Windows.Forms.CheckBox
 End Class

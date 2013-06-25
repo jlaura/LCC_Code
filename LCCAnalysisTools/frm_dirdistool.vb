@@ -109,6 +109,81 @@ Public Class frm_dirdistool
 
     End Sub
 
+
+    Private Sub Optimize_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles optimize.Click
+        Dim pFLayer As IFeatureLayer = GetFLayerByName(m_sDDFLayer)
+
+        'Make sure an input layer was selected and assigned to an object
+        If cboLAYER.SelectedIndex = -1 Or pFLayer Is Nothing Then
+            MsgBox("Please select an 'Input point layer'.", MsgBoxStyle.Exclamation, _
+                   "Missing Parameter")
+            Return
+        End If
+        Dim pFClass As IFeatureClass = pFLayer.FeatureClass
+        Dim pDataset As IDataset = pFClass
+        Dim pWrkspc2 As IWorkspace2 = DirectCast(pDataset.Workspace, IWorkspace2)
+
+        '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        ' Create a CancelTracker
+        Dim pTrkCan As ITrackCancel = New CancelTracker
+
+        ' Create the ProgressDialog. This automatically displays the dialog
+        Dim pProDlgFact As IProgressDialogFactory = New ProgressDialogFactory
+        Dim pProDlg As IProgressDialog2 = pProDlgFact.Create(pTrkCan, My.ArcMap.Application.hWnd)
+
+        ' Set the properties of the ProgressDialog
+        pProDlg.CancelEnabled = True
+        pProDlg.Title = "Generating Statistics"
+        pProDlg.Animation = esriProgressAnimationTypes.esriProgressSpiral
+
+        ' Set the properties of the Step Progressor
+        Dim pStepPro As IStepProgressor = pProDlg
+        pStepPro.MinRange = 0
+        pStepPro.MaxRange = pFClass.FeatureCount(Nothing)
+        pStepPro.StepValue = 1
+        pStepPro.Message = "Progress:"
+        '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+        'PROGRESS UPDATE: 
+        pProDlg.Description = "Computing Statistics..."
+        'Create an array that is the size of the input shapefile
+        'Each index store the nearest neighbor distance
+        Dim CntArray As New Dictionary(Of Integer, Integer)
+
+        Dim pFCursor1 As IFeatureCursor = pFClass.Search(Nothing, False) 'The input layer is accessed viat pFClass, which is defined above via PFLayer, which is accessed via a global which stores the layer name.  From the input form.
+        Dim pFeature1 As IFeature = pFCursor1.NextFeature
+
+        While Not pFeature1 Is Nothing
+            Dim cid As Integer = CType(pFeature1.Value(pFeature1.Fields.FindField("cid")), Integer)
+            Dim cnt As Integer = CType(pFeature1.Value(pFeature1.Fields.FindField("cnt")), Integer)
+            If Not CntArray.ContainsKey(cid) Then
+                CntArray.Add(cid, cnt)
+            End If
+            pFeature1 = pFCursor1.NextFeature()
+
+            If Not pTrkCan.Continue Then
+                'Destroy the progress dialog
+                ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                Return
+            End If
+        End While
+
+        'Get the mean cluster size
+        Dim pair As KeyValuePair(Of Integer, Integer)
+        Dim sum As Integer = 0
+        For Each pair In CntArray
+            sum = sum + pair.Value
+        Next
+
+        Dim Mean As Double = sum / CntArray.Count
+        'Populate the mininum distance text box with the optimized distance
+
+        txtDDPNUM.Text = CStr(Math.Round(Mean, 2))
+        
+        'Destroy the progress dialog
+        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+
+    End Sub
     Private Sub btnOK_Click(sender As System.Object,
                             e As System.EventArgs) _
                         Handles btnOK.Click
@@ -272,9 +347,8 @@ Public Class frm_dirdistool
         While Not pFeature1 Is Nothing
             Dim iCID As Integer = pFeature1.Value(pFeature1.Fields.FindField("cid"))
             Dim iCnt As Integer = pFeature1.Value(pFeature1.Fields.FindField("cnt"))
-            Dim weight As Double = pFeature1.Value(pFeature1.Fields.FindField("iflat"))
             Dim pPoint As IPoint = pFeature1.ShapeCopy
-            ArCPoints.Add(New ClusterPoint(pPoint.X, pPoint.Y, iCID, iCnt, weight))
+            ArCPoints.Add(New ClusterPoint(pPoint.X, pPoint.Y, iCID, iCnt, Nothing))
             pFeature1 = pFCursor1.NextFeature
             If Not pTrkCan.Continue Then
                 'SUMMARY PRINT: End program as interrupted

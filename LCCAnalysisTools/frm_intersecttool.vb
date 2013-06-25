@@ -1201,7 +1201,7 @@ Public Class frm_intersecttool
             Next
             'Get the centroid for the point collection
 
-            Dim dCentCoord As Lat2BLon2B = GetCentroid(pPColl4, cluster_weights)
+            Dim dCentCoord As Lat2BLon2B = GetCentroid(pPColl4, cluster_weights, weightedCentroids.Text)
             Dim dStats As Lat2BLon2B = GetClusterPointsFromCentroidStats(pPColl4, dCentCoord, _
                                                                          dSemiMajAxis, dSemiMinAxis, _
                                                                          IAF.bMEASPLAN, cluster_weights, mean_weight)
@@ -1346,7 +1346,7 @@ Public Class frm_intersecttool
 
     End Function
 
-    Private Function GetCentroid(ByVal pPointCollection As IPointCollection, ByVal weights As List(Of Double)) As Lat2BLon2B
+    Private Function GetCentroid(ByVal pPointCollection As IPointCollection, ByVal weights As List(Of Double), ByVal weighted As Boolean) As Lat2BLon2B
         'Computes the weighted centroid for each cluster of points.
 
         Dim i As Integer
@@ -1355,20 +1355,29 @@ Public Class frm_intersecttool
         Dim dXSum As Double
         Dim dYSum As Double
         Dim W As Integer
-        Dim counter As Integer
-        'Sum Xs and Ys
-        For i = 0 To pPointCollection.PointCount - 1
-            dX = pPointCollection.Point(i).X
-            dY = pPointCollection.Point(i).Y
-            W = CInt(weights(i) * 100) 'Scale to nondecimal.
-            counter = counter + W
-            Do Until W = 0
+        Dim counter As Integer = 0
+        If weighted = True Then
+            'Weighted Centroid
+            For i = 0 To pPointCollection.PointCount - 1
+                dX = pPointCollection.Point(i).X
+                dY = pPointCollection.Point(i).Y
+                W = CInt(weights(i) * 100) 'Scale to nondecimal.
+                counter = counter + W
+                Do Until W = 0
+                    dXSum = dXSum + dX
+                    dYSum = dYSum + dY
+                    W = W - 1
+                Loop
+            Next
+        Else
+            For i = 0 To pPointCollection.PointCount - 1
+                dX = pPointCollection.Point(i).X
+                dY = pPointCollection.Point(i).Y
+                counter = counter + 1
                 dXSum = dXSum + dX
                 dYSum = dYSum + dY
-                W = W - 1
-            Loop
-
-        Next
+            Next
+        End If
 
         'Calculate Mean Centers for X and Y
         Dim dCenterX, dCenterY As Double

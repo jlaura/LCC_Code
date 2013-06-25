@@ -334,7 +334,8 @@ Public Class frm_distancetool
 
         'Access the feature layer twice so we can aim at it twice with the gp tool.
         Dim FeatureLayer = GetFLayerByName(distlayer)
-        'Dim inputcollection As ESRI.ArcGIS.Geoprocessing.IGpEnumList = gp.ListFeatureClasses("*", "", "")
+        Dim dataset As IDataset = CType(FeatureLayer, IDataset)
+        Dim working_dir As String = dataset.Workspace.PathName
 
         'Setup Params
         Dim lcount As Long = knn
@@ -353,7 +354,7 @@ Public Class frm_distancetool
         genneartable.in_features = FeatureLayer
         genneartable.near_features = distlayer.ToString()
         'genneartable.near_features = "C:\Users\jlaura\Desktop\Zunil\Zunil_secondaries_proj.shp"
-        genneartable.out_table = DistanceTableOut
+        genneartable.out_table = working_dir + "\\" + DistanceTableOut.ToString()
         genneartable.closest = False
         genneartable.location = True
         genneartable.closest_count = lcount

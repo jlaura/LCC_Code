@@ -337,15 +337,15 @@ Public Class frm_clustertool
 
         'Populate the mininum distance text box with the optimized distance
 
-        txtNQUERY.Text = Math.Round(dMean / 2, 0)
-        meanstats.Text = Math.Round(dMean, 3)
-        rangestats.Text = Math.Round(dRange, 3)
-        stdstats.Text = Math.Round(dStd, 3)
-        medianstats.Text = Math.Round(dMedian, 3)
-        lqstats.Text = Math.Round(dLQ, 3)
-        uqstats.Text = Math.Round(dUQ, 3)
-        minstats.Text = Math.Round(dMin, 3)
-        maxstats.Text = Math.Round(dMax, 3)
+        txtNQUERY.Text = CStr(Math.Round(dMean, 0))
+        meanstats.Text = CStr(Math.Round(dMean, 3))
+        rangestats.Text = CStr(Math.Round(dRange, 3))
+        stdstats.Text = CStr(Math.Round(dStd, 3))
+        medianstats.Text = CStr(Math.Round(dMedian, 3))
+        lqstats.Text = CStr(Math.Round(dLQ, 3))
+        uqstats.Text = CStr(Math.Round(dUQ, 3))
+        minstats.Text = CStr(Math.Round(dMin, 3))
+        maxstats.Text = CStr(Math.Round(dMax, 3))
         'Destroy the progress dialog
         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
 
@@ -1251,7 +1251,6 @@ Public Class frm_clustertool
             'Create a list of the unvisited nodes.  We iterate over these.
             Dim Unvisited As New List(Of Integer)
             Unvisited.Clear()
-            MsgBox(Unvisited.Count, MsgBoxStyle.OkOnly, "Unvisited Count")
             For i As Integer = 0 To dist_lists.Count - 1
                 Unvisited.Add(dist_lists(i)(1))
             Next
@@ -1305,7 +1304,6 @@ Public Class frm_clustertool
             Loop
             'Cleanup
             dist_lists.Clear()
-            MsgBox(cluster_id, MsgBoxStyle.OkCancel, "Cluster Count")
 
         End If
         '********************************************************************************************
@@ -1655,12 +1653,13 @@ Public Class frm_clustertool
         End While
         Return Unvisited
     End Function
+
     Private Function GetNodeIndex(ByVal node As Integer) As Integer
-            For i As Integer = 0 To dist_lists.Count - 1
-                If dist_lists(i)(1) = node Then
+        For i As Integer = 0 To dist_lists.Count - 1
+            If dist_lists(i)(1) = node Then
                 node = i
-                End If
-            Next
+            End If
+        Next
         Return node
     End Function
 

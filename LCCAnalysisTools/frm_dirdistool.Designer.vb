@@ -24,12 +24,16 @@ Partial Class frm_dirdistool
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frm_dirdistool))
         Me.splcHELP = New System.Windows.Forms.SplitContainer()
+        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.OutputLogFile = New System.Windows.Forms.TextBox()
+        Me.SaveLog = New System.Windows.Forms.CheckBox()
         Me.grpOUT = New System.Windows.Forms.GroupBox()
         Me.txtOUT = New System.Windows.Forms.TextBox()
         Me.grpOUTGEOM = New System.Windows.Forms.GroupBox()
         Me.radOUTLINE = New System.Windows.Forms.RadioButton()
         Me.radOUTELLIPSE = New System.Windows.Forms.RadioButton()
         Me.grpDDPNUM = New System.Windows.Forms.GroupBox()
+        Me.optimize = New System.Windows.Forms.Button()
         Me.txtDDPNUM = New System.Windows.Forms.TextBox()
         Me.lblLAYER = New System.Windows.Forms.Label()
         Me.cboLAYER = New System.Windows.Forms.ComboBox()
@@ -42,6 +46,7 @@ Partial Class frm_dirdistool
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
+        Me.GroupBox1.SuspendLayout()
         Me.grpOUT.SuspendLayout()
         Me.grpOUTGEOM.SuspendLayout()
         Me.grpDDPNUM.SuspendLayout()
@@ -59,6 +64,7 @@ Partial Class frm_dirdistool
         '
         'splcHELP.Panel1
         '
+        Me.splcHELP.Panel1.Controls.Add(Me.GroupBox1)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUTGEOM)
         Me.splcHELP.Panel1.Controls.Add(Me.grpDDPNUM)
@@ -77,10 +83,40 @@ Partial Class frm_dirdistool
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
         '
+        'GroupBox1
+        '
+        Me.GroupBox1.Controls.Add(Me.OutputLogFile)
+        Me.GroupBox1.Controls.Add(Me.SaveLog)
+        Me.GroupBox1.Location = New System.Drawing.Point(7, 244)
+        Me.GroupBox1.Name = "GroupBox1"
+        Me.GroupBox1.Size = New System.Drawing.Size(338, 73)
+        Me.GroupBox1.TabIndex = 4
+        Me.GroupBox1.TabStop = False
+        Me.GroupBox1.Text = "Log File Output Name"
+        '
+        'OutputLogFile
+        '
+        Me.OutputLogFile.Location = New System.Drawing.Point(18, 19)
+        Me.OutputLogFile.Name = "OutputLogFile"
+        Me.OutputLogFile.Size = New System.Drawing.Size(303, 20)
+        Me.OutputLogFile.TabIndex = 0
+        '
+        'SaveLog
+        '
+        Me.SaveLog.AutoSize = True
+        Me.SaveLog.Checked = True
+        Me.SaveLog.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.SaveLog.Location = New System.Drawing.Point(200, 45)
+        Me.SaveLog.Name = "SaveLog"
+        Me.SaveLog.Size = New System.Drawing.Size(121, 17)
+        Me.SaveLog.TabIndex = 4
+        Me.SaveLog.Text = "Save Text Log File?"
+        Me.SaveLog.UseVisualStyleBackColor = True
+        '
         'grpOUT
         '
         Me.grpOUT.Controls.Add(Me.txtOUT)
-        Me.grpOUT.Location = New System.Drawing.Point(7, 167)
+        Me.grpOUT.Location = New System.Drawing.Point(7, 176)
         Me.grpOUT.Name = "grpOUT"
         Me.grpOUT.Size = New System.Drawing.Size(338, 50)
         Me.grpOUT.TabIndex = 3
@@ -98,7 +134,7 @@ Partial Class frm_dirdistool
         '
         Me.grpOUTGEOM.Controls.Add(Me.radOUTLINE)
         Me.grpOUTGEOM.Controls.Add(Me.radOUTELLIPSE)
-        Me.grpOUTGEOM.Location = New System.Drawing.Point(7, 108)
+        Me.grpOUTGEOM.Location = New System.Drawing.Point(7, 117)
         Me.grpOUTGEOM.Name = "grpOUTGEOM"
         Me.grpOUTGEOM.Size = New System.Drawing.Size(338, 53)
         Me.grpOUTGEOM.TabIndex = 2
@@ -132,19 +168,30 @@ Partial Class frm_dirdistool
         '
         'grpDDPNUM
         '
+        Me.grpDDPNUM.Controls.Add(Me.optimize)
         Me.grpDDPNUM.Controls.Add(Me.txtDDPNUM)
-        Me.grpDDPNUM.Location = New System.Drawing.Point(7, 49)
+        Me.grpDDPNUM.Location = New System.Drawing.Point(7, 58)
         Me.grpDDPNUM.Name = "grpDDPNUM"
         Me.grpDDPNUM.Size = New System.Drawing.Size(338, 53)
         Me.grpDDPNUM.TabIndex = 1
         Me.grpDDPNUM.TabStop = False
         Me.grpDDPNUM.Text = "Only when number of points in cluster is greater than or equal to"
         '
+        'optimize
+        '
+        Me.optimize.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.optimize.Location = New System.Drawing.Point(193, 17)
+        Me.optimize.Name = "optimize"
+        Me.optimize.Size = New System.Drawing.Size(139, 23)
+        Me.optimize.TabIndex = 3
+        Me.optimize.Text = "Optimize"
+        Me.optimize.UseVisualStyleBackColor = True
+        '
         'txtDDPNUM
         '
         Me.txtDDPNUM.Location = New System.Drawing.Point(18, 20)
         Me.txtDDPNUM.Name = "txtDDPNUM"
-        Me.txtDDPNUM.Size = New System.Drawing.Size(303, 20)
+        Me.txtDDPNUM.Size = New System.Drawing.Size(149, 20)
         Me.txtDDPNUM.TabIndex = 0
         Me.txtDDPNUM.Text = "10"
         Me.txtDDPNUM.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
@@ -256,6 +303,8 @@ Partial Class frm_dirdistool
         Me.splcHELP.Panel1.PerformLayout()
         Me.splcHELP.Panel2.ResumeLayout(False)
         Me.splcHELP.ResumeLayout(False)
+        Me.GroupBox1.ResumeLayout(False)
+        Me.GroupBox1.PerformLayout()
         Me.grpOUT.ResumeLayout(False)
         Me.grpOUT.PerformLayout()
         Me.grpOUTGEOM.ResumeLayout(False)
@@ -282,4 +331,8 @@ Partial Class frm_dirdistool
     Friend WithEvents grpOUT As System.Windows.Forms.GroupBox
     Friend WithEvents grpOUTGEOM As System.Windows.Forms.GroupBox
     Friend WithEvents grpDDPNUM As System.Windows.Forms.GroupBox
+    Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
+    Friend WithEvents OutputLogFile As System.Windows.Forms.TextBox
+    Friend WithEvents SaveLog As System.Windows.Forms.CheckBox
+    Friend WithEvents optimize As System.Windows.Forms.Button
 End Class
