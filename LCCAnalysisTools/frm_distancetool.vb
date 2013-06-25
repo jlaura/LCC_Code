@@ -188,7 +188,6 @@ Public Class frm_distancetool
             generateNearTablePlanar(distlayer, knn, distanceTableOut, workspace)
         End If
 
-
         'Close and dispose of form
         m_clusterForm = Nothing
         Me.Close()
@@ -235,7 +234,6 @@ Public Class frm_distancetool
         Dim tablerowbuffer As IRowBuffer = tablebuffer
         Dim tableinsert As ICursor = tTable.Insert(True)
 
-
         '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         ' Create a CancelTracker
         Dim pTrkCan As ITrackCancel = New CancelTracker
@@ -255,7 +253,6 @@ Public Class frm_distancetool
         pStepPro.MaxRange = featureclass.FeatureCount(Nothing)
         pStepPro.StepValue = 1
         pStepPro.Message = "Progress:"
-
 
         '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -296,8 +293,6 @@ Public Class frm_distancetool
             'Find the K-Nearest Neighbors in Geodesic space.
             FindNearestGeo(Ar, feature, dist, semi_major_axis, semi_minor_axis, knn)
 
-
-
             'Insert the returned distances into the distance table
             Dim InFID = tTable.FindField("IN_FID")
             Dim NearFID = tTable.FindField("NEAR_FID")
@@ -311,11 +306,8 @@ Public Class frm_distancetool
                 tablerowbuffer.Value(DistField) = dist(3, j)
                 tablerowbuffer.Value(xCoord) = dist(1, j)
                 tablerowbuffer.Value(yCoord) = dist(2, j)
-
                 tableinsert.InsertRow(tablerowbuffer)
-
             Next
-
 
             If Not pTrkCan.Continue Then
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
@@ -340,8 +332,9 @@ Public Class frm_distancetool
         'Setup the geoprocessor
         Dim gp As New ESRI.ArcGIS.Geoprocessor.Geoprocessor
 
+        'Access the feature layer twice so we can aim at it twice with the gp tool.
         Dim FeatureLayer = GetFLayerByName(distlayer)
-        Dim NearFeatureLayer = GetFLayerByName(distlayer)
+        'Dim inputcollection As ESRI.ArcGIS.Geoprocessing.IGpEnumList = gp.ListFeatureClasses("*", "", "")
 
         'Setup Params
         Dim lcount As Long = knn
@@ -355,9 +348,11 @@ Public Class frm_distancetool
         gp.AddOutputsToMap = True 'Add the derived table to the map doc.
         gp.OverwriteOutput = True
 
+
         'Set Params
         genneartable.in_features = FeatureLayer
-        genneartable.near_features = "C:\Users\jlaura\Desktop\Zunil\Zunil_secondaries_proj.shp"
+        genneartable.near_features = distlayer.ToString()
+        'genneartable.near_features = "C:\Users\jlaura\Desktop\Zunil\Zunil_secondaries_proj.shp"
         genneartable.out_table = DistanceTableOut
         genneartable.closest = False
         genneartable.location = True
