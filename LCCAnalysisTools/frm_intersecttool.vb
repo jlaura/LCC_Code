@@ -1200,8 +1200,9 @@ Public Class frm_intersecttool
                 cluster_weights.Add(newCPoint.Weight)
             Next
             'Get the centroid for the point collection
-
-            Dim dCentCoord As Lat2BLon2B = GetCentroid(pPColl4, cluster_weights, weightedCentroids.Text)
+            Dim weighted As Boolean = False
+            If weightedCentroids.Checked = True Then weighted = True
+            Dim dCentCoord As Lat2BLon2B = GetCentroid(pPColl4, cluster_weights, weighted)
             Dim dStats As Lat2BLon2B = GetClusterPointsFromCentroidStats(pPColl4, dCentCoord, _
                                                                          dSemiMajAxis, dSemiMinAxis, _
                                                                          IAF.bMEASPLAN, cluster_weights, mean_weight)
