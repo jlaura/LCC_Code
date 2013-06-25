@@ -388,8 +388,13 @@ Public Class frm_intersecttool
             While Not pFeature2 Is Nothing
                 Dim pPLine2 As IPolyline = CType(pFeature2.ShapeCopy, ESRI.ArcGIS.Geometry.IPolyline)
                 If Not pFeature1.OID = pFeature2.OID AndAlso Not pRelOp.Disjoint(pPLine2) Then
-                    iflat1 = CType(pFeature1.Value(pFeature1.Fields.FindField("iflat")), Double)
-                    iflat2 = CType(pFeature1.Value(pFeature2.Fields.FindField("iflat")), Double)
+                    Try
+                        iflat1 = CType(pFeature1.Value(pFeature1.Fields.FindField("iflat")), Double)
+                        iflat2 = CType(pFeature1.Value(pFeature2.Fields.FindField("iflat")), Double)
+                    Catch ex As Exception
+                        iflat1 = 1
+                        iflat2 = 1
+                    End Try
                     ArOIDPairs.Add(New PLineOIDPair(pFeature1.OID, pFeature2.OID, iflat1, iflat2))
                 End If
                 pFeature2 = pFCursor2.NextFeature
@@ -1363,6 +1368,10 @@ Public Class frm_intersecttool
                 dX = pPointCollection.Point(i).X
                 dY = pPointCollection.Point(i).Y
                 W = CInt(weights(i) * 100) 'Scale to nondecimal.
+                If W = 0 Then
+                    'If the weighted centroid is checked but no weight field exists.
+                    W = 1
+                End If
                 counter = counter + W
                 Do Until W = 0
                     dXSum = dXSum + dX
