@@ -12,6 +12,7 @@ Imports ESRI.ArcGIS.Geometry
 Imports System.Math
 
 Public Class frm_intersecttool
+#Region "Buttons, DropDowns, & Form Validation"
 
     Private Sub Frm_IntersectionAnalysis_Load(ByVal sender As System.Object, _
                                      ByVal e As System.EventArgs) _
@@ -168,6 +169,18 @@ Public Class frm_intersecttool
 
     End Sub
 
+    Private Sub LogSaveDialog_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles LogSaveDialog.Click
+        Dim saveFileDialog1 As New SaveFileDialog()
+
+        saveFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*"
+        saveFileDialog1.FilterIndex = 2
+        saveFileDialog1.RestoreDirectory = True
+
+        If saveFileDialog1.ShowDialog() = DialogResult.OK Then
+            LogFileName.Text = saveFileDialog1.FileName
+        End If
+    End Sub
+
     Private Sub FormErrorHandler()
 
         Dim pFLayer As IFeatureLayer = GetFLayerByName(m_sIAFLayer)
@@ -263,6 +276,8 @@ Public Class frm_intersecttool
         End If
 
     End Sub
+
+#End Region
 
     Private Sub LoadProgressForm()
 
@@ -372,33 +387,75 @@ Public Class frm_intersecttool
         pProDlg.Description = "Identifying polyline intersections..."
         PRINTtxt += vbCrLf & " [Identifying polyline intersections...]"
 
+        Dim pFCursorA As IFeatureCursor = pFClass.Search(Nothing, False)
+        Dim pFeatureA As IFeature = pFCursorA.NextFeature
+
+        Dim ArOIDPairs As New List(Of PLineOIDPair)
+
+        'Load the geometries into a stack to intersect symmetrically.
+        Dim feats As New List(Of FeatureExtractions)
+        Dim iflat As Double
+        Dim oid As Integer
+        Dim geom As IPolyline
+        While Not pFeatureA Is Nothing
+            oid = pFeatureA.OID
+            geom = CType(pFeatureA.ShapeCopy, ESRI.ArcGIS.Geometry.IPolyline)
+            'Try to grab the inverse flattening.
+            Try
+                iflat = CType(pFeatureA.Value(pFeatureA.Fields.FindField("iflat")), Double)
+            Catch ex As Exception
+                iflat = 1
+            End Try
+            feats.Add(New FeatureExtractions(oid, geom, iflat))
+            pFeatureA = pFCursorA.NextFeature
+        End While
+
+        'Reset the cursors
         Dim pFCursor1 As IFeatureCursor = pFClass.Search(Nothing, False)
         Dim pFeature1 As IFeature = pFCursor1.NextFeature
 
-        Dim ArOIDPairs As New List(Of PLineOIDPair)
         Dim iflat1 As Double
         Dim iflat2 As Double
 
         pTrkCan.Reset()
         While Not pFeature1 Is Nothing
+            'Pop the top feature off the list
+            feats.RemoveAt(0)
             Dim pPLine1 As IPolyline = CType(pFeature1.ShapeCopy, ESRI.ArcGIS.Geometry.IPolyline)
             Dim pRelOp As IRelationalOperator = CType(pPLine1, ESRI.ArcGIS.Geometry.IRelationalOperator)
             Dim pFCursor2 As IFeatureCursor = pFClass.Search(Nothing, False)
             Dim pFeature2 As IFeature = pFCursor2.NextFeature
-            While Not pFeature2 Is Nothing
-                Dim pPLine2 As IPolyline = CType(pFeature2.ShapeCopy, ESRI.ArcGIS.Geometry.IPolyline)
-                If Not pFeature1.OID = pFeature2.OID AndAlso Not pRelOp.Disjoint(pPLine2) Then
+            For i As Integer = 0 To feats.Count - 1
+                Dim entry As FeatureExtractions
+                entry = feats(i)
+                If Not pRelOp.Disjoint(entry.geom) AndAlso Not pRelOp.Equals(entry.geom) Then
                     Try
                         iflat1 = CType(pFeature1.Value(pFeature1.Fields.FindField("iflat")), Double)
-                        iflat2 = CType(pFeature1.Value(pFeature2.Fields.FindField("iflat")), Double)
+                        iflat2 = entry.iFlat
                     Catch ex As Exception
+                        'This catches shapefiles without an iflat field.
                         iflat1 = 1
                         iflat2 = 1
                     End Try
-                    ArOIDPairs.Add(New PLineOIDPair(pFeature1.OID, pFeature2.OID, iflat1, iflat2))
+                    ArOIDPairs.Add(New PLineOIDPair(pFeature1.OID, entry.OID, iflat1, iflat2))
                 End If
-                pFeature2 = pFCursor2.NextFeature
-            End While
+            Next
+
+            'While Not pFeature2 Is Nothing
+            '    Dim pPLine2 As IPolyline = CType(pFeature2.ShapeCopy, ESRI.ArcGIS.Geometry.IPolyline)
+            '    If Not pFeature1.OID = pFeature2.OID AndAlso Not pRelOp.Disjoint(pPLine2) Then
+            '        Try
+            '            iflat1 = CType(pFeature1.Value(pFeature1.Fields.FindField("iflat")), Double)
+            '            iflat2 = CType(pFeature1.Value(pFeature2.Fields.FindField("iflat")), Double)
+            '        Catch ex As Exception
+            '            'This catches coincident lines when more than one trajectory file is provided.
+            '            iflat1 = 1
+            '            iflat2 = 1
+            '        End Try
+            '        ArOIDPairs.Add(New PLineOIDPair(pFeature1.OID, pFeature2.OID, iflat1, iflat2))
+            '    End If
+            '    pFeature2 = pFCursor2.NextFeature
+            'End While
             pFeature1 = pFCursor1.NextFeature
             If Not pTrkCan.Continue Then
                 'SUMMARY PRINT: End program as interrupted
@@ -406,7 +463,9 @@ Public Class frm_intersecttool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(IAF.sOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         End While
@@ -418,46 +477,50 @@ Public Class frm_intersecttool
         pStepPro.StepValue = 1
         '<<<<<<<<<q<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-        'PROGRESS UPDATE: 
-        pProDlg.Description = "Removing duplicate intersections..."
-        PRINTtxt += vbCrLf & " [Removing duplicate intersections...]"
+        ''PROGRESS UPDATE: 
+        'pProDlg.Description = "Removing duplicate intersections..."
+        'PRINTtxt += vbCrLf & " [Removing duplicate intersections...]"
 
-        Dim ArOIDPairsRem As New List(Of PLineOIDPair)
+        'Dim ArOIDPairsRem As New List(Of PLineOIDPair)
 
-        pTrkCan.Reset()
-        For Each OIDPair In ArOIDPairs
-            p_pOIDPair = OIDPair
-            Dim toRemove As PLineOIDPair = ArOIDPairs.Find(AddressOf FindReversedPair)
-            If Not toRemove Is Nothing AndAlso ArOIDPairs.IndexOf(toRemove) > ArOIDPairs.IndexOf(OIDPair) Then
-                ArOIDPairsRem.Add(toRemove)
-            End If
-            If Not pTrkCan.Continue Then
-                'SUMMARY PRINT: End program as interrupted
-                PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
-                                          sSDate, sSTime)
-                'Destroy the progress dialog
-                ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(IAF.sOUT, PRINTtxt)
-                Return
-            End If
-        Next
-        For Each OIDPair In ArOIDPairsRem
-            ArOIDPairs.Remove(OIDPair)
-        Next
+        'pTrkCan.Reset()
+        'For Each OIDPair In ArOIDPairs
+        '    p_pOIDPair = OIDPair
+        '    Dim toRemove As PLineOIDPair = ArOIDPairs.Find(AddressOf FindReversedPair)
+        '    If Not toRemove Is Nothing AndAlso ArOIDPairs.IndexOf(toRemove) > ArOIDPairs.IndexOf(OIDPair) Then
+        '        ArOIDPairsRem.Add(toRemove)
+        '    End If
+        '    If Not pTrkCan.Continue Then
+        '        'SUMMARY PRINT: End program as interrupted
+        '        PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+        '                                  sSDate, sSTime)
+        '        'Destroy the progress dialog
+        '        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+        '        If LogFileName.Text <> "" Then
+        '            SaveLog(LogFileName.Text, PRINTtxt)
+        '        End If
+        '        Return
+        '    End If
+        'Next
+        'Dim counter As Integer = 0
+        'For Each OIDPair In ArOIDPairsRem
+        '    counter = counter + 1
+        '    ArOIDPairs.Remove(OIDPair)
+        'Next
+        'MsgBox(counter, MsgBoxStyle.Exclamation, "Coincident")
+        'Dim sampleintersectioncount = ArOIDPairs.Count
 
-        Dim sampleintersectioncount = ArOIDPairs.Count
+        ''Log the intersection computation stats.
+        'Dim report As String = ""
+        'report = vbCrLf & vbCrLf & _
+        '  Space(3) & "STATS: Trajectory Intersection " & vbCrLf & _
+        '  (String.Format(f500, "_")) & vbCrLf & _
+        '  (String.Format(f100, "Total Intersections", "=", intersectioncount)) & vbCrLf & _
+        '  (String.Format(f100, "Coindicent Removed", "=", sampleintersectioncount)) & vbCrLf & _
+        '  (String.Format(f100, "Percentage of Total", "=", sampleintersectioncount / intersectioncount * 100)) & vbCrLf & _
+        '  (String.Format(f400, "_")) & vbCrLf
 
-        'Log the intersection computation stats.
-        Dim report As String = ""
-        report = vbCrLf & vbCrLf & _
-          Space(3) & "STATS: Trajectory Intersection " & vbCrLf & _
-          (String.Format(f500, "_")) & vbCrLf & _
-          (String.Format(f100, "Total Intersections", "=", intersectioncount)) & vbCrLf & _
-          (String.Format(f100, "Coindicent Removed", "=", sampleintersectioncount)) & vbCrLf & _
-          (String.Format(f100, "Percentage of Total", "=", sampleintersectioncount / intersectioncount * 100)) & vbCrLf & _
-          (String.Format(f400, "_")) & vbCrLf
-
-        PRINTtxt += report
+        'PRINTtxt += report
 
         '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         pStepPro.MaxRange = ArOIDPairs.Count
@@ -473,16 +536,16 @@ Public Class frm_intersecttool
 
         pTrkCan.Reset()
         For Each OIDPair In ArOIDPairs
-            Try
-                Dim pF1 As IFeature = pFClass.GetFeature(OIDPair.OID1)
-                Dim pF2 As IFeature = pFClass.GetFeature(OIDPair.OID2)
-                Weight = 1 / (OIDPair.iflat1 * OIDPair.iflat2) 'inverse product of each ellipsoid iflat
-                Dim pTopoOp As ITopologicalOperator = CType(pF1.ShapeCopy, ESRI.ArcGIS.Geometry.ITopologicalOperator)
-                Dim pGC As IGeometryCollection = CType(pTopoOp.Intersect(pF2.ShapeCopy, esriGeometryDimension.esriGeometry0Dimension), ESRI.ArcGIS.Geometry.IGeometryCollection)
-                ArIntPts.Add(New IntersectionPoint(CType(pGC.Geometry(0), ESRI.ArcGIS.Geometry.IPoint), Weight))
-            Catch ex As Exception
-                'MsgBox("Failure on OID Pair" & OIDPair.OID1 & ", " & OIDPair.OID2, MsgBoxStyle.OkOnly, "Failure")
-            End Try
+            'Try
+            Dim pF1 As IFeature = pFClass.GetFeature(OIDPair.OID1)
+            Dim pF2 As IFeature = pFClass.GetFeature(OIDPair.OID2)
+            Weight = 1 / (OIDPair.iflat1 * OIDPair.iflat2) 'inverse product of each ellipsoid iflat
+            Dim pTopoOp As ITopologicalOperator = CType(pF1.ShapeCopy, ESRI.ArcGIS.Geometry.ITopologicalOperator)
+            Dim pGC As IGeometryCollection = CType(pTopoOp.Intersect(pF2.ShapeCopy, esriGeometryDimension.esriGeometry0Dimension), ESRI.ArcGIS.Geometry.IGeometryCollection)
+            ArIntPts.Add(New IntersectionPoint(CType(pGC.Geometry(0), ESRI.ArcGIS.Geometry.IPoint), Weight))
+            'Catch ex As Exception
+            'MsgBox("Failure on OID Pair" & OIDPair.OID1 & ", " & OIDPair.OID2, MsgBoxStyle.OkOnly, "Failure")
+            'End Try
 
             If Not pTrkCan.Continue Then
                 'SUMMARY PRINT: End program as interrupted
@@ -490,14 +553,16 @@ Public Class frm_intersecttool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(IAF.sOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         Next
 
         'Empty lists
         ArOIDPairs = Nothing
-        ArOIDPairsRem = Nothing
+        'ArOIDPairsRem = Nothing
 
         '------------------------------------------------------------------------------------------------------
 
@@ -541,7 +606,9 @@ Public Class frm_intersecttool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(IAF.sOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         Next
@@ -569,7 +636,9 @@ Public Class frm_intersecttool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(IAF.sOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         Next
@@ -691,7 +760,9 @@ Public Class frm_intersecttool
                                               sSDate, sSTime)
                     'Destroy the progress dialog
                     ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                    SaveSummaryReport(IAF.sOUT, PRINTtxt)
+                    If LogFileName.Text <> "" Then
+                        SaveLog(LogFileName.Text, PRINTtxt)
+                    End If
                     Return
                 End If
             Next
@@ -809,7 +880,9 @@ Public Class frm_intersecttool
                                               sSDate, sSTime)
                     'Destroy the progress dialog
                     ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                    SaveSummaryReport(IAF.sOUT, PRINTtxt)
+                    If LogFileName.Text <> "" Then
+                        SaveLog(LogFileName.Text, PRINTtxt)
+                    End If
                     Return
                 End If
             Next
@@ -938,7 +1011,9 @@ Public Class frm_intersecttool
                                               sSDate, sSTime)
                     'Destroy the progress dialog
                     ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                    SaveSummaryReport(IAF.sOUT, PRINTtxt)
+                    If LogFileName.Text <> "" Then
+                        SaveLog(LogFileName.Text, PRINTtxt)
+                    End If
                     Return
                 End If
             Next
@@ -1066,7 +1141,9 @@ Public Class frm_intersecttool
                                               sSDate, sSTime)
                     'Destroy the progress dialog
                     ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                    SaveSummaryReport(IAF.sOUT, PRINTtxt)
+                    If LogFileName.Text <> "" Then
+                        SaveLog(LogFileName.Text, PRINTtxt)
+                    End If
                     Return
                 End If
             Next
@@ -1104,7 +1181,9 @@ Public Class frm_intersecttool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(IAF.sOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         Next
@@ -1128,7 +1207,9 @@ Public Class frm_intersecttool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(IAF.sOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         Next
@@ -1146,7 +1227,9 @@ Public Class frm_intersecttool
                                       sSDate, sSTime)
             'Destroy the progress dialog
             ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-            SaveSummaryReport(IAF.sOUT, PRINTtxt)
+            If LogFileName.Text <> "" Then
+                SaveLog(LogFileName.Text, PRINTtxt)
+            End If
             Return
         End If
 
@@ -1168,7 +1251,9 @@ Public Class frm_intersecttool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(IAF.sOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         Next
@@ -1219,7 +1304,9 @@ Public Class frm_intersecttool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(IAF.sOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         Next
@@ -1279,7 +1366,9 @@ Public Class frm_intersecttool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(IAF.sOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         Next
@@ -1303,7 +1392,9 @@ Public Class frm_intersecttool
 
         'Destroy the progress dialog
         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-        SaveSummaryReport(IAF.sOUT, PRINTtxt)
+        If LogFileName.Text <> "" Then
+            SaveLog(LogFileName.Text, PRINTtxt)
+        End If
 
     End Sub
 

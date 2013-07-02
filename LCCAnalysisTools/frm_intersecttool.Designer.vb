@@ -50,8 +50,13 @@ Partial Class frm_intersecttool
         Me.btnSHHELP = New System.Windows.Forms.Button()
         Me.btnCANCEL = New System.Windows.Forms.Button()
         Me.btnOK = New System.Windows.Forms.Button()
-        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
         Me.weightedCentroids = New System.Windows.Forms.CheckBox()
+        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.GroupBox5 = New System.Windows.Forms.GroupBox()
+        Me.LogSaveDialog = New System.Windows.Forms.Button()
+        Me.GroupBox6 = New System.Windows.Forms.GroupBox()
+        Me.TextBox3 = New System.Windows.Forms.TextBox()
+        Me.LogFileName = New System.Windows.Forms.TextBox()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
@@ -62,6 +67,8 @@ Partial Class frm_intersecttool
         Me.grpNQUERY.SuspendLayout()
         Me.pnlMARGIN2.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
+        Me.GroupBox5.SuspendLayout()
+        Me.GroupBox6.SuspendLayout()
         Me.SuspendLayout()
         '
         'splcHELP
@@ -75,6 +82,7 @@ Partial Class frm_intersecttool
         '
         'splcHELP.Panel1
         '
+        Me.splcHELP.Panel1.Controls.Add(Me.GroupBox5)
         Me.splcHELP.Panel1.Controls.Add(Me.GroupBox2)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
         Me.splcHELP.Panel1.Controls.Add(Me.grpCPNUM)
@@ -91,7 +99,7 @@ Partial Class frm_intersecttool
         Me.splcHELP.Panel2.Controls.Add(Me.pnlMARGIN1)
         Me.splcHELP.Panel2Collapsed = True
         Me.splcHELP.Panel2MinSize = 0
-        Me.splcHELP.Size = New System.Drawing.Size(356, 429)
+        Me.splcHELP.Size = New System.Drawing.Size(356, 481)
         Me.splcHELP.SplitterDistance = 356
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
@@ -341,7 +349,7 @@ Partial Class frm_intersecttool
         'btnSHHELP
         '
         Me.btnSHHELP.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnSHHELP.Location = New System.Drawing.Point(263, 432)
+        Me.btnSHHELP.Location = New System.Drawing.Point(263, 487)
         Me.btnSHHELP.Name = "btnSHHELP"
         Me.btnSHHELP.Size = New System.Drawing.Size(84, 23)
         Me.btnSHHELP.TabIndex = 3
@@ -352,7 +360,7 @@ Partial Class frm_intersecttool
         '
         Me.btnCANCEL.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.btnCANCEL.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.btnCANCEL.Location = New System.Drawing.Point(182, 432)
+        Me.btnCANCEL.Location = New System.Drawing.Point(182, 487)
         Me.btnCANCEL.Name = "btnCANCEL"
         Me.btnCANCEL.Size = New System.Drawing.Size(75, 23)
         Me.btnCANCEL.TabIndex = 2
@@ -362,22 +370,12 @@ Partial Class frm_intersecttool
         'btnOK
         '
         Me.btnOK.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnOK.Location = New System.Drawing.Point(101, 432)
+        Me.btnOK.Location = New System.Drawing.Point(101, 487)
         Me.btnOK.Name = "btnOK"
         Me.btnOK.Size = New System.Drawing.Size(75, 23)
         Me.btnOK.TabIndex = 1
         Me.btnOK.Text = "OK"
         Me.btnOK.UseVisualStyleBackColor = True
-        '
-        'GroupBox2
-        '
-        Me.GroupBox2.Controls.Add(Me.weightedCentroids)
-        Me.GroupBox2.Location = New System.Drawing.Point(180, 108)
-        Me.GroupBox2.Name = "GroupBox2"
-        Me.GroupBox2.Size = New System.Drawing.Size(165, 53)
-        Me.GroupBox2.TabIndex = 3
-        Me.GroupBox2.TabStop = False
-        Me.GroupBox2.Text = "Weight Centroid"
         '
         'weightedCentroids
         '
@@ -391,22 +389,77 @@ Partial Class frm_intersecttool
         Me.weightedCentroids.Text = "Weight Centroids"
         Me.weightedCentroids.UseVisualStyleBackColor = True
         '
+        'GroupBox2
+        '
+        Me.GroupBox2.Controls.Add(Me.weightedCentroids)
+        Me.GroupBox2.Location = New System.Drawing.Point(180, 108)
+        Me.GroupBox2.Name = "GroupBox2"
+        Me.GroupBox2.Size = New System.Drawing.Size(165, 53)
+        Me.GroupBox2.TabIndex = 3
+        Me.GroupBox2.TabStop = False
+        Me.GroupBox2.Text = "Weight Centroid"
+        '
+        'GroupBox5
+        '
+        Me.GroupBox5.Controls.Add(Me.LogSaveDialog)
+        Me.GroupBox5.Controls.Add(Me.GroupBox6)
+        Me.GroupBox5.Controls.Add(Me.LogFileName)
+        Me.GroupBox5.Location = New System.Drawing.Point(7, 426)
+        Me.GroupBox5.Name = "GroupBox5"
+        Me.GroupBox5.Size = New System.Drawing.Size(338, 50)
+        Me.GroupBox5.TabIndex = 20
+        Me.GroupBox5.TabStop = False
+        Me.GroupBox5.Text = "Output Log File Name (Optional)"
+        '
+        'LogSaveDialog
+        '
+        Me.LogSaveDialog.Image = Global.LCCAnalysisTools.My.Resources.Resources.normal_folder
+        Me.LogSaveDialog.Location = New System.Drawing.Point(299, 16)
+        Me.LogSaveDialog.Name = "LogSaveDialog"
+        Me.LogSaveDialog.Size = New System.Drawing.Size(22, 23)
+        Me.LogSaveDialog.TabIndex = 19
+        Me.LogSaveDialog.UseVisualStyleBackColor = True
+        '
+        'GroupBox6
+        '
+        Me.GroupBox6.Controls.Add(Me.TextBox3)
+        Me.GroupBox6.Location = New System.Drawing.Point(1, 50)
+        Me.GroupBox6.Name = "GroupBox6"
+        Me.GroupBox6.Size = New System.Drawing.Size(404, 50)
+        Me.GroupBox6.TabIndex = 18
+        Me.GroupBox6.TabStop = False
+        Me.GroupBox6.Text = "Output layer name"
+        '
+        'TextBox3
+        '
+        Me.TextBox3.Location = New System.Drawing.Point(14, 19)
+        Me.TextBox3.Name = "TextBox3"
+        Me.TextBox3.Size = New System.Drawing.Size(384, 20)
+        Me.TextBox3.TabIndex = 0
+        '
+        'LogFileName
+        '
+        Me.LogFileName.Location = New System.Drawing.Point(14, 19)
+        Me.LogFileName.Name = "LogFileName"
+        Me.LogFileName.Size = New System.Drawing.Size(279, 20)
+        Me.LogFileName.TabIndex = 0
+        '
         'frm_intersecttool
         '
         Me.AcceptButton = Me.btnOK
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.btnCANCEL
-        Me.ClientSize = New System.Drawing.Size(356, 457)
+        Me.ClientSize = New System.Drawing.Size(356, 512)
         Me.Controls.Add(Me.splcHELP)
         Me.Controls.Add(Me.btnSHHELP)
         Me.Controls.Add(Me.btnCANCEL)
         Me.Controls.Add(Me.btnOK)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
-        Me.MaximumSize = New System.Drawing.Size(900, 495)
+        Me.MaximumSize = New System.Drawing.Size(372, 550)
         Me.MinimizeBox = False
-        Me.MinimumSize = New System.Drawing.Size(372, 495)
+        Me.MinimumSize = New System.Drawing.Size(372, 550)
         Me.Name = "frm_intersecttool"
         Me.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
@@ -428,6 +481,10 @@ Partial Class frm_intersecttool
         Me.pnlMARGIN2.ResumeLayout(False)
         Me.GroupBox2.ResumeLayout(False)
         Me.GroupBox2.PerformLayout()
+        Me.GroupBox5.ResumeLayout(False)
+        Me.GroupBox5.PerformLayout()
+        Me.GroupBox6.ResumeLayout(False)
+        Me.GroupBox6.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -460,4 +517,9 @@ Partial Class frm_intersecttool
     Friend WithEvents txtOUT As System.Windows.Forms.TextBox
     Friend WithEvents GroupBox2 As System.Windows.Forms.GroupBox
     Friend WithEvents weightedCentroids As System.Windows.Forms.CheckBox
+    Friend WithEvents GroupBox5 As System.Windows.Forms.GroupBox
+    Friend WithEvents LogSaveDialog As System.Windows.Forms.Button
+    Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
+    Friend WithEvents TextBox3 As System.Windows.Forms.TextBox
+    Friend WithEvents LogFileName As System.Windows.Forms.TextBox
 End Class

@@ -282,6 +282,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Images\minus.png" />
+    <Content Include="Images\normal_folder.png" />
     <Content Include="Images\plus.png" />
     <Content Include="Images\Plus__Orange.png" />
   </ItemGroup>

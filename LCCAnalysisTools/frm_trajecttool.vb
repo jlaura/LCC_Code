@@ -13,7 +13,7 @@ Imports ESRI.ArcGIS.Geometry
 Public Class frm_trajecttool
 
     Private p_inGeometry As String = "line"
-
+#Region "Form Button and Validation"
     Private Sub Frm_TrajectoryAnalysis_Load(ByVal sender As System.Object, _
                                         ByVal e As System.EventArgs) _
                                         Handles MyBase.Load
@@ -229,6 +229,18 @@ Public Class frm_trajecttool
 
     End Sub
 
+    Private Sub LogSaveDialog_ClickTraj(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles LogSaveDialog.Click
+        Dim saveFileDialog1 As New SaveFileDialog()
+
+        saveFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*"
+        saveFileDialog1.FilterIndex = 2
+        saveFileDialog1.RestoreDirectory = True
+
+        If saveFileDialog1.ShowDialog() = DialogResult.OK Then
+            LogFileName.Text = saveFileDialog1.FileName
+        End If
+    End Sub
+
     Private Sub btnOK_Click(ByVal sender As System.Object, _
                             ByVal e As System.EventArgs) _
                             Handles btnOK.Click
@@ -338,6 +350,7 @@ Public Class frm_trajecttool
         End If
 
     End Sub
+#End Region
 
     Private Sub LoadProgressForm()
 
@@ -556,7 +569,9 @@ Public Class frm_trajecttool
                                                       sSDate, sSTime)
                             'Destroy the progress dialog
                             ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                            SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
+                            If LogFileName.Text <> "" Then
+                                SaveLog(LogFileName.Text, PRINTtxt)
+                            End If
                             Return
                         End If
                     End While
@@ -590,7 +605,9 @@ Public Class frm_trajecttool
                                                       sSDate, sSTime)
                             'Destroy the progress dialog
                             ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                            SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
+                            If LogFileName.Text <> "" Then
+                                SaveLog(LogFileName.Text, PRINTtxt)
+                            End If
                             Return
                         End If
                     End While
@@ -619,7 +636,9 @@ Public Class frm_trajecttool
                                                       sSDate, sSTime)
                             'Destroy the progress dialog
                             ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                            SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
+                            If LogFileName.Text <> "" Then
+                                SaveLog(LogFileName.Text, PRINTtxt)
+                            End If
                             Return
                         End If
                     End While
@@ -651,7 +670,9 @@ Public Class frm_trajecttool
                                           sSDate, sSTime)
                 'DONE:
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         ElseIf p_inGeometry = "line no fields" Then
@@ -671,7 +692,9 @@ Public Class frm_trajecttool
                                           sSDate, sSTime)
                 'DONE:
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         End If
@@ -842,7 +865,9 @@ Public Class frm_trajecttool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         Next
@@ -887,7 +912,9 @@ Public Class frm_trajecttool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         Next
@@ -906,7 +933,9 @@ Public Class frm_trajecttool
 
         'Destroy the progress dialog
         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-        SaveSummaryReport(TAF.sTAOUT, PRINTtxt)
+        If LogFileName.Text <> "" Then
+            SaveLog(LogFileName.Text, PRINTtxt)
+        End If
 
     End Sub
 
@@ -995,14 +1024,14 @@ Public Class frm_trajecttool
         HELP_ClusterReq()
     End Sub
 
-    Private Sub lblEMA_Click(sender As System.Object, _
-                             e As System.EventArgs) _
+    Private Sub lblEMA_Click(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) _
                          Handles lblEMA.Click
         HELP_ClusterReq()
     End Sub
 
-    Private Sub lblEIF_Click(sender As System.Object, _
-                             e As System.EventArgs) _
+    Private Sub lblEIF_Click(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) _
                          Handles lblEIF.Click
         HELP_ClusterReq()
     End Sub
@@ -1035,8 +1064,8 @@ Public Class frm_trajecttool
         HELP_Coriolis()
     End Sub
 
-    Private Sub lblCEPROTP_Click(sender As System.Object, _
-                             e As System.EventArgs) _
+    Private Sub lblCEPROTP_Click(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) _
                          Handles lblCEPROTP.Click
         HELP_Coriolis()
     End Sub
@@ -1184,4 +1213,7 @@ Public Class frm_trajecttool
         End If
     End Sub
 
+    Private Sub LogSaveDialog_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
+
+    End Sub
 End Class

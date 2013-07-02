@@ -109,7 +109,6 @@ Public Class frm_dirdistool
 
     End Sub
 
-
     Private Sub Optimize_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles optimize.Click
         Dim pFLayer As IFeatureLayer = GetFLayerByName(m_sDDFLayer)
 
@@ -184,8 +183,9 @@ Public Class frm_dirdistool
         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
 
     End Sub
-    Private Sub btnOK_Click(sender As System.Object,
-                            e As System.EventArgs) _
+
+    Private Sub btnOK_Click(ByVal sender As System.Object,
+                            ByVal e As System.EventArgs) _
                         Handles btnOK.Click
 
         'Check for errors in all field values
@@ -193,6 +193,17 @@ Public Class frm_dirdistool
 
     End Sub
 
+    Private Sub LogSaveDialogDir_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles LogSaveDialog.Click
+        Dim saveFileDialog1 As New SaveFileDialog()
+
+        saveFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*"
+        saveFileDialog1.FilterIndex = 2
+        saveFileDialog1.RestoreDirectory = True
+
+        If saveFileDialog1.ShowDialog() = DialogResult.OK Then
+            LogFileName.Text = saveFileDialog1.FileName
+        End If
+    End Sub
 
     Private Sub FormErrorHandler()
 
@@ -254,6 +265,18 @@ Public Class frm_dirdistool
 
     End Sub
 
+    Private Sub LogSaveDialog_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles LogSaveDialog.Click
+        Dim saveFileDialog1 As New SaveFileDialog()
+
+        saveFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*"
+        saveFileDialog1.FilterIndex = 2
+        saveFileDialog1.RestoreDirectory = True
+
+        If saveFileDialog1.ShowDialog() = DialogResult.OK Then
+            LogFileName.Text = saveFileDialog1.FileName
+        End If
+    End Sub
+
     Private Sub LoadProgressForm()
 
         'Hide the Directional Distribution Tool form
@@ -277,7 +300,7 @@ Public Class frm_dirdistool
 
     End Sub
 
-    Private Sub RunDirDis(DD As DDPARAM)
+    Private Sub RunDirDis(ByVal DD As DDPARAM)
 
         Dim PRINTtxt As String = ""
 
@@ -356,7 +379,9 @@ Public Class frm_dirdistool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(DD.sDDOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         End While
@@ -371,7 +396,9 @@ Public Class frm_dirdistool
                                       sSDate, sSTime)
             'Destroy the progress dialog
             ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-            SaveSummaryReport(DD.sDDOUT, PRINTtxt)
+            If LogFileName.Text <> "" Then
+                SaveLog(LogFileName.Text, PRINTtxt)
+            End If
             Return
         End If
 
@@ -393,7 +420,9 @@ Public Class frm_dirdistool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(DD.sDDOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         Next
@@ -590,7 +619,9 @@ Public Class frm_dirdistool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(DD.sDDOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         Next
@@ -644,7 +675,9 @@ Public Class frm_dirdistool
                                               sSDate, sSTime)
                     'Destroy the progress dialog
                     ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                    SaveSummaryReport(DD.sDDOUT, PRINTtxt)
+                    If LogFileName.Text <> "" Then
+                        SaveLog(LogFileName.Text, PRINTtxt)
+                    End If
                     Return
                 End If
             Next
@@ -665,7 +698,9 @@ Public Class frm_dirdistool
                                               sSDate, sSTime)
                     'Destroy the progress dialog
                     ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                    SaveSummaryReport(DD.sDDOUT, PRINTtxt)
+                    If LogFileName.Text <> "" Then
+                        SaveLog(LogFileName.Text, PRINTtxt)
+                    End If
                     Return
                 End If
             Next
@@ -692,7 +727,9 @@ Public Class frm_dirdistool
 
         'Destroy the progress dialog
         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-        SaveSummaryReport(DD.sDDOUT, PRINTtxt)
+        If LogFileName.Text <> "" Then
+            SaveLog(LogFileName.Text, PRINTtxt)
+        End If
 
     End Sub
 
@@ -874,14 +911,14 @@ Public Class frm_dirdistool
 #Region "***** POINT QUERY *********"
 #End Region
 
-    Private Sub grpDDPNUM_Enter(sender As System.Object, _
-                                e As System.EventArgs) _
+    Private Sub grpDDPNUM_Enter(ByVal sender As System.Object, _
+                                ByVal e As System.EventArgs) _
                                 Handles grpDDPNUM.Enter
         HELP_PntCount()
     End Sub
 
-    Private Sub grpDDPNUM_Click(sender As System.Object, _
-                                e As System.EventArgs) _
+    Private Sub grpDDPNUM_Click(ByVal sender As System.Object, _
+                                ByVal e As System.EventArgs) _
                                 Handles grpDDPNUM.Click
         HELP_PntCount()
     End Sub
@@ -889,14 +926,14 @@ Public Class frm_dirdistool
 #Region "***** OUTPUT GEOMETRY *******"
 #End Region
 
-    Private Sub grpOUTGEOM_Enter(sender As System.Object, _
-                                 e As System.EventArgs) _
+    Private Sub grpOUTGEOM_Enter(ByVal sender As System.Object, _
+                                 ByVal e As System.EventArgs) _
                                  Handles grpOUTGEOM.Enter
         HELP_OutGeom()
     End Sub
 
-    Private Sub grpOUTGEOM_Click(sender As System.Object, _
-                                 e As System.EventArgs) _
+    Private Sub grpOUTGEOM_Click(ByVal sender As System.Object, _
+                                 ByVal e As System.EventArgs) _
                                  Handles grpOUTGEOM.Click
         HELP_OutGeom()
     End Sub
@@ -904,14 +941,14 @@ Public Class frm_dirdistool
 #Region "***** OUTPUT ********"
 #End Region
 
-    Private Sub grpOUT_Enter(sender As System.Object, _
-                             e As System.EventArgs) _
+    Private Sub grpOUT_Enter(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) _
                              Handles grpOUT.Enter
         HELP_Out()
     End Sub
 
-    Private Sub grpOUT_Click(sender As System.Object, _
-                         e As System.EventArgs) _
+    Private Sub grpOUT_Click(ByVal sender As System.Object, _
+                         ByVal e As System.EventArgs) _
                          Handles grpOUT.Click
         HELP_Out()
     End Sub

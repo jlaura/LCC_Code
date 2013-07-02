@@ -62,6 +62,11 @@ Partial Class frm_trajecttool
         Me.btnSHHELP = New System.Windows.Forms.Button()
         Me.btnOK = New System.Windows.Forms.Button()
         Me.btnCANCEL = New System.Windows.Forms.Button()
+        Me.GroupBox5 = New System.Windows.Forms.GroupBox()
+        Me.LogSaveDialog = New System.Windows.Forms.Button()
+        Me.GroupBox6 = New System.Windows.Forms.GroupBox()
+        Me.TextBox3 = New System.Windows.Forms.TextBox()
+        Me.LogFileName = New System.Windows.Forms.TextBox()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
@@ -73,6 +78,8 @@ Partial Class frm_trajecttool
         Me.GroupBox1.SuspendLayout()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.pnlMARGIN2.SuspendLayout()
+        Me.GroupBox5.SuspendLayout()
+        Me.GroupBox6.SuspendLayout()
         Me.SuspendLayout()
         '
         'splcHELP
@@ -86,6 +93,7 @@ Partial Class frm_trajecttool
         '
         'splcHELP.Panel1
         '
+        Me.splcHELP.Panel1.Controls.Add(Me.GroupBox5)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
         Me.splcHELP.Panel1.Controls.Add(Me.grpCOREFF)
         Me.splcHELP.Panel1.Controls.Add(Me.grpTRAJDIST)
@@ -100,7 +108,7 @@ Partial Class frm_trajecttool
         Me.splcHELP.Panel2.Controls.Add(Me.pnlMARGIN1)
         Me.splcHELP.Panel2Collapsed = True
         Me.splcHELP.Panel2MinSize = 0
-        Me.splcHELP.Size = New System.Drawing.Size(356, 429)
+        Me.splcHELP.Size = New System.Drawing.Size(356, 476)
         Me.splcHELP.SplitterDistance = 356
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
@@ -470,7 +478,7 @@ Partial Class frm_trajecttool
         'btnSHHELP
         '
         Me.btnSHHELP.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnSHHELP.Location = New System.Drawing.Point(263, 432)
+        Me.btnSHHELP.Location = New System.Drawing.Point(263, 482)
         Me.btnSHHELP.Name = "btnSHHELP"
         Me.btnSHHELP.Size = New System.Drawing.Size(84, 23)
         Me.btnSHHELP.TabIndex = 3
@@ -480,7 +488,7 @@ Partial Class frm_trajecttool
         'btnOK
         '
         Me.btnOK.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnOK.Location = New System.Drawing.Point(101, 432)
+        Me.btnOK.Location = New System.Drawing.Point(101, 482)
         Me.btnOK.Name = "btnOK"
         Me.btnOK.Size = New System.Drawing.Size(75, 23)
         Me.btnOK.TabIndex = 1
@@ -491,12 +499,57 @@ Partial Class frm_trajecttool
         '
         Me.btnCANCEL.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.btnCANCEL.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.btnCANCEL.Location = New System.Drawing.Point(182, 432)
+        Me.btnCANCEL.Location = New System.Drawing.Point(182, 482)
         Me.btnCANCEL.Name = "btnCANCEL"
         Me.btnCANCEL.Size = New System.Drawing.Size(75, 23)
         Me.btnCANCEL.TabIndex = 2
         Me.btnCANCEL.Text = "Close"
         Me.btnCANCEL.UseVisualStyleBackColor = True
+        '
+        'GroupBox5
+        '
+        Me.GroupBox5.Controls.Add(Me.LogSaveDialog)
+        Me.GroupBox5.Controls.Add(Me.GroupBox6)
+        Me.GroupBox5.Controls.Add(Me.LogFileName)
+        Me.GroupBox5.Location = New System.Drawing.Point(7, 424)
+        Me.GroupBox5.Name = "GroupBox5"
+        Me.GroupBox5.Size = New System.Drawing.Size(338, 50)
+        Me.GroupBox5.TabIndex = 20
+        Me.GroupBox5.TabStop = False
+        Me.GroupBox5.Text = "Output Log File Name (Optional)"
+        '
+        'LogSaveDialog
+        '
+        Me.LogSaveDialog.Image = Global.LCCAnalysisTools.My.Resources.Resources.normal_folder
+        Me.LogSaveDialog.Location = New System.Drawing.Point(308, 16)
+        Me.LogSaveDialog.Name = "LogSaveDialog"
+        Me.LogSaveDialog.Size = New System.Drawing.Size(22, 23)
+        Me.LogSaveDialog.TabIndex = 19
+        Me.LogSaveDialog.UseVisualStyleBackColor = True
+        '
+        'GroupBox6
+        '
+        Me.GroupBox6.Controls.Add(Me.TextBox3)
+        Me.GroupBox6.Location = New System.Drawing.Point(1, 50)
+        Me.GroupBox6.Name = "GroupBox6"
+        Me.GroupBox6.Size = New System.Drawing.Size(404, 50)
+        Me.GroupBox6.TabIndex = 18
+        Me.GroupBox6.TabStop = False
+        Me.GroupBox6.Text = "Output layer name"
+        '
+        'TextBox3
+        '
+        Me.TextBox3.Location = New System.Drawing.Point(14, 19)
+        Me.TextBox3.Name = "TextBox3"
+        Me.TextBox3.Size = New System.Drawing.Size(384, 20)
+        Me.TextBox3.TabIndex = 0
+        '
+        'LogFileName
+        '
+        Me.LogFileName.Location = New System.Drawing.Point(14, 19)
+        Me.LogFileName.Name = "LogFileName"
+        Me.LogFileName.Size = New System.Drawing.Size(288, 20)
+        Me.LogFileName.TabIndex = 0
         '
         'frm_trajecttool
         '
@@ -504,16 +557,16 @@ Partial Class frm_trajecttool
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.btnCANCEL
-        Me.ClientSize = New System.Drawing.Size(356, 457)
+        Me.ClientSize = New System.Drawing.Size(356, 507)
         Me.Controls.Add(Me.btnSHHELP)
         Me.Controls.Add(Me.btnOK)
         Me.Controls.Add(Me.btnCANCEL)
         Me.Controls.Add(Me.splcHELP)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
-        Me.MaximumSize = New System.Drawing.Size(900, 495)
+        Me.MaximumSize = New System.Drawing.Size(372, 545)
         Me.MinimizeBox = False
-        Me.MinimumSize = New System.Drawing.Size(372, 495)
+        Me.MinimumSize = New System.Drawing.Size(372, 545)
         Me.Name = "frm_trajecttool"
         Me.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
@@ -534,6 +587,10 @@ Partial Class frm_trajecttool
         Me.GroupBox1.ResumeLayout(False)
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.pnlMARGIN2.ResumeLayout(False)
+        Me.GroupBox5.ResumeLayout(False)
+        Me.GroupBox5.PerformLayout()
+        Me.GroupBox6.ResumeLayout(False)
+        Me.GroupBox6.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -576,4 +633,9 @@ Partial Class frm_trajecttool
     Friend WithEvents AddData As System.Windows.Forms.Button
     Friend WithEvents inputds As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents remove_layer As System.Windows.Forms.Button
+    Friend WithEvents GroupBox5 As System.Windows.Forms.GroupBox
+    Friend WithEvents LogSaveDialog As System.Windows.Forms.Button
+    Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
+    Friend WithEvents TextBox3 As System.Windows.Forms.TextBox
+    Friend WithEvents LogFileName As System.Windows.Forms.TextBox
 End Class

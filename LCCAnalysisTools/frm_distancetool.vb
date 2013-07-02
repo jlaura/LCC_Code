@@ -474,4 +474,22 @@ Public Class frm_distancetool
 
     End Function
 
+    Private Sub btnSHHELP_Click_1(ByVal sender As System.Object, _
+                                ByVal e As System.EventArgs) _
+                                Handles btnSHHELP.Click
+
+        If btnSHHELP.Text = "<< Hide Help" Then
+            splcHELP.Panel2Collapsed = True
+            Me.MaximumSize = New Size(Me.MinimumSize.Width, _
+                                      Me.MaximumSize.Height)
+            Me.Size = New Size(Me.MinimumSize.Width, Me.Size.Height)
+            btnSHHELP.Text = "Show Help >>"
+        Else
+            Me.MaximumSize = New Size(900, 495)
+            Me.Size = New Size(543, Me.Size.Height)
+            splcHELP.Panel2Collapsed = False
+            btnSHHELP.Text = "<< Hide Help"
+        End If
+
+    End Sub
 End Class

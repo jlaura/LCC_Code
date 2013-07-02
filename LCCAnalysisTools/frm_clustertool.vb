@@ -355,6 +355,7 @@ Public Class frm_clustertool
         Compute_DatasetStats()
 
     End Sub
+
     Private Sub kgraph_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles kgraph.Click
         'Get the statistics, the distance, and the distance array matrix if it hasn't been computed.
         'Make sure that we have an input layer..
@@ -448,6 +449,18 @@ Public Class frm_clustertool
         distanceform = Nothing
     End Sub
 
+    Private Sub LogSaveDialog_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles LogSaveDialog.Click
+        Dim saveFileDialog1 As New SaveFileDialog()
+
+        saveFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*"
+        saveFileDialog1.FilterIndex = 2
+        saveFileDialog1.RestoreDirectory = True
+
+        If saveFileDialog1.ShowDialog() = DialogResult.OK Then
+            LogFileName.Text = saveFileDialog1.FileName
+        End If
+    End Sub
+
     Private Sub btnSHHELP_Click(ByVal sender As System.Object,
                             ByVal e As System.EventArgs) _
                             Handles btnSHHELP.Click
@@ -466,8 +479,6 @@ Public Class frm_clustertool
         End If
 
     End Sub
-
-#End Region
 
     Private Sub FormErrorHandler()
         'On form submission this method is called to validate all the form fields.
@@ -533,10 +544,6 @@ Public Class frm_clustertool
 
         'Check if feature class already exists on the workspace
         If FeatureClassExists(pWrkspc2, txtOUT.Text) Then
-            MsgBox("The output layer feature class already exists. " & _
-                   "Please enter a different 'Output layer name'.", _
-                   MsgBoxStyle.Exclamation, _
-                   "Invalid Parameter")
             Return
         End If
 
@@ -549,6 +556,7 @@ Public Class frm_clustertool
         LoadProgressForm()
 
     End Sub
+#End Region
 
     Private Sub LoadProgressForm()
         'This method launches the progress form, packages the parameters from the form, and calls the RunClustering method to initiate processing.
@@ -694,7 +702,9 @@ Public Class frm_clustertool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(CAF.sOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                End If
                 Return
             End If
         End While
@@ -716,7 +726,9 @@ Public Class frm_clustertool
                                       sSDate, sSTime)
             'Destroy the progress dialog
             ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-            SaveSummaryReport(CAF.sOUT, PRINTtxt)
+            If LogFileName.Text <> "" Then
+                SaveLog(LogFileName.Text, PRINTtxt)
+            End If
             Return
         End If
 
@@ -846,7 +858,10 @@ Public Class frm_clustertool
                                                   sSDate, sSTime)
                         'Destroy the progress dialog
                         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                        SaveSummaryReport(CAF.sOUT, PRINTtxt)
+                        If LogFileName.Text <> "" Then
+                            SaveLog(LogFileName.Text, PRINTtxt)
+                            Return
+                        End If
                         Return
                     End If
                 Next
@@ -964,7 +979,10 @@ Public Class frm_clustertool
                                                   sSDate, sSTime)
                         'Destroy the progress dialog
                         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                        SaveSummaryReport(CAF.sOUT, PRINTtxt)
+                        If LogFileName.Text <> "" Then
+                            SaveLog(LogFileName.Text, PRINTtxt)
+                            Return
+                        End If
                         Return
                     End If
                 Next
@@ -1093,7 +1111,10 @@ Public Class frm_clustertool
                                                   sSDate, sSTime)
                         'Destroy the progress dialog
                         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                        SaveSummaryReport(CAF.sOUT, PRINTtxt)
+                        If LogFileName.Text <> "" Then
+                            SaveLog(LogFileName.Text, PRINTtxt)
+                            Return
+                        End If
                         Return
                     End If
                 Next
@@ -1221,7 +1242,10 @@ Public Class frm_clustertool
                                                   sSDate, sSTime)
                         'Destroy the progress dialog
                         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                        SaveSummaryReport(CAF.sOUT, PRINTtxt)
+                        If LogFileName.Text <> "" Then
+                            SaveLog(LogFileName.Text, PRINTtxt)
+                            Return
+                        End If
                         Return
                     End If
                 Next
@@ -1339,7 +1363,10 @@ Public Class frm_clustertool
                                           sSDate, sSTime)
                 'Destroy the progress dialog
                 ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                SaveSummaryReport(CAF.sOUT, PRINTtxt)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
+                    Return
+                End If
                 Return
             End If
         Next
@@ -1392,10 +1419,13 @@ Public Class frm_clustertool
                                               sSDate, sSTime)
                     'Destroy the progress dialog
                     ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                    SaveSummaryReport(CAF.sOUT, PRINTtxt)
-                    Return
+                    If LogFileName.Text <> "" Then
+                        SaveLog(LogFileName.Text, PRINTtxt)
+                        Return
+                    End If
                 End If
             End If
+
         Next
 
         'Stop edit operation and session, save edits
@@ -1416,7 +1446,10 @@ Public Class frm_clustertool
 
         'Destroy the progress dialog
         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-        SaveSummaryReport(CAF.sOUT, PRINTtxt)
+        'Save the log here without a dialog
+        If LogFileName.Text <> "" Then
+            SaveLog(LogFileName.Text, PRINTtxt)
+        End If
 
     End Sub
     Private Function CalcClusterStats(ByVal Ar, ByVal Ar2, ByVal Ar3)
@@ -1934,7 +1967,4 @@ Public Class frm_clustertool
 
     End Sub
 
-
-
-    
 End Class

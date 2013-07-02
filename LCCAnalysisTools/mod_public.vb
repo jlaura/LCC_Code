@@ -444,6 +444,45 @@ Public Module mod_public
         End Property
     End Class
 
+    Public Class FeatureExtractions
+        Private m_OID As Integer
+        Private m_geom As IPolyline
+        Private m_iflat As Double
+
+        Public Sub New(ByVal OID As Integer, ByVal geom As IPolyline, ByVal iFlat As Double)
+            Me.m_OID = OID
+            Me.m_geom = geom
+            Me.m_iflat = iFlat
+        End Sub
+
+        Public Property OID() As Integer
+            Get
+                Return m_OID
+            End Get
+            Set(ByVal value As Integer)
+                m_OID = value
+            End Set
+        End Property
+
+        Public Property geom() As IPolyline
+            Get
+                Return m_geom
+            End Get
+            Set(ByVal value As IPolyline)
+                m_geom = value
+            End Set
+        End Property
+
+        Public Property iFlat() As Double
+            Get
+                Return m_iflat
+            End Get
+            Set(ByVal value As Double)
+                m_iflat = value
+            End Set
+        End Property
+    End Class
+
     Public Class PLineOIDPair
         Private m_OID1 As Integer
         Private m_OID2 As Integer
@@ -1645,10 +1684,10 @@ Public Module mod_public
                 End If
             End If
         End If
-
     End Sub
-
-
+    Public Sub SaveLog(ByVal filename As String, ByVal text As String)
+        My.Computer.FileSystem.WriteAllText(filename, text, False)
+    End Sub
     Public Function GetArcGISLicenseName() As System.String
 
         Dim esriLicenseInfo As ESRI.ArcGIS.esriSystem.IESRILicenseInfo = New ESRI.ArcGIS.esriSystem.ESRILicenseInfoClass
