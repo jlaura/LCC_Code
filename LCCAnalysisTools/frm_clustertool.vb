@@ -223,132 +223,6 @@ Public Class frm_clustertool
 
     End Sub
 
-    Private Sub Compute_DatasetStats()
-        'Make sure that we have an input layer..
-        Dim pFLayer As IFeatureLayer = GetFLayerByName(m_sCAFLayer)
-        'Make sure an input layer was selected and assigned to an object
-        If cboLAYER.SelectedIndex = -1 Or pFLayer Is Nothing Then
-            MsgBox("Please select an 'Input point layer'.", MsgBoxStyle.Exclamation, _
-                   "Missing Parameter")
-            Return
-        End If
-
-        Dim pFClass As IFeatureClass = pFLayer.FeatureClass
-        Dim pDataset As IDataset = pFClass
-        Dim pWrkspc2 As IWorkspace2 = DirectCast(pDataset.Workspace, IWorkspace2)
-
-        'Make sure that a distance table was selected.
-        If distance_table Is Nothing Then
-            MsgBox("Please select a 'Distance Table'.", MsgBoxStyle.Exclamation, _
-                   "Missing Parameter")
-            Return
-        End If
-
-        '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        ' Create a CancelTracker
-        Dim pTrkCan As ITrackCancel = New CancelTracker
-
-        ' Create the ProgressDialog. This automatically displays the dialog
-        Dim pProDlgFact As IProgressDialogFactory = New ProgressDialogFactory
-        Dim pProDlg As IProgressDialog2 = pProDlgFact.Create(pTrkCan, My.ArcMap.Application.hWnd)
-
-        ' Set the properties of the ProgressDialog
-        pProDlg.CancelEnabled = True
-        pProDlg.Title = "Generating Statistics"
-        pProDlg.Animation = esriProgressAnimationTypes.esriProgressSpiral
-
-        ' Set the properties of the Step Progressor
-        Dim pStepPro As IStepProgressor = pProDlg
-        pStepPro.MinRange = 0
-        pStepPro.MaxRange = pFClass.FeatureCount(Nothing)
-        pStepPro.StepValue = 1
-        pStepPro.Message = "Progress:"
-        '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-        'PROGRESS UPDATE: 
-        pProDlg.Description = "Computing Statistics..."
-        'Create an array that is the size of the input shapefile
-        'Each index store the nearest neighbor distance
-        Dim DistArray(pFClass.FeatureCount(Nothing))
-        For i = 0 To DistArray.GetUpperBound(0) - 1
-            DistArray(i) = 9999999
-        Next
-        'Open the distance table
-        Dim table = getTableByName(distance_table)
-        Dim InFid As Integer = table.FindField("IN_FID")
-        Dim NearDist As Integer = table.FindField("NEAR_DIST")
-
-        Dim cursor As ICursor = table.Search(Nothing, True)
-        Dim row As IRow = cursor.NextRow()
-
-        While Not row Is Nothing
-            If row.Value(NearDist) < DistArray(row.Value(InFid)) Then
-                DistArray(row.Value(InFid)) = row.Value(NearDist)
-            End If
-            row = cursor.NextRow()
-            If Not pTrkCan.Continue Then
-                ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                Return
-            End If
-
-        End While
-
-        'Get the mean + std as the optimal max distance
-        Dim dCount, dRange, dSum, dMean, dStd, dMin, dMax, dSumsq, dMedian, dLQ, dUQ As Double
-
-        dCount = 0
-        dMax = DistArray(0)
-        dMin = DistArray(0)
-
-        For i As Integer = 0 To DistArray.GetUpperBound(0) - 1
-            dCount += 1
-            If DistArray(i) < dMin Then dMin = DistArray(i)
-            If DistArray(i) > dMax Then dMax = DistArray(i)
-            dSum = dSum + DistArray(i)
-        Next
-        dMean = dSum / dCount
-        dRange = dMax - dMin
-
-        'Variance and STD
-        dSumsq = 0
-        For i As Integer = 0 To DistArray.GetUpperBound(0) - 1
-            dSumsq = dSumsq + (DistArray(i) - dMean) ^ 2
-        Next
-
-        dStd = Sqrt(dSumsq / dCount)
-
-        System.Array.Sort(DistArray)
-
-        'Compute the quartiles
-        If IEEERemainder(dCount, 2) = 0 Then
-            dMedian = (DistArray(Round(dCount * 0.5)) + _
-                       DistArray(Round((dCount * 0.5) + 1))) / 2
-            dLQ = (DistArray(Round(dCount * 0.25)) + _
-                   DistArray(Round((dCount * 0.25) + 1))) / 2
-            dUQ = (DistArray(Round(dCount * 0.75)) + _
-                   DistArray(Round((dCount * 0.75) + 1))) / 2
-        Else
-            dMedian = DistArray(Round(dCount * 0.5))
-            dLQ = DistArray(Round(dCount * 0.25))
-            dUQ = DistArray(Round(dCount * 0.75))
-        End If
-
-        'Populate the mininum distance text box with the optimized distance
-
-        txtNQUERY.Text = CStr(Math.Round(dMean, 0))
-        meanstats.Text = CStr(Math.Round(dMean, 3))
-        rangestats.Text = CStr(Math.Round(dRange, 3))
-        stdstats.Text = CStr(Math.Round(dStd, 3))
-        medianstats.Text = CStr(Math.Round(dMedian, 3))
-        lqstats.Text = CStr(Math.Round(dLQ, 3))
-        uqstats.Text = CStr(Math.Round(dUQ, 3))
-        minstats.Text = CStr(Math.Round(dMin, 3))
-        maxstats.Text = CStr(Math.Round(dMax, 3))
-        'Destroy the progress dialog
-        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-
-    End Sub
-
     Private Sub Optimize_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles optimize.Click
         Compute_DatasetStats()
 
@@ -1990,5 +1864,131 @@ Public Class frm_clustertool
 
     End Sub
 
+    Private Sub Compute_DatasetStats()
+        'Make sure that we have an input layer..
+        Dim pFLayer As IFeatureLayer = GetFLayerByName(m_sCAFLayer)
+        'Make sure an input layer was selected and assigned to an object
+        If cboLAYER.SelectedIndex = -1 Or pFLayer Is Nothing Then
+            MsgBox("Please select an 'Input point layer'.", MsgBoxStyle.Exclamation, _
+                   "Missing Parameter")
+            Return
+        End If
 
+        Dim pFClass As IFeatureClass = pFLayer.FeatureClass
+        Dim pDataset As IDataset = pFClass
+        Dim pWrkspc2 As IWorkspace2 = DirectCast(pDataset.Workspace, IWorkspace2)
+
+        'Make sure that a distance table was selected.
+        If distance_table Is Nothing Then
+            MsgBox("Please select a 'Distance Table'.", MsgBoxStyle.Exclamation, _
+                   "Missing Parameter")
+            Return
+        End If
+
+        '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        ' Create a CancelTracker
+        Dim pTrkCan As ITrackCancel = New CancelTracker
+
+        ' Create the ProgressDialog. This automatically displays the dialog
+        Dim pProDlgFact As IProgressDialogFactory = New ProgressDialogFactory
+        Dim pProDlg As IProgressDialog2 = pProDlgFact.Create(pTrkCan, My.ArcMap.Application.hWnd)
+
+        ' Set the properties of the ProgressDialog
+        pProDlg.CancelEnabled = True
+        pProDlg.Title = "Generating Statistics"
+        pProDlg.Animation = esriProgressAnimationTypes.esriProgressSpiral
+
+        ' Set the properties of the Step Progressor
+        Dim pStepPro As IStepProgressor = pProDlg
+        pStepPro.MinRange = 0
+        pStepPro.MaxRange = pFClass.FeatureCount(Nothing)
+        pStepPro.StepValue = 1
+        pStepPro.Message = "Progress:"
+        '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+        'PROGRESS UPDATE: 
+        pProDlg.Description = "Computing Statistics..."
+        'Create an array that is the size of the input shapefile
+        'Each index store the nearest neighbor distance
+        Dim DistArray(pFClass.FeatureCount(Nothing) - 1)
+        For i = 0 To DistArray.GetUpperBound(0) - 1
+            DistArray(i) = 9999999
+        Next
+        'Open the distance table
+        Dim table = getTableByName(distance_table)
+        Dim InFid As Integer = table.FindField("IN_FID")
+        If InFid = Nothing Then InFid = table.FindField("OID")
+
+        Dim NearDist As Integer = table.FindField("NEAR_DIST")
+
+        Dim cursor As ICursor = table.Search(Nothing, True)
+        Dim row As IRow = cursor.NextRow()
+
+        While Not row Is Nothing
+            If row.Value(NearDist) < DistArray(row.Value(InFid)) Then
+                DistArray(row.Value(InFid)) = row.Value(NearDist)
+            End If
+            row = cursor.NextRow()
+            If Not pTrkCan.Continue Then
+                ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                Return
+            End If
+
+        End While
+
+        'Get the mean + std as the optimal max distance
+        Dim dCount, dRange, dSum, dMean, dStd, dMin, dMax, dSumsq, dMedian, dLQ, dUQ As Double
+
+        dCount = 0
+        dMax = DistArray(0)
+        dMin = DistArray(0)
+
+        For i As Integer = 0 To DistArray.GetUpperBound(0) - 1
+            dCount += 1
+            If DistArray(i) < dMin Then dMin = DistArray(i)
+            If DistArray(i) > dMax Then dMax = DistArray(i)
+            dSum = dSum + DistArray(i)
+        Next
+        dMean = dSum / dCount
+        dRange = dMax - dMin
+
+        'Variance and STD
+        dSumsq = 0
+        For i As Integer = 0 To DistArray.GetUpperBound(0) - 1
+            dSumsq = dSumsq + (DistArray(i) - dMean) ^ 2
+        Next
+
+        dStd = Sqrt(dSumsq / dCount)
+
+        System.Array.Sort(DistArray)
+
+        'Compute the quartiles
+        If IEEERemainder(dCount, 2) = 0 Then
+            dMedian = (DistArray(Round(dCount * 0.5)) + _
+                       DistArray(Round((dCount * 0.5) + 1))) / 2
+            dLQ = (DistArray(Round(dCount * 0.25)) + _
+                   DistArray(Round((dCount * 0.25) + 1))) / 2
+            dUQ = (DistArray(Round(dCount * 0.75)) + _
+                   DistArray(Round((dCount * 0.75) + 1))) / 2
+        Else
+            dMedian = DistArray(Round(dCount * 0.5))
+            dLQ = DistArray(Round(dCount * 0.25))
+            dUQ = DistArray(Round(dCount * 0.75))
+        End If
+
+        'Populate the mininum distance text box with the optimized distance
+
+        txtNQUERY.Text = CStr(Math.Round(dMean, 0))
+        meanstats.Text = CStr(Math.Round(dMean, 3))
+        rangestats.Text = CStr(Math.Round(dRange, 3))
+        stdstats.Text = CStr(Math.Round(dStd, 3))
+        medianstats.Text = CStr(Math.Round(dMedian, 3))
+        lqstats.Text = CStr(Math.Round(dLQ, 3))
+        uqstats.Text = CStr(Math.Round(dUQ, 3))
+        minstats.Text = CStr(Math.Round(dMin, 3))
+        maxstats.Text = CStr(Math.Round(dMax, 3))
+        'Destroy the progress dialog
+        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+
+    End Sub
 End Class
