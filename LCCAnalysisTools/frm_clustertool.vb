@@ -32,10 +32,10 @@ Public Class frm_clustertool
 
     End Sub
 
-#Region "Layer Drop Down"
+#Region "Form Controls and Entry Validation"
     Private Sub cboLAYER_DropDown(ByVal sender As Object, _
-                                  ByVal e As System.EventArgs) _
-                                  Handles cboLAYER.DropDown
+                                ByVal e As System.EventArgs) _
+                                Handles cboLAYER.DropDown
 
         Dim pMxDoc As IMxDocument = My.ArcMap.Document
 
@@ -93,9 +93,7 @@ Public Class frm_clustertool
         End If
 
     End Sub
-#End Region
 
-#Region "Distance Table Dropdown"
     Private Sub DistTable_DropDown(ByVal sender As Object, ByVal e As System.EventArgs) Handles Disttable.DropDown
         'Populate the dist table dropdown
         Dim mxdoc As IMxDocument = My.ArcMap.Document
@@ -119,11 +117,13 @@ Public Class frm_clustertool
             Exit Sub
         End Try
     End Sub
+
     Private Sub DistTable_DropdownClose(ByVal sender As Object, ByVal e As System.EventArgs) Handles Disttable.DropDownClosed
         If Disttable.SelectedIndex = -1 Then
             distance_table = Nothing
         End If
     End Sub
+
     Private Sub Distance_Table_SelectedIndexChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles Disttable.SelectedIndexChanged
         If Not Disttable.SelectedIndex = -1 Then
             distance_table = Disttable.Text
@@ -133,9 +133,7 @@ Public Class frm_clustertool
         End If
 
     End Sub
-#End Region
 
-#Region "Form Button Messages and Entry Validation"
     Private Sub TextBoxes_Update(ByVal sender As Object, _
                                  ByVal e As System.EventArgs) _
                                  Handles txtNQUERY.Leave, _
@@ -472,8 +470,8 @@ Public Class frm_clustertool
             Me.Size = New Size(Me.MinimumSize.Width, Me.Size.Height)
             btnSHHELP.Text = "Show Help >>"
         Else
-            Me.MaximumSize = New Size(900, 495)
-            Me.Size = New Size(543, Me.Size.Height)
+            Me.MaximumSize = New Size(900, 664)
+            Me.Size = New Size(643, Me.Size.Height)
             splcHELP.Panel2Collapsed = False
             btnSHHELP.Text = "<< Hide Help"
         End If
@@ -556,7 +554,6 @@ Public Class frm_clustertool
         LoadProgressForm()
 
     End Sub
-#End Region
 
     Private Sub LoadProgressForm()
         'This method launches the progress form, packages the parameters from the form, and calls the RunClustering method to initiate processing.
@@ -588,6 +585,7 @@ Public Class frm_clustertool
         Me.Dispose()
 
     End Sub
+#End Region
 
     Public Sub RunClustering(ByVal CAF As CAPARAM)
         'This is the algorithm to run the clustering analysis.
@@ -1452,6 +1450,7 @@ Public Class frm_clustertool
         End If
 
     End Sub
+
     Private Function CalcClusterStats(ByVal Ar, ByVal Ar2, ByVal Ar3)
         Dim dCount, dCountout, cluster_count, sample, n, dRange, dMean, dStd, dIqr, dMin, dMax, dSumsq, dArray(), _
     dMedian, dLQ, dUQ As Double
@@ -1626,6 +1625,7 @@ Public Class frm_clustertool
         Return sReport
     End Function
 
+#Region "DBScan"
     Private Function getNeighbors(ByVal epsilon As Double, ByVal index As Double, ByVal semimajor As Double, ByVal semiminor As Double) As Stack(Of Integer)
         Dim neighbors As New Stack(Of Integer)
         For i As Integer = 0 To dist_lists.Count - 1
@@ -1695,6 +1695,7 @@ Public Class frm_clustertool
         Next
         Return node
     End Function
+#End Region
 
 #Region "*** HELP CONTENT DISPLAY DYNAMICS ****************************************************"
 #End Region
@@ -1713,33 +1714,39 @@ Public Class frm_clustertool
         HELP_Form()
     End Sub
 
-#Region "***** LAYER ********"
-#End Region
-    Private Sub lblLAYER_Click(ByVal sender As System.Object, _
-                              ByVal e As System.EventArgs) _
-                              Handles lblLAYER.Click
+    'Layer
+    Private Sub lblLAYER_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles lblLAYER.Click
         HELP_Layer()
     End Sub
 
-    Private Sub cboLAYER_Click(ByVal sender As Object, _
-                               ByVal e As System.EventArgs) _
-                               Handles cboLAYER.Click
+    Private Sub cboLAYER_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles cboLAYER.Click
         HELP_Layer()
     End Sub
 
-#Region "***** NEAR QUERY *********"
-#End Region
+    'Distance Table
+    Private Sub disttable_lbl_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles disttable_lbl.Click
+        HELP_Distance()
+    End Sub
 
-    Private Sub grpNQUERY_Click(ByVal sender As Object, _
-                                ByVal e As System.EventArgs) _
-                                Handles grpNQUERY.Click
+    'Outlier Threshold Distance
+    Private Sub grpNQUERY_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles outlierdist_grp.Click
         HELP_DistanceQuery()
     End Sub
 
     Private Sub grpNQUERY_Enter(ByVal sender As System.Object, _
                                 ByVal e As System.EventArgs) _
-                                Handles grpNQUERY.Enter
+                                Handles outlierdist_grp.Enter
         HELP_DistanceQuery()
+    End Sub
+
+    Private Sub clustmeth_grp_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles clustmeth_grp.Enter
+        HELP_ClusterMethod()
+    End Sub
+
+    'DBScan
+
+    Private Sub DBScan_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles DBScan.Click
+        HELP_DBScan()
     End Sub
 
 #Region "***** MEASUREMENT SPACE *******"
@@ -1756,6 +1763,7 @@ Public Class frm_clustertool
 
         HELP_MeasurementSpace()
     End Sub
+
 
 #Region "***** CLUSTER METHOD *******"
 #End Region
@@ -1843,17 +1851,48 @@ Public Class frm_clustertool
 
     End Sub
 
+    Private Sub HELP_Distance()
+        'Update help panel
+        Dim strText As String = "The distance table associated with this input layer." & _
+            Environment.NewLine & _
+            "Requirement: A distance table generated using the distance table tool." & _
+            Environment.NewLine & _
+            "Select 'Planar' if the distance table was generated using planar distances or 'Geodetic' if the distance table was computed using geodesic distances."
+
+        HELPCntUpdate("Input Distance Table", strText)
+    End Sub
+
     Private Sub HELP_DistanceQuery()
 
         'Update help panel
         Dim strText As String = _
             "Points without a neighbor within this distance are considered outliers and are not considered during the cluster analysis process. " & vbCrLf & vbCrLf & _
-            "Optimization of this distance sets the threshold to the approximate lower quartile distance of the entire sample."
+            "Optimization of this distance sets the threshold to the mean distance of the entire sample and reports statistics of the dataset for potential alteration to our 'best guess optima'."
 
         HELPCntUpdate("Threshold Distance", strText)
 
     End Sub
+    Private Sub Help_ClusterMethod()
+        'Update help panel
+        Dim strText As String = _
+            "DBScan - A density based clustering method which requires a minimum threshold number of impacts as a parameter.  This is the computationally faster clustering method." & _
+            Environment.NewLine & _
+           "Heirarchal - A traditional clustering method that iterates over all point sequentially and merges clusters.  This is a signifigantly slower clustering method."
 
+        HELPCntUpdate("Threshold Distance", strText)
+    End Sub
+
+    Private Sub HELP_DBScan()
+        'Update help panel
+        Dim strText As String = _
+            "Minimum Cluster Seed Size determines the minimum number of clusters within the threshold distance in order to begin a new crater cluster." & _
+            Environment.NewLine & _
+           "The K-Distance graph provides a metric to assist in determining the distance at which outliers (noise) begin to impact cluster creation. " & _
+           "A drastic increase in slope is indicative of the distance at which outliers should be thresholded as noise. " & _
+           "Note that this is data specific, i.e. low ressolution source data with distinct spacecraft track boundaries skews this metric signifigantly."
+
+        HELPCntUpdate("Density Based Clustering (DBScan)", strText)
+    End Sub
     Private Sub HELP_MeasurementSpace()
 
         'Update help panel
@@ -1951,20 +1990,5 @@ Public Class frm_clustertool
 
     End Sub
 
-    Private Sub btnCANCEL_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCANCEL.Click
-
-    End Sub
-
-    Private Sub grpCLUSTER_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles grpCLUSTER.Enter
-
-    End Sub
-
-    Private Sub splcHELP_Panel1_Paint(ByVal sender As System.Object, ByVal e As System.Windows.Forms.PaintEventArgs) Handles splcHELP.Panel1.Paint
-
-    End Sub
-
-    Private Sub CheckBox1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs)
-
-    End Sub
 
 End Class

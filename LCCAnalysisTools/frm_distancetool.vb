@@ -36,8 +36,8 @@ Public Class frm_distancetool
     End Sub
 #Region "Input Layer DropDown"
     Private Sub inputlayer_DropDown(ByVal sender As Object, _
-                                 ByVal e As System.EventArgs) _
-                                 Handles inputlayer.DropDown
+                                 ByVal e As System.EventArgs) Handles inputlayer.DropDown
+
 
         Dim pMxDoc As IMxDocument = My.ArcMap.Document
 
@@ -72,7 +72,7 @@ Public Class frm_distancetool
     End Sub
 
     Private Sub inputlayer_DropDownClosed(ByVal sender As Object, _
-                                        ByVal e As System.EventArgs)
+                                        ByVal e As System.EventArgs) Handles inputlayer.DropDownClosed
 
 
         If inputlayer.SelectedIndex = -1 Then
@@ -97,7 +97,7 @@ Public Class frm_distancetool
     End Sub
 #End Region
 
-    Private Sub TextBoxes_Update(ByVal sender As Object, ByVal e As System.EventArgs) Handles knn.Leave
+    Private Sub TextBoxes_Update(ByVal sender As Object, ByVal e As System.EventArgs)
 
         'Make sure that we have an integer
         Try

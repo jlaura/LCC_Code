@@ -39,6 +39,11 @@ Partial Class frm_clustertool
         Me.btnOK = New System.Windows.Forms.Button()
         Me.btnSHHELP = New System.Windows.Forms.Button()
         Me.splcHELP = New System.Windows.Forms.SplitContainer()
+        Me.GroupBox5 = New System.Windows.Forms.GroupBox()
+        Me.LogSaveDialog = New System.Windows.Forms.Button()
+        Me.GroupBox6 = New System.Windows.Forms.GroupBox()
+        Me.TextBox3 = New System.Windows.Forms.TextBox()
+        Me.LogFileName = New System.Windows.Forms.TextBox()
         Me.radMEASGEO = New System.Windows.Forms.RadioButton()
         Me.radMEASPLAN = New System.Windows.Forms.RadioButton()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
@@ -59,14 +64,16 @@ Partial Class frm_clustertool
         Me.Label4 = New System.Windows.Forms.Label()
         Me.meanstats = New System.Windows.Forms.TextBox()
         Me.grpOUT = New System.Windows.Forms.GroupBox()
+        Me.GroupBox4 = New System.Windows.Forms.GroupBox()
+        Me.TextBox2 = New System.Windows.Forms.TextBox()
         Me.txtOUT = New System.Windows.Forms.TextBox()
-        Me.Label1 = New System.Windows.Forms.Label()
+        Me.disttable_lbl = New System.Windows.Forms.Label()
         Me.Disttable = New System.Windows.Forms.ComboBox()
-        Me.grpNQUERY = New System.Windows.Forms.GroupBox()
+        Me.outlierdist_grp = New System.Windows.Forms.GroupBox()
         Me.optimize = New System.Windows.Forms.Button()
-        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.clustmeth_grp = New System.Windows.Forms.GroupBox()
         Me.tabcontrol = New System.Windows.Forms.TabControl()
-        Me.TabPage4 = New System.Windows.Forms.TabPage()
+        Me.DBScan = New System.Windows.Forms.TabPage()
         Me.TextBox1 = New System.Windows.Forms.TextBox()
         Me.kgraph = New System.Windows.Forms.Button()
         Me.GroupBox3 = New System.Windows.Forms.GroupBox()
@@ -76,29 +83,22 @@ Partial Class frm_clustertool
         Me.rtxtHELP_CNT = New System.Windows.Forms.RichTextBox()
         Me.Panel2 = New System.Windows.Forms.Panel()
         Me.Label2 = New System.Windows.Forms.Label()
-        Me.TextBox2 = New System.Windows.Forms.TextBox()
-        Me.GroupBox4 = New System.Windows.Forms.GroupBox()
-        Me.GroupBox5 = New System.Windows.Forms.GroupBox()
-        Me.GroupBox6 = New System.Windows.Forms.GroupBox()
-        Me.TextBox3 = New System.Windows.Forms.TextBox()
-        Me.LogFileName = New System.Windows.Forms.TextBox()
-        Me.LogSaveDialog = New System.Windows.Forms.Button()
         Me.grpCLUSTER.SuspendLayout()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
+        Me.GroupBox5.SuspendLayout()
+        Me.GroupBox6.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
         Me.grpOUT.SuspendLayout()
-        Me.grpNQUERY.SuspendLayout()
-        Me.GroupBox2.SuspendLayout()
+        Me.GroupBox4.SuspendLayout()
+        Me.outlierdist_grp.SuspendLayout()
+        Me.clustmeth_grp.SuspendLayout()
         Me.tabcontrol.SuspendLayout()
-        Me.TabPage4.SuspendLayout()
+        Me.DBScan.SuspendLayout()
         Me.GroupBox3.SuspendLayout()
         Me.TabPage1.SuspendLayout()
         Me.Panel1.SuspendLayout()
-        Me.GroupBox4.SuspendLayout()
-        Me.GroupBox5.SuspendLayout()
-        Me.GroupBox6.SuspendLayout()
         Me.SuspendLayout()
         '
         'radCMBNND
@@ -221,7 +221,7 @@ Partial Class frm_clustertool
         '
         Me.btnCANCEL.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.btnCANCEL.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.btnCANCEL.Location = New System.Drawing.Point(90, 592)
+        Me.btnCANCEL.Location = New System.Drawing.Point(90, 601)
         Me.btnCANCEL.Name = "btnCANCEL"
         Me.btnCANCEL.Size = New System.Drawing.Size(75, 23)
         Me.btnCANCEL.TabIndex = 2
@@ -240,7 +240,7 @@ Partial Class frm_clustertool
         'btnOK
         '
         Me.btnOK.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnOK.Location = New System.Drawing.Point(9, 592)
+        Me.btnOK.Location = New System.Drawing.Point(9, 601)
         Me.btnOK.Name = "btnOK"
         Me.btnOK.Size = New System.Drawing.Size(75, 23)
         Me.btnOK.TabIndex = 1
@@ -250,7 +250,7 @@ Partial Class frm_clustertool
         'btnSHHELP
         '
         Me.btnSHHELP.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnSHHELP.Location = New System.Drawing.Point(325, 592)
+        Me.btnSHHELP.Location = New System.Drawing.Point(325, 601)
         Me.btnSHHELP.Name = "btnSHHELP"
         Me.btnSHHELP.Size = New System.Drawing.Size(84, 23)
         Me.btnSHHELP.TabIndex = 4
@@ -268,18 +268,19 @@ Partial Class frm_clustertool
         '
         'splcHELP.Panel1
         '
+        Me.splcHELP.Panel1.AutoScroll = True
         Me.splcHELP.Panel1.Controls.Add(Me.GroupBox5)
         Me.splcHELP.Panel1.Controls.Add(Me.radMEASGEO)
         Me.splcHELP.Panel1.Controls.Add(Me.radMEASPLAN)
         Me.splcHELP.Panel1.Controls.Add(Me.GroupBox1)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
-        Me.splcHELP.Panel1.Controls.Add(Me.Label1)
+        Me.splcHELP.Panel1.Controls.Add(Me.disttable_lbl)
         Me.splcHELP.Panel1.Controls.Add(Me.Disttable)
-        Me.splcHELP.Panel1.Controls.Add(Me.grpNQUERY)
+        Me.splcHELP.Panel1.Controls.Add(Me.outlierdist_grp)
         Me.splcHELP.Panel1.Controls.Add(Me.lblLAYER)
         Me.splcHELP.Panel1.Controls.Add(Me.cboLAYER)
-        Me.splcHELP.Panel1.Controls.Add(Me.GroupBox2)
-        Me.splcHELP.Panel1MinSize = 354
+        Me.splcHELP.Panel1.Controls.Add(Me.clustmeth_grp)
+        Me.splcHELP.Panel1MinSize = 414
         '
         'splcHELP.Panel2
         '
@@ -287,10 +288,55 @@ Partial Class frm_clustertool
         Me.splcHELP.Panel2.Controls.Add(Me.Panel2)
         Me.splcHELP.Panel2Collapsed = True
         Me.splcHELP.Panel2MinSize = 0
-        Me.splcHELP.Size = New System.Drawing.Size(415, 589)
-        Me.splcHELP.SplitterDistance = 356
+        Me.splcHELP.Size = New System.Drawing.Size(415, 595)
+        Me.splcHELP.SplitterDistance = 414
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
+        '
+        'GroupBox5
+        '
+        Me.GroupBox5.Controls.Add(Me.LogSaveDialog)
+        Me.GroupBox5.Controls.Add(Me.GroupBox6)
+        Me.GroupBox5.Controls.Add(Me.LogFileName)
+        Me.GroupBox5.Location = New System.Drawing.Point(4, 535)
+        Me.GroupBox5.Name = "GroupBox5"
+        Me.GroupBox5.Size = New System.Drawing.Size(403, 50)
+        Me.GroupBox5.TabIndex = 19
+        Me.GroupBox5.TabStop = False
+        Me.GroupBox5.Text = "Output Log File Name (Optional)"
+        '
+        'LogSaveDialog
+        '
+        Me.LogSaveDialog.Image = Global.LCCAnalysisTools.My.Resources.Resources.normal_folder
+        Me.LogSaveDialog.Location = New System.Drawing.Point(371, 16)
+        Me.LogSaveDialog.Name = "LogSaveDialog"
+        Me.LogSaveDialog.Size = New System.Drawing.Size(22, 23)
+        Me.LogSaveDialog.TabIndex = 19
+        Me.LogSaveDialog.UseVisualStyleBackColor = True
+        '
+        'GroupBox6
+        '
+        Me.GroupBox6.Controls.Add(Me.TextBox3)
+        Me.GroupBox6.Location = New System.Drawing.Point(1, 50)
+        Me.GroupBox6.Name = "GroupBox6"
+        Me.GroupBox6.Size = New System.Drawing.Size(404, 50)
+        Me.GroupBox6.TabIndex = 18
+        Me.GroupBox6.TabStop = False
+        Me.GroupBox6.Text = "Output layer name"
+        '
+        'TextBox3
+        '
+        Me.TextBox3.Location = New System.Drawing.Point(14, 19)
+        Me.TextBox3.Name = "TextBox3"
+        Me.TextBox3.Size = New System.Drawing.Size(384, 20)
+        Me.TextBox3.TabIndex = 0
+        '
+        'LogFileName
+        '
+        Me.LogFileName.Location = New System.Drawing.Point(14, 19)
+        Me.LogFileName.Name = "LogFileName"
+        Me.LogFileName.Size = New System.Drawing.Size(351, 20)
+        Me.LogFileName.TabIndex = 0
         '
         'radMEASGEO
         '
@@ -489,6 +535,23 @@ Partial Class frm_clustertool
         Me.grpOUT.TabStop = False
         Me.grpOUT.Text = "Output layer name"
         '
+        'GroupBox4
+        '
+        Me.GroupBox4.Controls.Add(Me.TextBox2)
+        Me.GroupBox4.Location = New System.Drawing.Point(1, 50)
+        Me.GroupBox4.Name = "GroupBox4"
+        Me.GroupBox4.Size = New System.Drawing.Size(404, 50)
+        Me.GroupBox4.TabIndex = 18
+        Me.GroupBox4.TabStop = False
+        Me.GroupBox4.Text = "Output layer name"
+        '
+        'TextBox2
+        '
+        Me.TextBox2.Location = New System.Drawing.Point(14, 19)
+        Me.TextBox2.Name = "TextBox2"
+        Me.TextBox2.Size = New System.Drawing.Size(384, 20)
+        Me.TextBox2.TabIndex = 0
+        '
         'txtOUT
         '
         Me.txtOUT.Location = New System.Drawing.Point(14, 19)
@@ -496,14 +559,14 @@ Partial Class frm_clustertool
         Me.txtOUT.Size = New System.Drawing.Size(384, 20)
         Me.txtOUT.TabIndex = 0
         '
-        'Label1
+        'disttable_lbl
         '
-        Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(4, 51)
-        Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(106, 13)
-        Me.Label1.TabIndex = 6
-        Me.Label1.Text = "Input Distance Table"
+        Me.disttable_lbl.AutoSize = True
+        Me.disttable_lbl.Location = New System.Drawing.Point(4, 51)
+        Me.disttable_lbl.Name = "disttable_lbl"
+        Me.disttable_lbl.Size = New System.Drawing.Size(106, 13)
+        Me.disttable_lbl.TabIndex = 6
+        Me.disttable_lbl.Text = "Input Distance Table"
         '
         'Disttable
         '
@@ -514,16 +577,16 @@ Partial Class frm_clustertool
         Me.Disttable.Size = New System.Drawing.Size(277, 21)
         Me.Disttable.TabIndex = 5
         '
-        'grpNQUERY
+        'outlierdist_grp
         '
-        Me.grpNQUERY.Controls.Add(Me.optimize)
-        Me.grpNQUERY.Controls.Add(Me.txtNQUERY)
-        Me.grpNQUERY.Location = New System.Drawing.Point(7, 104)
-        Me.grpNQUERY.Name = "grpNQUERY"
-        Me.grpNQUERY.Size = New System.Drawing.Size(400, 51)
-        Me.grpNQUERY.TabIndex = 1
-        Me.grpNQUERY.TabStop = False
-        Me.grpNQUERY.Text = "Outlier Threshold Distance"
+        Me.outlierdist_grp.Controls.Add(Me.optimize)
+        Me.outlierdist_grp.Controls.Add(Me.txtNQUERY)
+        Me.outlierdist_grp.Location = New System.Drawing.Point(7, 104)
+        Me.outlierdist_grp.Name = "outlierdist_grp"
+        Me.outlierdist_grp.Size = New System.Drawing.Size(400, 51)
+        Me.outlierdist_grp.TabIndex = 1
+        Me.outlierdist_grp.TabStop = False
+        Me.outlierdist_grp.Text = "Outlier Threshold Distance"
         '
         'optimize
         '
@@ -535,19 +598,19 @@ Partial Class frm_clustertool
         Me.optimize.Text = "Optimize"
         Me.optimize.UseVisualStyleBackColor = True
         '
-        'GroupBox2
+        'clustmeth_grp
         '
-        Me.GroupBox2.Controls.Add(Me.tabcontrol)
-        Me.GroupBox2.Location = New System.Drawing.Point(7, 264)
-        Me.GroupBox2.Name = "GroupBox2"
-        Me.GroupBox2.Size = New System.Drawing.Size(400, 209)
-        Me.GroupBox2.TabIndex = 9
-        Me.GroupBox2.TabStop = False
-        Me.GroupBox2.Text = "Clustering Method"
+        Me.clustmeth_grp.Controls.Add(Me.tabcontrol)
+        Me.clustmeth_grp.Location = New System.Drawing.Point(7, 264)
+        Me.clustmeth_grp.Name = "clustmeth_grp"
+        Me.clustmeth_grp.Size = New System.Drawing.Size(400, 209)
+        Me.clustmeth_grp.TabIndex = 9
+        Me.clustmeth_grp.TabStop = False
+        Me.clustmeth_grp.Text = "Clustering Method"
         '
         'tabcontrol
         '
-        Me.tabcontrol.Controls.Add(Me.TabPage4)
+        Me.tabcontrol.Controls.Add(Me.DBScan)
         Me.tabcontrol.Controls.Add(Me.TabPage1)
         Me.tabcontrol.Location = New System.Drawing.Point(10, 19)
         Me.tabcontrol.Name = "tabcontrol"
@@ -555,17 +618,17 @@ Partial Class frm_clustertool
         Me.tabcontrol.Size = New System.Drawing.Size(384, 185)
         Me.tabcontrol.TabIndex = 7
         '
-        'TabPage4
+        'DBScan
         '
-        Me.TabPage4.Controls.Add(Me.TextBox1)
-        Me.TabPage4.Controls.Add(Me.kgraph)
-        Me.TabPage4.Controls.Add(Me.GroupBox3)
-        Me.TabPage4.Location = New System.Drawing.Point(4, 22)
-        Me.TabPage4.Name = "TabPage4"
-        Me.TabPage4.Size = New System.Drawing.Size(376, 159)
-        Me.TabPage4.TabIndex = 3
-        Me.TabPage4.Text = "DBSCAN"
-        Me.TabPage4.UseVisualStyleBackColor = True
+        Me.DBScan.Controls.Add(Me.TextBox1)
+        Me.DBScan.Controls.Add(Me.kgraph)
+        Me.DBScan.Controls.Add(Me.GroupBox3)
+        Me.DBScan.Location = New System.Drawing.Point(4, 22)
+        Me.DBScan.Name = "DBScan"
+        Me.DBScan.Size = New System.Drawing.Size(376, 159)
+        Me.DBScan.TabIndex = 3
+        Me.DBScan.Text = "DBSCAN"
+        Me.DBScan.UseVisualStyleBackColor = True
         '
         'TextBox1
         '
@@ -662,84 +725,22 @@ Partial Class frm_clustertool
         Me.Label2.TabIndex = 0
         Me.Label2.Text = "Input point layer:"
         '
-        'TextBox2
-        '
-        Me.TextBox2.Location = New System.Drawing.Point(14, 19)
-        Me.TextBox2.Name = "TextBox2"
-        Me.TextBox2.Size = New System.Drawing.Size(384, 20)
-        Me.TextBox2.TabIndex = 0
-        '
-        'GroupBox4
-        '
-        Me.GroupBox4.Controls.Add(Me.TextBox2)
-        Me.GroupBox4.Location = New System.Drawing.Point(1, 50)
-        Me.GroupBox4.Name = "GroupBox4"
-        Me.GroupBox4.Size = New System.Drawing.Size(404, 50)
-        Me.GroupBox4.TabIndex = 18
-        Me.GroupBox4.TabStop = False
-        Me.GroupBox4.Text = "Output layer name"
-        '
-        'GroupBox5
-        '
-        Me.GroupBox5.Controls.Add(Me.LogSaveDialog)
-        Me.GroupBox5.Controls.Add(Me.GroupBox6)
-        Me.GroupBox5.Controls.Add(Me.LogFileName)
-        Me.GroupBox5.Location = New System.Drawing.Point(4, 535)
-        Me.GroupBox5.Name = "GroupBox5"
-        Me.GroupBox5.Size = New System.Drawing.Size(403, 50)
-        Me.GroupBox5.TabIndex = 19
-        Me.GroupBox5.TabStop = False
-        Me.GroupBox5.Text = "Output Log File Name (Optional)"
-        '
-        'GroupBox6
-        '
-        Me.GroupBox6.Controls.Add(Me.TextBox3)
-        Me.GroupBox6.Location = New System.Drawing.Point(1, 50)
-        Me.GroupBox6.Name = "GroupBox6"
-        Me.GroupBox6.Size = New System.Drawing.Size(404, 50)
-        Me.GroupBox6.TabIndex = 18
-        Me.GroupBox6.TabStop = False
-        Me.GroupBox6.Text = "Output layer name"
-        '
-        'TextBox3
-        '
-        Me.TextBox3.Location = New System.Drawing.Point(14, 19)
-        Me.TextBox3.Name = "TextBox3"
-        Me.TextBox3.Size = New System.Drawing.Size(384, 20)
-        Me.TextBox3.TabIndex = 0
-        '
-        'LogFileName
-        '
-        Me.LogFileName.Location = New System.Drawing.Point(14, 19)
-        Me.LogFileName.Name = "LogFileName"
-        Me.LogFileName.Size = New System.Drawing.Size(351, 20)
-        Me.LogFileName.TabIndex = 0
-        '
-        'LogSaveDialog
-        '
-        Me.LogSaveDialog.Image = Global.LCCAnalysisTools.My.Resources.Resources.normal_folder
-        Me.LogSaveDialog.Location = New System.Drawing.Point(371, 16)
-        Me.LogSaveDialog.Name = "LogSaveDialog"
-        Me.LogSaveDialog.Size = New System.Drawing.Size(22, 23)
-        Me.LogSaveDialog.TabIndex = 19
-        Me.LogSaveDialog.UseVisualStyleBackColor = True
-        '
         'frm_clustertool
         '
         Me.AcceptButton = Me.btnOK
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.btnCANCEL
-        Me.ClientSize = New System.Drawing.Size(415, 617)
+        Me.ClientSize = New System.Drawing.Size(415, 626)
         Me.Controls.Add(Me.splcHELP)
         Me.Controls.Add(Me.btnCANCEL)
         Me.Controls.Add(Me.btnOK)
         Me.Controls.Add(Me.btnSHHELP)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
-        Me.MaximumSize = New System.Drawing.Size(1000, 655)
+        Me.MaximumSize = New System.Drawing.Size(1000, 664)
         Me.MinimizeBox = False
-        Me.MinimumSize = New System.Drawing.Size(431, 655)
+        Me.MinimumSize = New System.Drawing.Size(431, 664)
         Me.Name = "frm_clustertool"
         Me.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
@@ -750,26 +751,26 @@ Partial Class frm_clustertool
         Me.splcHELP.Panel1.PerformLayout()
         Me.splcHELP.Panel2.ResumeLayout(False)
         Me.splcHELP.ResumeLayout(False)
-        Me.GroupBox1.ResumeLayout(False)
-        Me.GroupBox1.PerformLayout()
-        Me.grpOUT.ResumeLayout(False)
-        Me.grpOUT.PerformLayout()
-        Me.grpNQUERY.ResumeLayout(False)
-        Me.grpNQUERY.PerformLayout()
-        Me.GroupBox2.ResumeLayout(False)
-        Me.tabcontrol.ResumeLayout(False)
-        Me.TabPage4.ResumeLayout(False)
-        Me.TabPage4.PerformLayout()
-        Me.GroupBox3.ResumeLayout(False)
-        Me.GroupBox3.PerformLayout()
-        Me.TabPage1.ResumeLayout(False)
-        Me.Panel1.ResumeLayout(False)
-        Me.GroupBox4.ResumeLayout(False)
-        Me.GroupBox4.PerformLayout()
         Me.GroupBox5.ResumeLayout(False)
         Me.GroupBox5.PerformLayout()
         Me.GroupBox6.ResumeLayout(False)
         Me.GroupBox6.PerformLayout()
+        Me.GroupBox1.ResumeLayout(False)
+        Me.GroupBox1.PerformLayout()
+        Me.grpOUT.ResumeLayout(False)
+        Me.grpOUT.PerformLayout()
+        Me.GroupBox4.ResumeLayout(False)
+        Me.GroupBox4.PerformLayout()
+        Me.outlierdist_grp.ResumeLayout(False)
+        Me.outlierdist_grp.PerformLayout()
+        Me.clustmeth_grp.ResumeLayout(False)
+        Me.tabcontrol.ResumeLayout(False)
+        Me.DBScan.ResumeLayout(False)
+        Me.DBScan.PerformLayout()
+        Me.GroupBox3.ResumeLayout(False)
+        Me.GroupBox3.PerformLayout()
+        Me.TabPage1.ResumeLayout(False)
+        Me.Panel1.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -792,14 +793,14 @@ Partial Class frm_clustertool
     Friend WithEvents Label2 As System.Windows.Forms.Label
     Friend WithEvents txtOUT As System.Windows.Forms.TextBox
     Friend WithEvents grpOUT As System.Windows.Forms.GroupBox
-    Friend WithEvents grpNQUERY As System.Windows.Forms.GroupBox
+    Friend WithEvents outlierdist_grp As System.Windows.Forms.GroupBox
     Friend WithEvents rtxtHELP_CNT As System.Windows.Forms.RichTextBox
     Friend WithEvents optimize As System.Windows.Forms.Button
-    Friend WithEvents Label1 As System.Windows.Forms.Label
+    Friend WithEvents disttable_lbl As System.Windows.Forms.Label
     Friend WithEvents Disttable As System.Windows.Forms.ComboBox
     Friend WithEvents tabcontrol As System.Windows.Forms.TabControl
     Friend WithEvents TabPage1 As System.Windows.Forms.TabPage
-    Friend WithEvents TabPage4 As System.Windows.Forms.TabPage
+    Friend WithEvents DBScan As System.Windows.Forms.TabPage
     Friend WithEvents Panel1 As System.Windows.Forms.Panel
     Friend WithEvents Panel2 As System.Windows.Forms.Panel
     Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
@@ -815,7 +816,7 @@ Partial Class frm_clustertool
     Friend WithEvents medianstats As System.Windows.Forms.TextBox
     Friend WithEvents Label4 As System.Windows.Forms.Label
     Friend WithEvents meanstats As System.Windows.Forms.TextBox
-    Friend WithEvents GroupBox2 As System.Windows.Forms.GroupBox
+    Friend WithEvents clustmeth_grp As System.Windows.Forms.GroupBox
     Friend WithEvents Label9 As System.Windows.Forms.Label
     Friend WithEvents maxstats As System.Windows.Forms.TextBox
     Friend WithEvents Label8 As System.Windows.Forms.Label

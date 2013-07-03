@@ -24,6 +24,11 @@ Partial Class frm_trajecttool
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frm_trajecttool))
         Me.splcHELP = New System.Windows.Forms.SplitContainer()
+        Me.GroupBox5 = New System.Windows.Forms.GroupBox()
+        Me.LogSaveDialog = New System.Windows.Forms.Button()
+        Me.GroupBox6 = New System.Windows.Forms.GroupBox()
+        Me.TextBox3 = New System.Windows.Forms.TextBox()
+        Me.LogFileName = New System.Windows.Forms.TextBox()
         Me.grpOUT = New System.Windows.Forms.GroupBox()
         Me.txtOUT = New System.Windows.Forms.TextBox()
         Me.grpCOREFF = New System.Windows.Forms.GroupBox()
@@ -62,14 +67,11 @@ Partial Class frm_trajecttool
         Me.btnSHHELP = New System.Windows.Forms.Button()
         Me.btnOK = New System.Windows.Forms.Button()
         Me.btnCANCEL = New System.Windows.Forms.Button()
-        Me.GroupBox5 = New System.Windows.Forms.GroupBox()
-        Me.LogSaveDialog = New System.Windows.Forms.Button()
-        Me.GroupBox6 = New System.Windows.Forms.GroupBox()
-        Me.TextBox3 = New System.Windows.Forms.TextBox()
-        Me.LogFileName = New System.Windows.Forms.TextBox()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
+        Me.GroupBox5.SuspendLayout()
+        Me.GroupBox6.SuspendLayout()
         Me.grpOUT.SuspendLayout()
         Me.grpCOREFF.SuspendLayout()
         Me.grpTRAJDIST.SuspendLayout()
@@ -78,8 +80,6 @@ Partial Class frm_trajecttool
         Me.GroupBox1.SuspendLayout()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.pnlMARGIN2.SuspendLayout()
-        Me.GroupBox5.SuspendLayout()
-        Me.GroupBox6.SuspendLayout()
         Me.SuspendLayout()
         '
         'splcHELP
@@ -112,6 +112,51 @@ Partial Class frm_trajecttool
         Me.splcHELP.SplitterDistance = 356
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
+        '
+        'GroupBox5
+        '
+        Me.GroupBox5.Controls.Add(Me.LogSaveDialog)
+        Me.GroupBox5.Controls.Add(Me.GroupBox6)
+        Me.GroupBox5.Controls.Add(Me.LogFileName)
+        Me.GroupBox5.Location = New System.Drawing.Point(7, 424)
+        Me.GroupBox5.Name = "GroupBox5"
+        Me.GroupBox5.Size = New System.Drawing.Size(338, 50)
+        Me.GroupBox5.TabIndex = 20
+        Me.GroupBox5.TabStop = False
+        Me.GroupBox5.Text = "Output Log File Name (Optional)"
+        '
+        'LogSaveDialog
+        '
+        Me.LogSaveDialog.Image = Global.LCCAnalysisTools.My.Resources.Resources.normal_folder
+        Me.LogSaveDialog.Location = New System.Drawing.Point(308, 16)
+        Me.LogSaveDialog.Name = "LogSaveDialog"
+        Me.LogSaveDialog.Size = New System.Drawing.Size(22, 23)
+        Me.LogSaveDialog.TabIndex = 19
+        Me.LogSaveDialog.UseVisualStyleBackColor = True
+        '
+        'GroupBox6
+        '
+        Me.GroupBox6.Controls.Add(Me.TextBox3)
+        Me.GroupBox6.Location = New System.Drawing.Point(1, 50)
+        Me.GroupBox6.Name = "GroupBox6"
+        Me.GroupBox6.Size = New System.Drawing.Size(404, 50)
+        Me.GroupBox6.TabIndex = 18
+        Me.GroupBox6.TabStop = False
+        Me.GroupBox6.Text = "Output layer name"
+        '
+        'TextBox3
+        '
+        Me.TextBox3.Location = New System.Drawing.Point(14, 19)
+        Me.TextBox3.Name = "TextBox3"
+        Me.TextBox3.Size = New System.Drawing.Size(384, 20)
+        Me.TextBox3.TabIndex = 0
+        '
+        'LogFileName
+        '
+        Me.LogFileName.Location = New System.Drawing.Point(14, 19)
+        Me.LogFileName.Name = "LogFileName"
+        Me.LogFileName.Size = New System.Drawing.Size(288, 20)
+        Me.LogFileName.TabIndex = 0
         '
         'grpOUT
         '
@@ -401,11 +446,13 @@ Partial Class frm_trajecttool
         Me.DataGridView1.AllowUserToDeleteRows = False
         Me.DataGridView1.AllowUserToResizeColumns = False
         Me.DataGridView1.AllowUserToResizeRows = False
-        Me.DataGridView1.BackgroundColor = System.Drawing.SystemColors.Control
+        Me.DataGridView1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells
+        Me.DataGridView1.BackgroundColor = System.Drawing.SystemColors.ControlLightLight
+        Me.DataGridView1.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.RaisedVertical
         Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.DataGridView1.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.inputds})
         Me.DataGridView1.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically
-        Me.DataGridView1.GridColor = System.Drawing.Color.Maroon
+        Me.DataGridView1.GridColor = System.Drawing.Color.Black
         Me.DataGridView1.Location = New System.Drawing.Point(3, 46)
         Me.DataGridView1.Name = "DataGridView1"
         Me.DataGridView1.ReadOnly = True
@@ -506,51 +553,6 @@ Partial Class frm_trajecttool
         Me.btnCANCEL.Text = "Close"
         Me.btnCANCEL.UseVisualStyleBackColor = True
         '
-        'GroupBox5
-        '
-        Me.GroupBox5.Controls.Add(Me.LogSaveDialog)
-        Me.GroupBox5.Controls.Add(Me.GroupBox6)
-        Me.GroupBox5.Controls.Add(Me.LogFileName)
-        Me.GroupBox5.Location = New System.Drawing.Point(7, 424)
-        Me.GroupBox5.Name = "GroupBox5"
-        Me.GroupBox5.Size = New System.Drawing.Size(338, 50)
-        Me.GroupBox5.TabIndex = 20
-        Me.GroupBox5.TabStop = False
-        Me.GroupBox5.Text = "Output Log File Name (Optional)"
-        '
-        'LogSaveDialog
-        '
-        Me.LogSaveDialog.Image = Global.LCCAnalysisTools.My.Resources.Resources.normal_folder
-        Me.LogSaveDialog.Location = New System.Drawing.Point(308, 16)
-        Me.LogSaveDialog.Name = "LogSaveDialog"
-        Me.LogSaveDialog.Size = New System.Drawing.Size(22, 23)
-        Me.LogSaveDialog.TabIndex = 19
-        Me.LogSaveDialog.UseVisualStyleBackColor = True
-        '
-        'GroupBox6
-        '
-        Me.GroupBox6.Controls.Add(Me.TextBox3)
-        Me.GroupBox6.Location = New System.Drawing.Point(1, 50)
-        Me.GroupBox6.Name = "GroupBox6"
-        Me.GroupBox6.Size = New System.Drawing.Size(404, 50)
-        Me.GroupBox6.TabIndex = 18
-        Me.GroupBox6.TabStop = False
-        Me.GroupBox6.Text = "Output layer name"
-        '
-        'TextBox3
-        '
-        Me.TextBox3.Location = New System.Drawing.Point(14, 19)
-        Me.TextBox3.Name = "TextBox3"
-        Me.TextBox3.Size = New System.Drawing.Size(384, 20)
-        Me.TextBox3.TabIndex = 0
-        '
-        'LogFileName
-        '
-        Me.LogFileName.Location = New System.Drawing.Point(14, 19)
-        Me.LogFileName.Name = "LogFileName"
-        Me.LogFileName.Size = New System.Drawing.Size(288, 20)
-        Me.LogFileName.TabIndex = 0
-        '
         'frm_trajecttool
         '
         Me.AcceptButton = Me.btnOK
@@ -574,6 +576,10 @@ Partial Class frm_trajecttool
         Me.splcHELP.Panel1.ResumeLayout(False)
         Me.splcHELP.Panel2.ResumeLayout(False)
         Me.splcHELP.ResumeLayout(False)
+        Me.GroupBox5.ResumeLayout(False)
+        Me.GroupBox5.PerformLayout()
+        Me.GroupBox6.ResumeLayout(False)
+        Me.GroupBox6.PerformLayout()
         Me.grpOUT.ResumeLayout(False)
         Me.grpOUT.PerformLayout()
         Me.grpCOREFF.ResumeLayout(False)
@@ -587,10 +593,6 @@ Partial Class frm_trajecttool
         Me.GroupBox1.ResumeLayout(False)
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.pnlMARGIN2.ResumeLayout(False)
-        Me.GroupBox5.ResumeLayout(False)
-        Me.GroupBox5.PerformLayout()
-        Me.GroupBox6.ResumeLayout(False)
-        Me.GroupBox6.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
