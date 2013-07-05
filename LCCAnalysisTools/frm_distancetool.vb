@@ -112,12 +112,6 @@ Public Class frm_distancetool
     Private Sub btnOK_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles okay.Click
         validateform()
     End Sub
-    Private Sub btnSHHELP_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
-
-    End Sub
-    Private Sub btnCANCEL_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
-
-    End Sub
 
     Private Sub validateform()
         'On form submission this method is called to validate all the form fields.
@@ -196,8 +190,7 @@ Public Class frm_distancetool
     End Sub
 
     Private Sub generateNearTablePlanar(ByVal distlayer, ByVal knn, ByVal distanceTableOut, ByRef workspace)
-
-
+        MsgBox("ALERT: NOT YET IMPLEMENTED", MsgBoxStyle.Exclamation, "ERROR")
     End Sub
 
     Private Sub generateNearGeodesicTable(ByVal distlayer, ByVal knn, ByVal distanceTableOut, ByRef workspace)
@@ -350,7 +343,7 @@ Public Class frm_distancetool
         gp.OverwriteOutput = True
 
 
-        'Set Params
+        'Set Params 
         genneartable.in_features = FeatureLayer
         genneartable.near_features = distlayer.ToString()
         'genneartable.near_features = "C:\Users\jlaura\Desktop\Zunil\Zunil_secondaries_proj.shp"
@@ -474,6 +467,8 @@ Public Class frm_distancetool
 
     End Function
 
+#Region "Help Button & Contents"
+
     Private Sub btnSHHELP_Click_1(ByVal sender As System.Object, _
                                 ByVal e As System.EventArgs) _
                                 Handles btnSHHELP.Click
@@ -485,11 +480,180 @@ Public Class frm_distancetool
             Me.Size = New Size(Me.MinimumSize.Width, Me.Size.Height)
             btnSHHELP.Text = "Show Help >>"
         Else
-            Me.MaximumSize = New Size(900, 495)
-            Me.Size = New Size(543, Me.Size.Height)
+            Me.MaximumSize = New Size(900, 438)
+            Me.Size = New Size(693, Me.Size.Height)
             splcHELP.Panel2Collapsed = False
             btnSHHELP.Text = "<< Hide Help"
         End If
+    End Sub
+
+#Region "General Help"
+    Private Sub frm_distancetool_Click(ByVal sender As Object, _
+                                             ByVal e As System.EventArgs) _
+                                             Handles Me.Click
+        HELP_Form()
+    End Sub
+
+    Private Sub splcHELP_Click(ByVal sender As Object, _
+                           ByVal e As System.EventArgs) _
+                           Handles btnSHHELP.Click
+        HELP_Form()
+    End Sub
+
+    Private Sub HELP_Form()
+
+        'Update help panel
+        Dim strText As String = _
+          "Computes the k nearest neighbors in tabular form " & vbCrLf & vbCrLf & _
+          "Requirement: An input layer (shapefile or featureclass)."
+
+        HELPCntUpdate("Distance Matrix Tool", strText)
+    End Sub
+#End Region
+
+#Region "Input Layer Help"
+    'Layer
+    Private Sub lblLAYER_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles lblLAYER.Click
+        HELP_Layer()
+    End Sub
+
+    Private Sub cboLAYER_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles inputlayer.Click
+        HELP_Layer()
+    End Sub
+
+    Private Sub HELP_Layer()
+
+        'Update help panel
+        Dim strText As String = _
+            "The point layer." & vbCrLf & vbCrLf & _
+            "Requirement: The input layer must be projected in meters."
+
+        HELPCntUpdate("Input point layer", strText)
 
     End Sub
+
+#End Region
+
+#Region "KNN Help"
+    Private Sub knn_grp_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles knn_grp.Enter
+        HELP_KNN()
+    End Sub
+
+    Private Sub knn_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles knn.Click
+        HELP_KNN()
+    End Sub
+
+    Private Sub HELP_KNN()
+
+        'Update help panel
+        Dim strText As String = _
+            "The number of nearest neighbors." & vbCrLf & vbCrLf & _
+            "Requirement: An integer number of nearest neighbors to compute for each point observation."
+
+        HELPCntUpdate("K-Nearest Neighbors", strText)
+
+    End Sub
+#End Region
+
+#Region "Measurement Space Help"
+    Private Sub grpMEASSPACE_Click(ByVal sender As System.Object, _
+                       ByVal e As System.EventArgs) Handles grpMEASSPACE.Click
+
+        HELP_MeasurementSpace()
+    End Sub
+
+    Private Sub grpMEASSPACE_Enter(ByVal sender As System.Object, _
+                               ByVal e As System.EventArgs)
+
+        HELP_MeasurementSpace()
+    End Sub
+
+    Private Sub geod_measure_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles geodesic_measure.CheckedChanged
+        HELP_MeasurementSpace()
+    End Sub
+
+    Private Sub planar_measure_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles planar_measure.CheckedChanged
+        HELP_MeasurementSpace()
+    End Sub
+
+
+
+
+    Private Sub HELP_MeasurementSpace()
+
+        'Update help panel
+        Dim strText As String = _
+            "Planar - Distance measurements are performed in projected " & _
+            "space." & vbCrLf & vbCrLf & _
+            "Geodetic - Measurements are perfomed geodetically. This " & _
+            "method will yield results independent of map projection " & _
+            "and is considerably slower." & _
+            Environment.NewLine & _
+            Environment.NewLine & _
+            "As a metric to help drive your choice: Colorado is approximately 451km by 612km. Banerjee, S. (2004) reports that the compured distance between the most " & _
+            "distant points using Euclidean (planar) distance was 933.8km, while geodetic distance was 741.7km.  This is using un-projected data.  If the input data " & _
+            "is projected we see that (using a Mercator projection) euclidean distance is closer at 951.8km." & _
+            Environment.NewLine & _
+            Environment.NewLine & _
+            "In short - euclidean distance accuracy errors increase proportional to the size of the study area." & _
+            Environment.NewLine & _
+            "Banerjee, S. (2004). On Geodetic Distance Computations in Spatial Modeling. Biometrics."
+
+        HELPCntUpdate("Measurement space", strText)
+
+    End Sub
+#End Region
+
+#Region "Output Table Help"
+    Private Sub grpOUT_Enter(ByVal sender As System.Object, _
+                         ByVal e As System.EventArgs) _
+                         Handles grpOUT.Enter
+        HELP_Out()
+    End Sub
+
+    Private Sub grpOUT_Click(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) _
+                             Handles grpOUT.Click
+        HELP_Out()
+    End Sub
+
+
+    Private Sub HELP_Out()
+
+        'Update help panel
+        Dim strText As String = _
+            "The output table name."
+
+        HELPCntUpdate("Output table name", strText)
+
+    End Sub
+#End Region
+    Private Sub HELPCntUpdate(ByVal Title As String, ByVal Text As String)
+
+        'Update the content of the help panel
+        rtxtHELP_CNT.Clear()
+
+        rtxtHELP_CNT.AppendText("   " & vbCrLf & Title)
+        rtxtHELP_CNT.Find(Title, RichTextBoxFinds.MatchCase)
+        rtxtHELP_CNT.SelectionFont = New Drawing.Font("Arial", 12, Drawing.FontStyle.Bold)
+        rtxtHELP_CNT.SelectionColor = Drawing.Color.Black
+        rtxtHELP_CNT.DeselectAll()
+        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf)
+
+        rtxtHELP_CNT.AppendText(Text)
+
+        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf & vbCrLf)
+        rtxtHELP_CNT.Find("   ", RichTextBoxFinds.MatchCase)
+        rtxtHELP_CNT.ScrollToCaret()
+        rtxtHELP_CNT.DeselectAll()
+
+        rtxtHELP_CNT.Refresh()
+
+
+    End Sub
+#End Region
+
+
+
+
 End Class

@@ -688,7 +688,7 @@ Partial Class frm_clustertool
         Me.Panel1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Panel1.Location = New System.Drawing.Point(12, 0)
         Me.Panel1.Name = "Panel1"
-        Me.Panel1.Size = New System.Drawing.Size(9, 96)
+        Me.Panel1.Size = New System.Drawing.Size(178, 591)
         Me.Panel1.TabIndex = 2
         '
         'rtxtHELP_CNT
@@ -702,7 +702,7 @@ Partial Class frm_clustertool
         Me.rtxtHELP_CNT.Name = "rtxtHELP_CNT"
         Me.rtxtHELP_CNT.ReadOnly = True
         Me.rtxtHELP_CNT.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical
-        Me.rtxtHELP_CNT.Size = New System.Drawing.Size(9, 96)
+        Me.rtxtHELP_CNT.Size = New System.Drawing.Size(178, 591)
         Me.rtxtHELP_CNT.TabIndex = 0
         Me.rtxtHELP_CNT.TabStop = False
         Me.rtxtHELP_CNT.Text = ""
@@ -713,7 +713,7 @@ Partial Class frm_clustertool
         Me.Panel2.Dock = System.Windows.Forms.DockStyle.Left
         Me.Panel2.Location = New System.Drawing.Point(0, 0)
         Me.Panel2.Name = "Panel2"
-        Me.Panel2.Size = New System.Drawing.Size(12, 96)
+        Me.Panel2.Size = New System.Drawing.Size(12, 591)
         Me.Panel2.TabIndex = 14
         '
         'Label2

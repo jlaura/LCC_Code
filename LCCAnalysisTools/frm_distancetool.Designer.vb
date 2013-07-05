@@ -26,25 +26,25 @@ Partial Class frm_distancetool
         Me.okay = New System.Windows.Forms.Button()
         Me.btnCANCEL = New System.Windows.Forms.Button()
         Me.splcHELP = New System.Windows.Forms.SplitContainer()
-        Me.Panel1 = New System.Windows.Forms.Panel()
-        Me.rtxtHELP_CNT = New System.Windows.Forms.RichTextBox()
-        Me.Panel2 = New System.Windows.Forms.Panel()
         Me.grpMEASSPACE = New System.Windows.Forms.GroupBox()
         Me.planar_measure = New System.Windows.Forms.RadioButton()
         Me.geodesic_measure = New System.Windows.Forms.RadioButton()
-        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.knn_grp = New System.Windows.Forms.GroupBox()
         Me.knn = New System.Windows.Forms.TextBox()
         Me.grpOUT = New System.Windows.Forms.GroupBox()
         Me.distanceTableOut = New System.Windows.Forms.TextBox()
         Me.lblLAYER = New System.Windows.Forms.Label()
         Me.inputlayer = New System.Windows.Forms.ComboBox()
+        Me.Panel1 = New System.Windows.Forms.Panel()
+        Me.rtxtHELP_CNT = New System.Windows.Forms.RichTextBox()
+        Me.Panel2 = New System.Windows.Forms.Panel()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
-        Me.Panel1.SuspendLayout()
         Me.grpMEASSPACE.SuspendLayout()
-        Me.GroupBox1.SuspendLayout()
+        Me.knn_grp.SuspendLayout()
         Me.grpOUT.SuspendLayout()
+        Me.Panel1.SuspendLayout()
         Me.SuspendLayout()
         '
         'btnSHHELP
@@ -90,11 +90,11 @@ Partial Class frm_distancetool
         'splcHELP.Panel1
         '
         Me.splcHELP.Panel1.Controls.Add(Me.grpMEASSPACE)
-        Me.splcHELP.Panel1.Controls.Add(Me.GroupBox1)
+        Me.splcHELP.Panel1.Controls.Add(Me.knn_grp)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
         Me.splcHELP.Panel1.Controls.Add(Me.lblLAYER)
         Me.splcHELP.Panel1.Controls.Add(Me.inputlayer)
-        Me.splcHELP.Panel1MinSize = 354
+        Me.splcHELP.Panel1MinSize = 421
         '
         'splcHELP.Panel2
         '
@@ -103,43 +103,9 @@ Partial Class frm_distancetool
         Me.splcHELP.Panel2Collapsed = True
         Me.splcHELP.Panel2MinSize = 0
         Me.splcHELP.Size = New System.Drawing.Size(422, 232)
-        Me.splcHELP.SplitterDistance = 356
+        Me.splcHELP.SplitterDistance = 421
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 10
-        '
-        'Panel1
-        '
-        Me.Panel1.Controls.Add(Me.rtxtHELP_CNT)
-        Me.Panel1.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.Panel1.Location = New System.Drawing.Point(12, 0)
-        Me.Panel1.Name = "Panel1"
-        Me.Panel1.Size = New System.Drawing.Size(9, 96)
-        Me.Panel1.TabIndex = 2
-        '
-        'rtxtHELP_CNT
-        '
-        Me.rtxtHELP_CNT.BackColor = System.Drawing.SystemColors.Window
-        Me.rtxtHELP_CNT.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.rtxtHELP_CNT.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.rtxtHELP_CNT.Font = New System.Drawing.Font("Arial", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.rtxtHELP_CNT.HideSelection = False
-        Me.rtxtHELP_CNT.Location = New System.Drawing.Point(0, 0)
-        Me.rtxtHELP_CNT.Name = "rtxtHELP_CNT"
-        Me.rtxtHELP_CNT.ReadOnly = True
-        Me.rtxtHELP_CNT.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical
-        Me.rtxtHELP_CNT.Size = New System.Drawing.Size(9, 96)
-        Me.rtxtHELP_CNT.TabIndex = 0
-        Me.rtxtHELP_CNT.TabStop = False
-        Me.rtxtHELP_CNT.Text = ""
-        '
-        'Panel2
-        '
-        Me.Panel2.BackColor = System.Drawing.SystemColors.Window
-        Me.Panel2.Dock = System.Windows.Forms.DockStyle.Left
-        Me.Panel2.Location = New System.Drawing.Point(0, 0)
-        Me.Panel2.Name = "Panel2"
-        Me.Panel2.Size = New System.Drawing.Size(12, 96)
-        Me.Panel2.TabIndex = 14
         '
         'grpMEASSPACE
         '
@@ -177,15 +143,15 @@ Partial Class frm_distancetool
         Me.geodesic_measure.Text = "Geodesic"
         Me.geodesic_measure.UseVisualStyleBackColor = True
         '
-        'GroupBox1
+        'knn_grp
         '
-        Me.GroupBox1.Controls.Add(Me.knn)
-        Me.GroupBox1.Location = New System.Drawing.Point(13, 51)
-        Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Size = New System.Drawing.Size(400, 50)
-        Me.GroupBox1.TabIndex = 15
-        Me.GroupBox1.TabStop = False
-        Me.GroupBox1.Text = "Number of nearest neighbors"
+        Me.knn_grp.Controls.Add(Me.knn)
+        Me.knn_grp.Location = New System.Drawing.Point(13, 51)
+        Me.knn_grp.Name = "knn_grp"
+        Me.knn_grp.Size = New System.Drawing.Size(400, 50)
+        Me.knn_grp.TabIndex = 15
+        Me.knn_grp.TabStop = False
+        Me.knn_grp.Text = "Number of nearest neighbors"
         '
         'knn
         '
@@ -231,6 +197,40 @@ Partial Class frm_distancetool
         Me.inputlayer.Size = New System.Drawing.Size(400, 21)
         Me.inputlayer.TabIndex = 11
         '
+        'Panel1
+        '
+        Me.Panel1.Controls.Add(Me.rtxtHELP_CNT)
+        Me.Panel1.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Panel1.Location = New System.Drawing.Point(12, 0)
+        Me.Panel1.Name = "Panel1"
+        Me.Panel1.Size = New System.Drawing.Size(9, 96)
+        Me.Panel1.TabIndex = 2
+        '
+        'rtxtHELP_CNT
+        '
+        Me.rtxtHELP_CNT.BackColor = System.Drawing.SystemColors.Window
+        Me.rtxtHELP_CNT.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.rtxtHELP_CNT.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.rtxtHELP_CNT.Font = New System.Drawing.Font("Arial", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.rtxtHELP_CNT.HideSelection = False
+        Me.rtxtHELP_CNT.Location = New System.Drawing.Point(0, 0)
+        Me.rtxtHELP_CNT.Name = "rtxtHELP_CNT"
+        Me.rtxtHELP_CNT.ReadOnly = True
+        Me.rtxtHELP_CNT.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical
+        Me.rtxtHELP_CNT.Size = New System.Drawing.Size(9, 96)
+        Me.rtxtHELP_CNT.TabIndex = 0
+        Me.rtxtHELP_CNT.TabStop = False
+        Me.rtxtHELP_CNT.Text = ""
+        '
+        'Panel2
+        '
+        Me.Panel2.BackColor = System.Drawing.SystemColors.Window
+        Me.Panel2.Dock = System.Windows.Forms.DockStyle.Left
+        Me.Panel2.Location = New System.Drawing.Point(0, 0)
+        Me.Panel2.Name = "Panel2"
+        Me.Panel2.Size = New System.Drawing.Size(12, 96)
+        Me.Panel2.TabIndex = 14
+        '
         'frm_distancetool
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -240,19 +240,23 @@ Partial Class frm_distancetool
         Me.Controls.Add(Me.okay)
         Me.Controls.Add(Me.btnCANCEL)
         Me.Controls.Add(Me.splcHELP)
+        Me.MaximizeBox = False
+        Me.MaximumSize = New System.Drawing.Size(900, 314)
+        Me.MinimizeBox = False
+        Me.MinimumSize = New System.Drawing.Size(438, 314)
         Me.Name = "frm_distancetool"
         Me.Text = "frm_distancetool"
         Me.splcHELP.Panel1.ResumeLayout(False)
         Me.splcHELP.Panel1.PerformLayout()
         Me.splcHELP.Panel2.ResumeLayout(False)
         Me.splcHELP.ResumeLayout(False)
-        Me.Panel1.ResumeLayout(False)
         Me.grpMEASSPACE.ResumeLayout(False)
         Me.grpMEASSPACE.PerformLayout()
-        Me.GroupBox1.ResumeLayout(False)
-        Me.GroupBox1.PerformLayout()
+        Me.knn_grp.ResumeLayout(False)
+        Me.knn_grp.PerformLayout()
         Me.grpOUT.ResumeLayout(False)
         Me.grpOUT.PerformLayout()
+        Me.Panel1.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -263,7 +267,7 @@ Partial Class frm_distancetool
     Friend WithEvents grpMEASSPACE As System.Windows.Forms.GroupBox
     Friend WithEvents planar_measure As System.Windows.Forms.RadioButton
     Friend WithEvents geodesic_measure As System.Windows.Forms.RadioButton
-    Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
+    Friend WithEvents knn_grp As System.Windows.Forms.GroupBox
     Friend WithEvents knn As System.Windows.Forms.TextBox
     Friend WithEvents grpOUT As System.Windows.Forms.GroupBox
     Friend WithEvents distanceTableOut As System.Windows.Forms.TextBox

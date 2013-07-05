@@ -345,7 +345,7 @@ Public Class frm_clustertool
             btnSHHELP.Text = "Show Help >>"
         Else
             Me.MaximumSize = New Size(900, 664)
-            Me.Size = New Size(643, Me.Size.Height)
+            Me.Size = New Size(693, Me.Size.Height)
             splcHELP.Panel2Collapsed = False
             btnSHHELP.Text = "<< Hide Help"
         End If
@@ -1423,7 +1423,7 @@ Public Class frm_clustertool
 
     End Function
 
-    Private Function CalcBufferStats(ByVal Ar, ByVal dThreshold)
+    Private Function CalcBufferStats(ByVal Ar, ByVal dThreshold) As String
         Dim dCount, dCountout, dRange, dSum, dMean, dStd, dIqr, dMin, dMax, dSumsq, dArray(), _
             dMedian, dLQ, dUQ As Double
 
