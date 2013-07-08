@@ -1719,8 +1719,8 @@ Public Module mod_public
 
         'Iterate through the rows.
         While Not row Is Nothing
-            If row.Value(NearDist) < Ar(4, row.Value(InFid)) Then
-                Ar(4, row.Value(InFid)) = row.Value(NearDist)
+            If row.Value(NearDist) < Ar(4, row.Value(InFid) - 1) Then
+                Ar(4, row.Value(InFid) - 1) = row.Value(NearDist)
             End If
             row = cursor.NextRow()
 

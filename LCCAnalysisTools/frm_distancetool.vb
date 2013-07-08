@@ -535,7 +535,7 @@ Public Class frm_distancetool
 #End Region
 
 #Region "KNN Help"
-    Private Sub knn_grp_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles knn_grp.Enter
+    Private Sub knn_grp_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles knn_grp.Click
         HELP_KNN()
     End Sub
 
@@ -575,9 +575,6 @@ Public Class frm_distancetool
     Private Sub planar_measure_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles planar_measure.CheckedChanged
         HELP_MeasurementSpace()
     End Sub
-
-
-
 
     Private Sub HELP_MeasurementSpace()
 
@@ -628,6 +625,7 @@ Public Class frm_distancetool
 
     End Sub
 #End Region
+
     Private Sub HELPCntUpdate(ByVal Title As String, ByVal Text As String)
 
         'Update the content of the help panel
@@ -651,6 +649,7 @@ Public Class frm_distancetool
 
 
     End Sub
+
 #End Region
 
 

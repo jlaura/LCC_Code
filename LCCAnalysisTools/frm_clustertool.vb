@@ -344,8 +344,8 @@ Public Class frm_clustertool
             Me.Size = New Size(Me.MinimumSize.Width, Me.Size.Height)
             btnSHHELP.Text = "Show Help >>"
         Else
-            Me.MaximumSize = New Size(900, 664)
-            Me.Size = New Size(693, Me.Size.Height)
+            Me.MaximumSize = New Size(900, 720)
+            Me.Size = New Size(720, Me.Size.Height)
             splcHELP.Panel2Collapsed = False
             btnSHHELP.Text = "<< Hide Help"
         End If
@@ -363,7 +363,7 @@ Public Class frm_clustertool
         End If
 
         Dim pFClass As IFeatureClass = pFLayer.FeatureClass
-        Dim pDataset As IDataset = pFClass
+        Dim pDataset As IDataset = CType(pFClass, IDataset)
         Dim pWrkspc2 As IWorkspace2 = DirectCast(pDataset.Workspace, IWorkspace2)
 
         'Make sure that a distance table was selected.
@@ -411,11 +411,13 @@ Public Class frm_clustertool
 
         'Check for invalid output name
         If ValidateString(txtOUT.Text, "Output layer name", pFLayer.Name) = False Then
+            MsgBox("The output layer name contains invlaid characters unsupported by ArcMap.  Please rename the output layer.", MsgBoxStyle.Exclamation, "Invalid Output Name")
             Return
         End If
 
         'Check if feature class already exists on the workspace
         If FeatureClassExists(pWrkspc2, txtOUT.Text) Then
+            MsgBox("The output layer already exsits.  Please select a new output layer name.", MsgBoxStyle.Exclamation, "Output Exists")
             Return
         End If
 
@@ -606,10 +608,6 @@ Public Class frm_clustertool
 
         'Compute statistics on the clusters.
         PRINTtxt += CalcBufferStats(Ar, CAF.sNQUERY)
-
-
-
-
 
         If c_method = "heirarchal" Then
             '********************************************************************************************
@@ -1123,52 +1121,52 @@ Public Class frm_clustertool
                 Next
             End If
 
-        ElseIf c_method = "slink" Then
-            MsgBox("S-Link Clustering", MsgBoxStyle.Information, "Clustering Method")
-        ElseIf c_method = "dlink" Then
-            MsgBox("D-Link", MsgBoxStyle.Information, "Clustering Method")
-
         ElseIf c_method = "dbscan" Then
-            'DBSCAN
-            Dim counter As Integer = 0
-            For i As Integer = 0 To Ar.GetUpperBound(1) - 1
-                If Ar(4, i) < CDbl(txtNQUERY.Text) Then
-                    Dim Arr As New List(Of Double)
-                    Arr.Add(Ar(0, i))
-                    Arr.Add(Ar(1, i))
-                    Arr.Add(Ar(2, i))
-                    Arr.Add(Ar(3, i))
-                    dist_lists.Add(Arr)
-                    counter += 1
-                End If
-            Next
+            Dim measurement_space As Boolean = False
+            If radMEASPLAN.Checked Then
+                measurement_space = True
 
-            Dim cluster_id As Integer = 0
-            'Create a list of the unvisited nodes.  We iterate over these.
-            Dim Unvisited As New List(Of Integer)
-            Unvisited.Clear()
-            For i As Integer = 0 To dist_lists.Count - 1
-                Unvisited.Add(dist_lists(i)(1))
-            Next
+            End If
+                'DBSCAN
+                Dim counter As Integer = 0
+                For i As Integer = 0 To Ar.GetUpperBound(1) - 1
+                    If Ar(4, i) < CDbl(txtNQUERY.Text) Then
+                        Dim Arr As New List(Of Double)
+                        Arr.Add(Ar(0, i))
+                        Arr.Add(Ar(1, i))
+                        Arr.Add(Ar(2, i))
+                        Arr.Add(Ar(3, i))
+                        dist_lists.Add(Arr)
+                        counter += 1
+                    End If
+                Next
 
-            'Progress Bar
-            pProDlg.Description = "Clustering using DBScan..."
-            pStepPro.Message = String.Format("Processing {0} points ...", Unvisited.Count)
-            pStepPro.MinRange = 0
-            pStepPro.MaxRange = dist_lists.Count - 1
+                Dim cluster_id As Integer = 0
+                'Create a list of the unvisited nodes.  We iterate over these.
+                Dim Unvisited As New List(Of Integer)
+                Unvisited.Clear()
+                For i As Integer = 0 To dist_lists.Count - 1
+                Unvisited.Add(CInt(dist_lists(i)(0)))
+                Next
 
-            'Setup to start at a random node
-            Dim randomnumber As New Random
-            Dim index As Integer = 0
-            Dim old_count As Integer = 0
+                'Progress Bar
+                pProDlg.Description = "Clustering using DBScan..."
+            pStepPro.Message = String.Format("Processed {0} / {1} points ...", Unvisited.Count, dist_lists.Count)
+                pStepPro.MinRange = 0
+                pStepPro.MaxRange = dist_lists.Count - 1
 
-            'Iterate until we have visited all nodes.
+                'Setup to start at a random node
+                Dim randomnumber As New Random
+                Dim index As Integer = 0
+                Dim old_count As Integer = 0
+
+                'Iterate until we have visited all nodes.
             Do Until Unvisited.Count = 0
                 'Grab the index of the current node
                 index = randomnumber.Next(0, Unvisited.Count - 1)
                 Dim node = Unvisited(index)
                 old_count = Unvisited.Count
-                'If node = 16477 Or node = 16475 Or node = 16476 Or node = 16480 Then MsgBox("here", MsgBoxStyle.OkOnly, "gotcha")
+                'If node = 1077 Or node = 1078 Or node = 1079 Or node = 1076 Or node = 1080 Or node = 1081 Or node = 1082 Or node = 1083 Or node = 1084 Then MsgBox("here", MsgBoxStyle.OkOnly, "gotcha")
 
                 'Remove the node from the unvisited list and the node from the dist_lists
                 Unvisited.RemoveAt(index)
@@ -1178,16 +1176,17 @@ Public Class frm_clustertool
                 node_index = GetNodeIndex(node)
 
                 'Get the neighbors to the current node
-                Dim neighbors = getNeighbors(txtNQUERY.Text, node_index, dSemiMajAxis, dSemiMinAxis)
+                Dim neighbors = getNeighbors(txtNQUERY.Text, node_index, dSemiMajAxis, dSemiMinAxis, measurement_space)
 
                 'If we are greater than epsilon we have a cluster, otherwise we have noise.  Unmarked nodes are implicitly noise.
                 If neighbors.Count >= CInt(minpts.Text) Then 'neighbors includes the source point in the list
 
                     'Attempt to expand the cluster
-                    Unvisited = ExpandCluster(neighbors, cluster_id, txtNQUERY.Text, minpts.Text, Ar2, Unvisited, dSemiMajAxis, dSemiMinAxis)
+                    Unvisited = ExpandCluster(neighbors, cluster_id, txtNQUERY.Text, minpts.Text, Ar2, Unvisited, dSemiMajAxis, dSemiMinAxis, measurement_space)
 
                 End If
                 pStepPro.StepValue = old_count - Unvisited.Count
+                pStepPro.Message = String.Format("Processed {0} / {1} points ...", Unvisited.Count, dist_lists.Count)
                 If Not pTrkCan.Continue Then
                     'SUMMARY PRINT: End program as interrupted
                     PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
@@ -1198,85 +1197,85 @@ Public Class frm_clustertool
                 End If
 
             Loop
-            'Cleanup
-            dist_lists.Clear()
+                'Cleanup
+                dist_lists.Clear()
 
-        End If
-        '********************************************************************************************
-
-
-        'Add the CID of the main feature to the master CID list
-        Dim dCIDList(Ar.GetUpperBound(1)) As Double
-        System.Array.Copy(Ar2, 0, dCIDList, 0, Ar2.Length)
-        'Sort the CID master list
-        System.Array.Sort(dCIDList)
-
-        'PROGRESS UPDATE: 
-        pProDlg.Description = "Counting number of features per cluster..."
-        PRINTtxt += vbCrLf & " [Counting number of features per cluster...]"
-
-        'Get the number of CID occurances from the CID master list for each main feature CID
-        pTrkCan.Reset()
-        For n As Integer = 0 To Ar.GetUpperBound(1)
-            'If the main feature has no CID, skip it
-            If Ar2(Ar(0, n)) <> -1 Then
-                'Get the first and last occurance of the main feature CID
-                'from the CID master list
-                Dim n1stIndex, nLastIndex As Integer
-                n1stIndex = System.Array.IndexOf(dCIDList, Ar2(Ar(0, n))) + 1
-                nLastIndex = System.Array.LastIndexOf(dCIDList, Ar2(Ar(0, n))) + 1
-                'Calculate the number of main feature CID occurrances 
-                'from the first and last index of that CID on the master CID list
-                Ar3(Ar(0, n)) = (nLastIndex - n1stIndex) + 1
             End If
-            If Not pTrkCan.Continue Then
-                'SUMMARY PRINT: End program as interrupted
-                PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
-                                          sSDate, sSTime)
-                'Destroy the progress dialog
-                ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                If LogFileName.Text <> "" Then
-                    SaveLog(LogFileName.Text, PRINTtxt)
+            '********************************************************************************************
+
+
+            'Add the CID of the main feature to the master CID list
+            Dim dCIDList(Ar.GetUpperBound(1)) As Double
+            System.Array.Copy(Ar2, 0, dCIDList, 0, Ar2.Length)
+            'Sort the CID master list
+            System.Array.Sort(dCIDList)
+
+            'PROGRESS UPDATE: 
+            pProDlg.Description = "Counting number of features per cluster..."
+            PRINTtxt += vbCrLf & " [Counting number of features per cluster...]"
+        pStepPro.Message = "Processing..."
+            'Get the number of CID occurances from the CID master list for each main feature CID
+            pTrkCan.Reset()
+            For n As Integer = 0 To Ar.GetUpperBound(1)
+                'If the main feature has no CID, skip it
+                If Ar2(Ar(0, n)) <> -1 Then
+                    'Get the first and last occurance of the main feature CID
+                    'from the CID master list
+                    Dim n1stIndex, nLastIndex As Integer
+                    n1stIndex = System.Array.IndexOf(dCIDList, Ar2(Ar(0, n))) + 1
+                    nLastIndex = System.Array.LastIndexOf(dCIDList, Ar2(Ar(0, n))) + 1
+                    'Calculate the number of main feature CID occurrances 
+                    'from the first and last index of that CID on the master CID list
+                    Ar3(Ar(0, n)) = (nLastIndex - n1stIndex) + 1
+                End If
+                If Not pTrkCan.Continue Then
+                    'SUMMARY PRINT: End program as interrupted
+                    PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+                                              sSDate, sSTime)
+                    'Destroy the progress dialog
+                    ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                    If LogFileName.Text <> "" Then
+                        SaveLog(LogFileName.Text, PRINTtxt)
+                        Return
+                    End If
                     Return
                 End If
-                Return
-            End If
-        Next
+            Next
 
-        'PROGRESS UPDATE: 
-        pProDlg.Description = "Computing Cluster Statistics..."
-        PRINTtxt += vbCrLf & " [Computing Cluster Statistics...]"
+            'PROGRESS UPDATE: 
+            pProDlg.Description = "Computing Cluster Statistics..."
+            PRINTtxt += vbCrLf & " [Computing Cluster Statistics...]"
 
-        'Compute Cluster Statistics
-        PRINTtxt += CalcClusterStats(Ar, Ar2, Ar3)
+            'Compute Cluster Statistics
+            PRINTtxt += CalcClusterStats(Ar, Ar2, Ar3)
 
-        'PROGRESS UPDATE: 
-        pProDlg.Description = "Creating point feature class..."
-        PRINTtxt += vbCrLf & " [Creating point feature class...]"
+            'PROGRESS UPDATE: 
+            pProDlg.Description = "Creating point feature class..."
+            PRINTtxt += vbCrLf & " [Creating point feature class...]"
 
-        Dim pNewReqFields As IFields = GetClusterReqFields(True)
-        Dim pNewFLayer As IFeatureLayer = New FeatureLayerClass()
-        pNewFLayer.FeatureClass = CreateFeatureClass(pWrkspc2, pFDataset, CAF.sOUT, _
-                                                     pNewReqFields, _
-                                                     esriGeometryType.esriGeometryPoint, _
-                                                     pSpatRef)
-        pNewFLayer.Name = pNewFLayer.FeatureClass.AliasName
-        Dim pNewFClass As IFeatureClass = pNewFLayer.FeatureClass
+            Dim pNewReqFields As IFields = GetClusterReqFields(True)
+            Dim pNewFLayer As IFeatureLayer = New FeatureLayerClass()
+            pNewFLayer.FeatureClass = CreateFeatureClass(pWrkspc2, pFDataset, CAF.sOUT, _
+                                                         pNewReqFields, _
+                                                         esriGeometryType.esriGeometryPoint, _
+                                                         pSpatRef)
+            pNewFLayer.Name = pNewFLayer.FeatureClass.AliasName
+            Dim pNewFClass As IFeatureClass = pNewFLayer.FeatureClass
 
-        Dim pNewFCursor As IFeatureCursor = pNewFClass.Insert(True)
+            Dim pNewFCursor As IFeatureCursor = pNewFClass.Insert(True)
 
-        'Begin edit session and operation
-        Dim pEditor As IEditor = My.ArcMap.Editor
-        pEditor.StartEditing(pWrkspc2)
-        pEditor.StartOperation()
+            'Begin edit session and operation
+            Dim pEditor As IEditor = My.ArcMap.Editor
+            pEditor.StartEditing(pWrkspc2)
+            pEditor.StartOperation()
 
-        'PROGRESS UPDATE: 
-        pProDlg.Description = "Storing point features..."
-        PRINTtxt += vbCrLf & " [Storing point features...]"
+            'PROGRESS UPDATE: 
+            pProDlg.Description = "Storing point features..."
+            PRINTtxt += vbCrLf & " [Storing point features...]"
 
-        'Update the features with the values computed above
-        pTrkCan.Reset()
-        For o As Integer = 0 To Ar.GetUpperBound(1)
+            'Update the features with the values computed above
+            pTrkCan.Reset()
+        For o As Integer = 0 To Ar2.Length - 1
             If Ar2(Ar(0, o)) <> -1 Then
                 pFeature1 = pFClass.GetFeature(Ar(1, o))
                 'Create the feature buffer
@@ -1300,28 +1299,28 @@ Public Class frm_clustertool
 
         Next
 
-        'Stop edit operation and session, save edits
-        pEditor.StopOperation("Cluster features")
-        StopEditSession(True)
+            'Stop edit operation and session, save edits
+            pEditor.StopOperation("Cluster features")
+            StopEditSession(True)
 
-        'Add the new layer to the map
-        Dim pNewLayer As ILayer = pNewFLayer
-        pMxDoc.ActiveView.FocusMap.AddLayer(pNewLayer)
+            'Add the new layer to the map
+            Dim pNewLayer As ILayer = pNewFLayer
+            pMxDoc.ActiveView.FocusMap.AddLayer(pNewLayer)
 
-        'Refresh the Toc and Map
-        pMxDoc.UpdateContents()
-        pMxDoc.ActiveView.Refresh()
+            'Refresh the Toc and Map
+            pMxDoc.UpdateContents()
+            pMxDoc.ActiveView.Refresh()
 
-        'SUMMARY PRINT: End program as complete
-        PRINTtxt += SumEndProgram("COMPLETE: Cluster process complete.", _
-                                  sSDate, sSTime)
+            'SUMMARY PRINT: End program as complete
+            PRINTtxt += SumEndProgram("COMPLETE: Cluster process complete.", _
+                                      sSDate, sSTime)
 
-        'Destroy the progress dialog
-        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-        'Save the log here without a dialog
-        If LogFileName.Text <> "" Then
-            SaveLog(LogFileName.Text, PRINTtxt)
-        End If
+            'Destroy the progress dialog
+            ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+            'Save the log here without a dialog
+            If LogFileName.Text <> "" Then
+                SaveLog(LogFileName.Text, PRINTtxt)
+            End If
 
     End Sub
 
@@ -1500,10 +1499,11 @@ Public Class frm_clustertool
     End Function
 
 #Region "DBScan"
-    Private Function getNeighbors(ByVal epsilon As Double, ByVal index As Double, ByVal semimajor As Double, ByVal semiminor As Double) As Stack(Of Integer)
+    Private Function getNeighbors(ByVal epsilon As Double, ByVal index As Double, ByVal semimajor As Double, ByVal semiminor As Double, ByVal measurement_space As Boolean) As Stack(Of Integer)
         Dim neighbors As New Stack(Of Integer)
+        Dim dist As Double = 0.0
         For i As Integer = 0 To dist_lists.Count - 1
-            Dim dist = GetDist(dist_lists(index)(2), dist_lists(index)(3), dist_lists(i)(2), dist_lists(i)(3), semimajor, semiminor, True)
+            dist = GetDist(dist_lists(index)(2), dist_lists(index)(3), dist_lists(i)(2), dist_lists(i)(3), semimajor, semiminor, measurement_space)
             If dist <= epsilon Then
                 neighbors.Push(i) 'By Index
             End If
@@ -1513,7 +1513,7 @@ Public Class frm_clustertool
     End Function
 
     Private Function ExpandCluster(ByRef neighbors As Stack(Of Integer), ByRef cluster_id As Integer, ByVal epsilon As Double, ByVal minpts As Integer, _
-                                   ByRef Ar2() As Double, ByVal Unvisited As List(Of Integer), ByVal semimajor As Double, ByVal semiminor As Double) As List(Of Integer)
+                                   ByRef Ar2() As Double, ByVal Unvisited As List(Of Integer), ByVal semimajor As Double, ByVal semiminor As Double, ByVal measurement_space As Boolean) As List(Of Integer)
 
         Dim new_neighbors As New Stack(Of Integer)
         Dim neighbor_node As Integer = 0
@@ -1534,15 +1534,15 @@ Public Class frm_clustertool
             visited.Add(neighbor_node)
 
             'If we have not visited the node yet, check to see if the cluster extends
-            If Unvisited.Contains(dist_lists(neighbor_node)(1)) Then
+            If Unvisited.Contains(dist_lists(neighbor_node)(0)) Then
                 'Mark neighbor as visited
-                Unvisited.Remove(dist_lists(neighbor_node)(1))
+                Unvisited.Remove(dist_lists(neighbor_node)(0))
                 'Get the index of the neighbor_node in the dist_lists
                 'node_index = GetNodeIndex(neighbor_node)
                 'Get the neighbors to the new neighbor, i.e. is the cluster expanding by epsilon
-                new_neighbors = getNeighbors(epsilon, neighbor_node, semimajor, semiminor)
+                new_neighbors = getNeighbors(epsilon, neighbor_node, semimajor, semiminor, measurement_space)
                 'If the number of new neighbors constitutes a new cluster, start adding that cluster as well.  Grow by density essentially.
-                If new_neighbors.Count >= minpts - 1 Then
+                If new_neighbors.Count + Unvisited.Count + neighbors.Count >= minpts - 1 Then
                     Do Until new_neighbors.Count = 0
                         new_neighbor = new_neighbors.Peek
                         If visited.Contains(new_neighbor) Or neighbors.Contains(new_neighbor) Then
@@ -1555,7 +1555,7 @@ Public Class frm_clustertool
             End If
 
             'If the neighbor is not part of a cluster, add it to the current cluster.
-            If Ar2(dist_lists(neighbor_node)(1)) = -1 Then Ar2(dist_lists(neighbor_node)(1)) = cluster_id
+            If Ar2(dist_lists(neighbor_node)(0)) = -1 Then Ar2(dist_lists(neighbor_node)(0)) = cluster_id
 
         End While
         Return Unvisited
@@ -1563,7 +1563,7 @@ Public Class frm_clustertool
 
     Private Function GetNodeIndex(ByVal node As Integer) As Integer
         For i As Integer = 0 To dist_lists.Count - 1
-            If dist_lists(i)(1) = node Then
+            If dist_lists(i)(0) = node Then
                 node = i
             End If
         Next
@@ -1571,299 +1571,7 @@ Public Class frm_clustertool
     End Function
 #End Region
 
-#Region "*** HELP CONTENT DISPLAY DYNAMICS ****************************************************"
-#End Region
-
-#Region "***** FORM *********"
-#End Region
-    Private Sub Frm_ClusterAnalysis_Click(ByVal sender As Object, _
-                                          ByVal e As System.EventArgs) _
-                                          Handles Me.Click
-        HELP_Form()
-    End Sub
-
-    Private Sub splcHELP_Click(ByVal sender As Object, _
-                           ByVal e As System.EventArgs) _
-                           Handles splcHELP.Click
-        HELP_Form()
-    End Sub
-
-    'Layer
-    Private Sub lblLAYER_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles lblLAYER.Click
-        HELP_Layer()
-    End Sub
-
-    Private Sub cboLAYER_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles cboLAYER.Click
-        HELP_Layer()
-    End Sub
-
-    'Distance Table
-    Private Sub disttable_lbl_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles disttable_lbl.Click
-        HELP_Distance()
-    End Sub
-
-    'Outlier Threshold Distance
-    Private Sub grpNQUERY_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles outlierdist_grp.Click
-        HELP_DistanceQuery()
-    End Sub
-
-    Private Sub grpNQUERY_Enter(ByVal sender As System.Object, _
-                                ByVal e As System.EventArgs) _
-                                Handles outlierdist_grp.Enter
-        HELP_DistanceQuery()
-    End Sub
-
-    Private Sub clustmeth_grp_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles clustmeth_grp.Enter
-        HELP_ClusterMethod()
-    End Sub
-
-    'DBScan
-
-    Private Sub DBScan_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles DBScan.Click
-        HELP_DBScan()
-    End Sub
-
-#Region "***** MEASUREMENT SPACE *******"
-#End Region
-
-    Private Sub grpMEASSPACE_Click(ByVal sender As System.Object, _
-                           ByVal e As System.EventArgs)
-
-        HELP_MeasurementSpace()
-    End Sub
-
-    Private Sub grpMEASSPACE_Enter(ByVal sender As System.Object, _
-                               ByVal e As System.EventArgs)
-
-        HELP_MeasurementSpace()
-    End Sub
-
-
-#Region "***** CLUSTER METHOD *******"
-#End Region
-
-    Private Sub radCMS_GotFocus(ByVal sender As Object, _
-                                   ByVal e As System.EventArgs) _
-                                   Handles radCMS.GotFocus
-        HELP_ClusterMethodSameDist()
-    End Sub
-
-    Private Sub txtCMSVAL_GotFocus(ByVal sender As Object, _
-                                ByVal e As System.EventArgs) _
-                                Handles txtCMSVAL.GotFocus
-        HELP_ClusterMethodSameDist()
-    End Sub
-
-    Private Sub radCMBNND_GotFocus(ByVal sender As Object, _
-                                     ByVal e As System.EventArgs) _
-                                     Handles radCMBNND.GotFocus
-        HELP_ClusterMethodBNearestNDist()
-    End Sub
-
-    Private Sub radCMBF_GotFocus(ByVal sender As Object, _
-                                      ByVal e As System.EventArgs) _
-                                      Handles radCMBF.GotFocus
-        HELP_ClusterMethodBNearestNDistFact()
-    End Sub
-
-    Private Sub txtCMBFVAL_GotFocus(ByVal sender As Object, _
-                                 ByVal e As System.EventArgs) _
-                                 Handles txtCMBFVAL.GotFocus
-        HELP_ClusterMethodBNearestNDistFact()
-    End Sub
-
-    Private Sub radCMBS_GotFocus(ByVal sender As Object, _
-                                    ByVal e As System.EventArgs) _
-                                    Handles radCMBS.GotFocus
-        HELP_ClusterMethodBSameDist()
-    End Sub
-
-    Private Sub txtCMBSVAL_GotFocus(ByVal sender As Object, _
-                                 ByVal e As System.EventArgs) _
-                                 Handles txtCMBSVAL.GotFocus
-        HELP_ClusterMethodBSameDist()
-    End Sub
-
-#Region "***** OUTPUT ********"
-#End Region
-
-    Private Sub grpOUT_Enter(ByVal sender As System.Object, _
-                             ByVal e As System.EventArgs) _
-                             Handles grpOUT.Enter
-        HELP_Out()
-    End Sub
-
-    Private Sub grpOUT_Click(ByVal sender As System.Object, _
-                             ByVal e As System.EventArgs) _
-                             Handles grpOUT.Click
-        HELP_Out()
-    End Sub
-
-#Region "*** HELP PANEL UPDATE CONTENT ********************************************************"
-#End Region
-
-    Private Sub HELP_Form()
-
-        'Update help panel
-        Dim strText As String = _
-          "Identifies clusters of points using each point's Nearest " & _
-          "Neighbor distance." & vbCrLf & vbCrLf & _
-          "Requirement: The input layer must be projected in meters."
-
-        HELPCntUpdate("Cluster Tool", strText)
-
-    End Sub
-
-    Private Sub HELP_Layer()
-
-        'Update help panel
-        Dim strText As String = _
-            "The point layer." & vbCrLf & vbCrLf & _
-            "Requirement: The input layer must be projected in meters."
-
-        HELPCntUpdate("Input point layer", strText)
-
-    End Sub
-
-    Private Sub HELP_Distance()
-        'Update help panel
-        Dim strText As String = "The distance table associated with this input layer." & _
-            Environment.NewLine & _
-            "Requirement: A distance table generated using the distance table tool." & _
-            Environment.NewLine & _
-            "Select 'Planar' if the distance table was generated using planar distances or 'Geodetic' if the distance table was computed using geodesic distances."
-
-        HELPCntUpdate("Input Distance Table", strText)
-    End Sub
-
-    Private Sub HELP_DistanceQuery()
-
-        'Update help panel
-        Dim strText As String = _
-            "Points without a neighbor within this distance are considered outliers and are not considered during the cluster analysis process. " & vbCrLf & vbCrLf & _
-            "Optimization of this distance sets the threshold to the mean distance of the entire sample and reports statistics of the dataset for potential alteration to our 'best guess optima'."
-
-        HELPCntUpdate("Threshold Distance", strText)
-
-    End Sub
-    Private Sub Help_ClusterMethod()
-        'Update help panel
-        Dim strText As String = _
-            "DBScan - A density based clustering method which requires a minimum threshold number of impacts as a parameter.  This is the computationally faster clustering method." & _
-            Environment.NewLine & _
-           "Heirarchal - A traditional clustering method that iterates over all point sequentially and merges clusters.  This is a signifigantly slower clustering method."
-
-        HELPCntUpdate("Threshold Distance", strText)
-    End Sub
-
-    Private Sub HELP_DBScan()
-        'Update help panel
-        Dim strText As String = _
-            "Minimum Cluster Seed Size determines the minimum number of clusters within the threshold distance in order to begin a new crater cluster." & _
-            Environment.NewLine & _
-           "The K-Distance graph provides a metric to assist in determining the distance at which outliers (noise) begin to impact cluster creation. " & _
-           "A drastic increase in slope is indicative of the distance at which outliers should be thresholded as noise. " & _
-           "Note that this is data specific, i.e. low ressolution source data with distinct spacecraft track boundaries skews this metric signifigantly."
-
-        HELPCntUpdate("Density Based Clustering (DBScan)", strText)
-    End Sub
-    Private Sub HELP_MeasurementSpace()
-
-        'Update help panel
-        Dim strText As String = _
-            "Planar - Distance measurements are performed in projected " & _
-            "space." & vbCrLf & vbCrLf & _
-            "Geodetic - Measurements are perfomed geodetically. This " & _
-            "method will yield results independent of map projection " & _
-            "and is considerably slower."
-
-        HELPCntUpdate("Measurement space", strText)
-
-    End Sub
-
-    Private Sub HELP_ClusterMethodSameDist()
-
-        'Update help panel
-        Dim strText As String = _
-            "Points that fall within this distance from a " & _
-            "point are considered part of the same cluster."
-
-        HELPCntUpdate("Fixed distance", strText)
-
-    End Sub
-
-    Private Sub HELP_ClusterMethodBNearestNDist()
-
-        'Update help panel
-        Dim strText As String = _
-            "Points are buffered by a distance equal to their Nearest " & _
-            "Neighbor distance. Once buffers are merged, all points " & _
-            "that fall inside the merged area are considered part of the " & _
-            "same cluster."
-
-        HELPCntUpdate("Buffer option: Nearest Neighbor distance", strText)
-
-    End Sub
-
-    Private Sub HELP_ClusterMethodBNearestNDistFact()
-
-        'Update help panel
-        Dim strText As String = _
-            "Points are buffered by a distance equal to their Nearest " & _
-            "Neighbor distance times a factor value. Once buffers " & _
-            "are merged, all points that fall inside the merged area are " & _
-            "considered part of the same cluster."
-
-        HELPCntUpdate("Buffer option: Nearest Neighbor distance x factor", strText)
-
-    End Sub
-
-    Private Sub HELP_ClusterMethodBSameDist()
-
-        'Update help panel
-        Dim strText As String = _
-            "Points are buffered by this distance. Once buffers " & _
-            "are merged, all points that fall inside the merged area are " & _
-            "considered part of the same cluster."
-
-        HELPCntUpdate("Buffer option: Fixed distance", strText)
-
-    End Sub
-
-    Private Sub HELP_Out()
-
-        'Update help panel
-        Dim strText As String = _
-            "The output point layer name."
-
-        HELPCntUpdate("Output layer name", strText)
-
-    End Sub
-
-    Private Sub HELPCntUpdate(ByVal Title As String, ByVal Text As String)
-
-        'Update the content of the help panel
-        rtxtHELP_CNT.Clear()
-
-        rtxtHELP_CNT.AppendText("   " & vbCrLf & Title)
-        rtxtHELP_CNT.Find(Title, RichTextBoxFinds.MatchCase)
-        rtxtHELP_CNT.SelectionFont = New Drawing.Font("Arial", 12, Drawing.FontStyle.Bold)
-        rtxtHELP_CNT.SelectionColor = Drawing.Color.Black
-        rtxtHELP_CNT.DeselectAll()
-        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf)
-
-        rtxtHELP_CNT.AppendText(Text)
-
-        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf & vbCrLf)
-        rtxtHELP_CNT.Find("   ", RichTextBoxFinds.MatchCase)
-        rtxtHELP_CNT.ScrollToCaret()
-        rtxtHELP_CNT.DeselectAll()
-
-        rtxtHELP_CNT.Refresh()
-
-
-    End Sub
-
+#Region "Compute Optimization Statistics"
     Private Sub Compute_DatasetStats()
         'Make sure that we have an input layer..
         Dim pFLayer As IFeatureLayer = GetFLayerByName(m_sCAFLayer)
@@ -1876,7 +1584,7 @@ Public Class frm_clustertool
 
         Dim pFClass As IFeatureClass = pFLayer.FeatureClass
         Dim pDataset As IDataset = pFClass
-        Dim pWrkspc2 As IWorkspace2 = DirectCast(pDataset.Workspace, IWorkspace2)
+        Dim pWrkspc2 As IWorkspace = DirectCast(pDataset.Workspace, IWorkspace)
 
         'Make sure that a distance table was selected.
         If distance_table Is Nothing Then
@@ -1916,25 +1624,29 @@ Public Class frm_clustertool
         Next
         'Open the distance table
         Dim table = getTableByName(distance_table)
-        Dim InFid As Integer = table.FindField("IN_FID")
-        If InFid = Nothing Then InFid = table.FindField("OID")
+        Dim InFid As Integer = 5
+        InFid = table.FindField("IN_FID")
 
         Dim NearDist As Integer = table.FindField("NEAR_DIST")
 
-        Dim cursor As ICursor = table.Search(Nothing, True)
-        Dim row As IRow = cursor.NextRow()
+        Dim cursor As ICursor = table.Search(Nothing, False)
+        Dim row As IRow = cursor.NextRow
 
-        While Not row Is Nothing
-            If row.Value(NearDist) < DistArray(row.Value(InFid)) Then
-                DistArray(row.Value(InFid)) = row.Value(NearDist)
-            End If
-            row = cursor.NextRow()
-            If Not pTrkCan.Continue Then
-                ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                Return
-            End If
+        Do While Not row Is Nothing
+            Try
+                If row.Value(NearDist) < DistArray(row.Value(InFid) - 1) Then
+                    DistArray(row.Value(InFid) - 1) = row.Value(NearDist)
+                End If
+                row = cursor.NextRow
+                If Not pTrkCan.Continue Then
+                    ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                    Return
+                End If
+            Catch ex As Exception
+                MsgBox(row.Value(InFid), MsgBoxStyle.MsgBoxHelp, "Row OID")
+            End Try
 
-        End While
+        Loop
 
         'Get the mean + std as the optimal max distance
         Dim dCount, dRange, dSum, dMean, dStd, dMin, dMax, dSumsq, dMedian, dLQ, dUQ As Double
@@ -1991,4 +1703,367 @@ Public Class frm_clustertool
         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
 
     End Sub
+#End Region
+
+#Region "Help Button & Contents"
+
+#Region "Form Help"
+    Private Sub Frm_ClusterAnalysis_Click(ByVal sender As Object, _
+                                          ByVal e As System.EventArgs) _
+                                          Handles Me.Click
+        HELP_Form()
+    End Sub
+
+    Private Sub splcHELP_Click(ByVal sender As Object, _
+                           ByVal e As System.EventArgs) _
+                           Handles splcHELP.Click
+        HELP_Form()
+    End Sub
+
+    Private Sub HELP_Form()
+
+        'Update help panel
+        Dim strText As String = _
+          "Identifies clusters of points using each point's Nearest " & _
+          "Neighbor distance." & vbCrLf & vbCrLf & _
+          "Requirement: The input layer must be projected in meters."
+
+        HELPCntUpdate("Cluster Tool", strText)
+
+    End Sub
+#End Region
+
+#Region "Input Layer Help"
+    Private Sub lblLAYER_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles lblLAYER.Click
+        HELP_Layer()
+    End Sub
+
+    Private Sub cboLAYER_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles cboLAYER.Click
+        HELP_Layer()
+    End Sub
+
+    Private Sub HELP_Layer()
+
+        'Update help panel
+        Dim strText As String = _
+            "The point layer." & vbCrLf & vbCrLf & _
+            "Requirement: The input layer must be projected in meters."
+
+        HELPCntUpdate("Input point layer", strText)
+
+    End Sub
+#End Region
+
+#Region "Distance Table Help"
+    'Distance Table
+    Private Sub disttable_lbl_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles disttable_lbl.Click
+        HELP_Distance()
+    End Sub
+
+    Private Sub disttable_ddown_click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Disttable.Click
+        HELP_Distance()
+    End Sub
+
+    'Outlier Threshold Distance
+    Private Sub grpNQUERY_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles outlierdist_grp.Click
+        HELP_DistanceQuery()
+    End Sub
+
+    Private Sub grpNQUERY_Enter(ByVal sender As System.Object, _
+                                ByVal e As System.EventArgs) _
+                                Handles outlierdist_grp.Enter
+        HELP_DistanceQuery()
+    End Sub
+
+    Private Sub grpNQUERY_Focus(ByVal sender As System.Object, _
+                            ByVal e As System.EventArgs) _
+                            Handles outlierdist_grp.GotFocus
+        HELP_DistanceQuery()
+    End Sub
+
+    Private Sub HELP_Distance()
+        'Update help panel
+        Dim strText As String = "The distance table associated with this input layer." & _
+            Environment.NewLine & _
+            "Requirement: A distance table generated using the distance table tool." & _
+            Environment.NewLine & _
+            "Select 'Planar' if the distance table was generated using planar distances or 'Geodetic' if the distance table was computed using geodesic distances."
+
+        HELPCntUpdate("Input Distance Table", strText)
+    End Sub
+
+    Private Sub HELP_DistanceQuery()
+
+        'Update help panel
+        Dim strText As String = _
+            "Points without a neighbor within this distance are considered outliers and are not considered during the cluster analysis process. " & vbCrLf & vbCrLf & _
+            "Optimization of this distance sets the threshold to the mean distance of the entire sample and reports statistics of the dataset for potential alteration to our 'best guess optima'."
+
+        HELPCntUpdate("Threshold Distance", strText)
+
+    End Sub
+#End Region
+
+#Region "Stats"
+    Private Sub stats_group_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles stats_group.Enter
+        HELP_stats()
+    End Sub
+
+    Private Sub HELP_stats()
+        'Update help panel
+        Dim strText As String = "Derived from the distance table, these fields are populated" & _
+            " by the optimization button."
+
+        HELPCntUpdate("Nearest Neighbor Statistics", strText)
+    End Sub
+#End Region
+
+#Region "Measurement Space Help"
+    Private Sub grpMEASSPACE_Click(ByVal sender As System.Object, _
+                       ByVal e As System.EventArgs) Handles grpMEASSPACE.Click
+
+        HELP_MeasurementSpace()
+    End Sub
+
+    Private Sub grpMEASSPACE_Enter(ByVal sender As System.Object, _
+                               ByVal e As System.EventArgs)
+
+        HELP_MeasurementSpace()
+    End Sub
+
+    Private Sub geod_measure_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radMEASGEO.CheckedChanged
+        HELP_MeasurementSpace()
+    End Sub
+
+    Private Sub planar_measure_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles radMEASPLAN.CheckedChanged
+        HELP_MeasurementSpace()
+    End Sub
+
+    Private Sub HELP_MeasurementSpace()
+
+        'Update help panel
+        Dim strText As String = _
+            "Planar - Distance measurements are performed in projected " & _
+            "space." & vbCrLf & vbCrLf & _
+            "Geodetic - Measurements are perfomed geodetically. This " & _
+            "method will yield results independent of map projection " & _
+            "and is considerably slower." & _
+            Environment.NewLine & _
+            Environment.NewLine & _
+            "WARNING: Using geodesic measurement in projected space will not process.  To use geodesic measurements, the shapefile or featureclass must be in GCS." & _
+            Environment.NewLine & _
+            Environment.NewLine & _
+            "As a metric to help drive your choice: Colorado is approximately 451km by 612km. Banerjee, S. (2004) reports that the compured distance between the most " & _
+            "distant points using Euclidean (planar) distance was 933.8km, while geodetic distance was 741.7km.  This is using un-projected data.  If the input data " & _
+            "is projected we see that (using a Mercator projection) euclidean distance is closer at 951.8km." & _
+            Environment.NewLine & _
+            Environment.NewLine & _
+            "In short - euclidean distance accuracy errors increase proportional to the size of the study area." & _
+            Environment.NewLine & _
+            "Banerjee, S. (2004). On Geodetic Distance Computations in Spatial Modeling. Biometrics."
+
+        HELPCntUpdate("Measurement space", strText)
+
+    End Sub
+#End Region
+
+#Region "Clustering"
+    Private Sub clustmeth_grp_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles clustmeth_grp.Click
+        Help_ClusterMethod()
+    End Sub
+
+    Private Sub DBScan_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles DBScan.Click
+        HELP_DBScan()
+    End Sub
+
+    Private Sub radCMS_GotFocus(ByVal sender As Object, _
+                                  ByVal e As System.EventArgs) _
+                                  Handles radCMS.GotFocus
+        HELP_ClusterMethodSameDist()
+    End Sub
+
+    Private Sub txtCMSVAL_GotFocus(ByVal sender As Object, _
+                                ByVal e As System.EventArgs) _
+                                Handles txtCMSVAL.GotFocus
+        HELP_ClusterMethodSameDist()
+    End Sub
+
+    Private Sub radCMBNND_GotFocus(ByVal sender As Object, _
+                                     ByVal e As System.EventArgs) _
+                                     Handles radCMBNND.GotFocus
+        HELP_ClusterMethodBNearestNDist()
+    End Sub
+
+    Private Sub radCMBF_GotFocus(ByVal sender As Object, _
+                                      ByVal e As System.EventArgs) _
+                                      Handles radCMBF.GotFocus
+        HELP_ClusterMethodBNearestNDistFact()
+    End Sub
+
+    Private Sub txtCMBFVAL_GotFocus(ByVal sender As Object, _
+                                 ByVal e As System.EventArgs) _
+                                 Handles txtCMBFVAL.GotFocus
+        HELP_ClusterMethodBNearestNDistFact()
+    End Sub
+
+    Private Sub radCMBS_GotFocus(ByVal sender As Object, _
+                                    ByVal e As System.EventArgs) _
+                                    Handles radCMBS.GotFocus
+        HELP_ClusterMethodBSameDist()
+    End Sub
+
+    Private Sub txtCMBSVAL_GotFocus(ByVal sender As Object, _
+                                 ByVal e As System.EventArgs) _
+                                 Handles txtCMBSVAL.GotFocus
+        HELP_ClusterMethodBSameDist()
+    End Sub
+
+    Private Sub Help_ClusterMethod()
+        'Update help panel
+        Dim strText As String = _
+            "DBScan - A density based clustering method which requires a minimum threshold number of impacts as a parameter.  This is the computationally faster clustering method." & _
+            Environment.NewLine & _
+            Environment.NewLine & _
+           "Heirarchal - A traditional clustering method that iterates over all point sequentially and merges clusters.  This is a signifigantly slower clustering method."
+
+        HELPCntUpdate("Clustering Method", strText)
+    End Sub
+
+    Private Sub HELP_DBScan()
+        'Update help panel
+        Dim strText As String = _
+            "Minimum Cluster Seed Size determines the minimum number of clusters within the threshold distance in order to begin a new crater cluster." & _
+            Environment.NewLine & _
+           "The K-Distance graph provides a metric to assist in determining the distance at which outliers (noise) begin to impact cluster creation. " & _
+           "A drastic increase in slope is indicative of the distance at which outliers should be thresholded as noise. " & _
+           "Note that this is data specific, i.e. low ressolution source data with distinct spacecraft track boundaries skews this metric signifigantly."
+
+        HELPCntUpdate("Density Based Clustering (DBScan)", strText)
+    End Sub
+
+    Private Sub HELP_ClusterMethodSameDist()
+
+        'Update help panel
+        Dim strText As String = _
+            "Points that fall within this distance from a " & _
+            "point are considered part of the same cluster."
+
+        HELPCntUpdate("Fixed distance", strText)
+
+    End Sub
+
+    Private Sub HELP_ClusterMethodBNearestNDist()
+
+        'Update help panel
+        Dim strText As String = _
+            "Points are buffered by a distance equal to their Nearest " & _
+            "Neighbor distance. Once buffers are merged, all points " & _
+            "that fall inside the merged area are considered part of the " & _
+            "same cluster."
+
+        HELPCntUpdate("Buffer option: Nearest Neighbor distance", strText)
+
+    End Sub
+
+    Private Sub HELP_ClusterMethodBNearestNDistFact()
+
+        'Update help panel
+        Dim strText As String = _
+            "Points are buffered by a distance equal to their Nearest " & _
+            "Neighbor distance times a factor value. Once buffers " & _
+            "are merged, all points that fall inside the merged area are " & _
+            "considered part of the same cluster."
+
+        HELPCntUpdate("Buffer option: Nearest Neighbor distance x factor", strText)
+
+    End Sub
+
+    Private Sub HELP_ClusterMethodBSameDist()
+
+        'Update help panel
+        Dim strText As String = _
+            "Points are buffered by this distance. Once buffers " & _
+            "are merged, all points that fall inside the merged area are " & _
+            "considered part of the same cluster."
+
+        HELPCntUpdate("Buffer option: Fixed distance", strText)
+
+    End Sub
+
+    Private Sub HELPCntUpdate(ByVal Title As String, ByVal Text As String)
+
+        'Update the content of the help panel
+        rtxtHELP_CNT.Clear()
+
+        rtxtHELP_CNT.AppendText("   " & vbCrLf & Title)
+        rtxtHELP_CNT.Find(Title, RichTextBoxFinds.MatchCase)
+        rtxtHELP_CNT.SelectionFont = New Drawing.Font("Arial", 12, Drawing.FontStyle.Bold)
+        rtxtHELP_CNT.SelectionColor = Drawing.Color.Black
+        rtxtHELP_CNT.DeselectAll()
+        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf)
+
+        rtxtHELP_CNT.AppendText(Text)
+
+        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf & vbCrLf)
+        rtxtHELP_CNT.Find("   ", RichTextBoxFinds.MatchCase)
+        rtxtHELP_CNT.ScrollToCaret()
+        rtxtHELP_CNT.DeselectAll()
+
+        rtxtHELP_CNT.Refresh()
+
+
+    End Sub
+#End Region
+
+#Region "Output File"
+    Private Sub grpOUT_Enter(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) _
+                             Handles grpOUT.Enter
+        HELP_Out()
+    End Sub
+
+    Private Sub grpOUT_Click(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) _
+                             Handles grpOUT.Click
+        HELP_Out()
+    End Sub
+
+    Private Sub HELP_Out()
+
+        'Update help panel
+        Dim strText As String = _
+            "The output point layer name."
+
+        HELPCntUpdate("Output layer name", strText)
+
+    End Sub
+#End Region
+
+#Region "Log File"
+    Private Sub log_grp_Enter(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) _
+                             Handles log_grp.Enter
+        HELP_Out()
+    End Sub
+
+    Private Sub log_name_Click(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) _
+                             Handles LogFileName.Click
+        HELP_Log()
+    End Sub
+
+    Private Sub HELP_Log()
+
+        'Update help panel
+        Dim strText As String = _
+            "The output log file name." & _
+            Environment.NewLine & _
+            "This field is optional."
+
+        HELPCntUpdate("Output layer name", strText)
+
+    End Sub
+#End Region
+#End Region
+
 End Class

@@ -39,14 +39,15 @@ Partial Class frm_clustertool
         Me.btnOK = New System.Windows.Forms.Button()
         Me.btnSHHELP = New System.Windows.Forms.Button()
         Me.splcHELP = New System.Windows.Forms.SplitContainer()
-        Me.GroupBox5 = New System.Windows.Forms.GroupBox()
+        Me.grpMEASSPACE = New System.Windows.Forms.GroupBox()
+        Me.radMEASPLAN = New System.Windows.Forms.RadioButton()
+        Me.radMEASGEO = New System.Windows.Forms.RadioButton()
+        Me.log_grp = New System.Windows.Forms.GroupBox()
         Me.LogSaveDialog = New System.Windows.Forms.Button()
         Me.GroupBox6 = New System.Windows.Forms.GroupBox()
         Me.TextBox3 = New System.Windows.Forms.TextBox()
         Me.LogFileName = New System.Windows.Forms.TextBox()
-        Me.radMEASGEO = New System.Windows.Forms.RadioButton()
-        Me.radMEASPLAN = New System.Windows.Forms.RadioButton()
-        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.stats_group = New System.Windows.Forms.GroupBox()
         Me.Label9 = New System.Windows.Forms.Label()
         Me.maxstats = New System.Windows.Forms.TextBox()
         Me.Label8 = New System.Windows.Forms.Label()
@@ -87,9 +88,10 @@ Partial Class frm_clustertool
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
-        Me.GroupBox5.SuspendLayout()
+        Me.grpMEASSPACE.SuspendLayout()
+        Me.log_grp.SuspendLayout()
         Me.GroupBox6.SuspendLayout()
-        Me.GroupBox1.SuspendLayout()
+        Me.stats_group.SuspendLayout()
         Me.grpOUT.SuspendLayout()
         Me.GroupBox4.SuspendLayout()
         Me.outlierdist_grp.SuspendLayout()
@@ -221,7 +223,7 @@ Partial Class frm_clustertool
         '
         Me.btnCANCEL.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.btnCANCEL.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.btnCANCEL.Location = New System.Drawing.Point(90, 601)
+        Me.btnCANCEL.Location = New System.Drawing.Point(90, 657)
         Me.btnCANCEL.Name = "btnCANCEL"
         Me.btnCANCEL.Size = New System.Drawing.Size(75, 23)
         Me.btnCANCEL.TabIndex = 2
@@ -240,7 +242,7 @@ Partial Class frm_clustertool
         'btnOK
         '
         Me.btnOK.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnOK.Location = New System.Drawing.Point(9, 601)
+        Me.btnOK.Location = New System.Drawing.Point(9, 657)
         Me.btnOK.Name = "btnOK"
         Me.btnOK.Size = New System.Drawing.Size(75, 23)
         Me.btnOK.TabIndex = 1
@@ -250,7 +252,7 @@ Partial Class frm_clustertool
         'btnSHHELP
         '
         Me.btnSHHELP.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnSHHELP.Location = New System.Drawing.Point(325, 601)
+        Me.btnSHHELP.Location = New System.Drawing.Point(325, 657)
         Me.btnSHHELP.Name = "btnSHHELP"
         Me.btnSHHELP.Size = New System.Drawing.Size(84, 23)
         Me.btnSHHELP.TabIndex = 4
@@ -269,10 +271,9 @@ Partial Class frm_clustertool
         'splcHELP.Panel1
         '
         Me.splcHELP.Panel1.AutoScroll = True
-        Me.splcHELP.Panel1.Controls.Add(Me.GroupBox5)
-        Me.splcHELP.Panel1.Controls.Add(Me.radMEASGEO)
-        Me.splcHELP.Panel1.Controls.Add(Me.radMEASPLAN)
-        Me.splcHELP.Panel1.Controls.Add(Me.GroupBox1)
+        Me.splcHELP.Panel1.Controls.Add(Me.grpMEASSPACE)
+        Me.splcHELP.Panel1.Controls.Add(Me.log_grp)
+        Me.splcHELP.Panel1.Controls.Add(Me.stats_group)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
         Me.splcHELP.Panel1.Controls.Add(Me.disttable_lbl)
         Me.splcHELP.Panel1.Controls.Add(Me.Disttable)
@@ -288,22 +289,58 @@ Partial Class frm_clustertool
         Me.splcHELP.Panel2.Controls.Add(Me.Panel2)
         Me.splcHELP.Panel2Collapsed = True
         Me.splcHELP.Panel2MinSize = 0
-        Me.splcHELP.Size = New System.Drawing.Size(415, 595)
+        Me.splcHELP.Size = New System.Drawing.Size(415, 654)
         Me.splcHELP.SplitterDistance = 414
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
         '
-        'GroupBox5
+        'grpMEASSPACE
         '
-        Me.GroupBox5.Controls.Add(Me.LogSaveDialog)
-        Me.GroupBox5.Controls.Add(Me.GroupBox6)
-        Me.GroupBox5.Controls.Add(Me.LogFileName)
-        Me.GroupBox5.Location = New System.Drawing.Point(4, 535)
-        Me.GroupBox5.Name = "GroupBox5"
-        Me.GroupBox5.Size = New System.Drawing.Size(403, 50)
-        Me.GroupBox5.TabIndex = 19
-        Me.GroupBox5.TabStop = False
-        Me.GroupBox5.Text = "Output Log File Name (Optional)"
+        Me.grpMEASSPACE.Controls.Add(Me.radMEASPLAN)
+        Me.grpMEASSPACE.Controls.Add(Me.radMEASGEO)
+        Me.grpMEASSPACE.Location = New System.Drawing.Point(3, 264)
+        Me.grpMEASSPACE.Name = "grpMEASSPACE"
+        Me.grpMEASSPACE.Size = New System.Drawing.Size(405, 53)
+        Me.grpMEASSPACE.TabIndex = 20
+        Me.grpMEASSPACE.TabStop = False
+        Me.grpMEASSPACE.Text = "Measurement space"
+        '
+        'radMEASPLAN
+        '
+        Me.radMEASPLAN.Appearance = System.Windows.Forms.Appearance.Button
+        Me.radMEASPLAN.AutoSize = True
+        Me.radMEASPLAN.Checked = True
+        Me.radMEASPLAN.Location = New System.Drawing.Point(18, 19)
+        Me.radMEASPLAN.Name = "radMEASPLAN"
+        Me.radMEASPLAN.Size = New System.Drawing.Size(47, 23)
+        Me.radMEASPLAN.TabIndex = 0
+        Me.radMEASPLAN.TabStop = True
+        Me.radMEASPLAN.Text = "Planar"
+        Me.radMEASPLAN.UseVisualStyleBackColor = True
+        '
+        'radMEASGEO
+        '
+        Me.radMEASGEO.Appearance = System.Windows.Forms.Appearance.Button
+        Me.radMEASGEO.AutoSize = True
+        Me.radMEASGEO.Location = New System.Drawing.Point(71, 19)
+        Me.radMEASGEO.Name = "radMEASGEO"
+        Me.radMEASGEO.Size = New System.Drawing.Size(62, 23)
+        Me.radMEASGEO.TabIndex = 1
+        Me.radMEASGEO.TabStop = True
+        Me.radMEASGEO.Text = "Geodesic"
+        Me.radMEASGEO.UseVisualStyleBackColor = True
+        '
+        'log_grp
+        '
+        Me.log_grp.Controls.Add(Me.LogSaveDialog)
+        Me.log_grp.Controls.Add(Me.GroupBox6)
+        Me.log_grp.Controls.Add(Me.LogFileName)
+        Me.log_grp.Location = New System.Drawing.Point(0, 594)
+        Me.log_grp.Name = "log_grp"
+        Me.log_grp.Size = New System.Drawing.Size(403, 50)
+        Me.log_grp.TabIndex = 19
+        Me.log_grp.TabStop = False
+        Me.log_grp.Text = "Output Log File Name (Optional)"
         '
         'LogSaveDialog
         '
@@ -338,55 +375,30 @@ Partial Class frm_clustertool
         Me.LogFileName.Size = New System.Drawing.Size(351, 20)
         Me.LogFileName.TabIndex = 0
         '
-        'radMEASGEO
+        'stats_group
         '
-        Me.radMEASGEO.Appearance = System.Windows.Forms.Appearance.Button
-        Me.radMEASGEO.AutoSize = True
-        Me.radMEASGEO.Location = New System.Drawing.Point(322, 75)
-        Me.radMEASGEO.Name = "radMEASGEO"
-        Me.radMEASGEO.Size = New System.Drawing.Size(60, 23)
-        Me.radMEASGEO.TabIndex = 17
-        Me.radMEASGEO.TabStop = True
-        Me.radMEASGEO.Text = "Geodetic"
-        Me.radMEASGEO.UseVisualStyleBackColor = True
-        '
-        'radMEASPLAN
-        '
-        Me.radMEASPLAN.Appearance = System.Windows.Forms.Appearance.Button
-        Me.radMEASPLAN.AutoSize = True
-        Me.radMEASPLAN.Checked = True
-        Me.radMEASPLAN.Location = New System.Drawing.Point(323, 46)
-        Me.radMEASPLAN.Name = "radMEASPLAN"
-        Me.radMEASPLAN.Size = New System.Drawing.Size(47, 23)
-        Me.radMEASPLAN.TabIndex = 16
-        Me.radMEASPLAN.TabStop = True
-        Me.radMEASPLAN.Text = "Planar"
-        Me.radMEASPLAN.UseVisualStyleBackColor = True
-        '
-        'GroupBox1
-        '
-        Me.GroupBox1.Controls.Add(Me.Label9)
-        Me.GroupBox1.Controls.Add(Me.maxstats)
-        Me.GroupBox1.Controls.Add(Me.Label8)
-        Me.GroupBox1.Controls.Add(Me.minstats)
-        Me.GroupBox1.Controls.Add(Me.Label12)
-        Me.GroupBox1.Controls.Add(Me.lqstats)
-        Me.GroupBox1.Controls.Add(Me.Label7)
-        Me.GroupBox1.Controls.Add(Me.uqstats)
-        Me.GroupBox1.Controls.Add(Me.Label11)
-        Me.GroupBox1.Controls.Add(Me.stdstats)
-        Me.GroupBox1.Controls.Add(Me.Label6)
-        Me.GroupBox1.Controls.Add(Me.rangestats)
-        Me.GroupBox1.Controls.Add(Me.Label5)
-        Me.GroupBox1.Controls.Add(Me.medianstats)
-        Me.GroupBox1.Controls.Add(Me.Label4)
-        Me.GroupBox1.Controls.Add(Me.meanstats)
-        Me.GroupBox1.Location = New System.Drawing.Point(7, 161)
-        Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Size = New System.Drawing.Size(400, 97)
-        Me.GroupBox1.TabIndex = 8
-        Me.GroupBox1.TabStop = False
-        Me.GroupBox1.Text = "Nearest Neighbor Statistics"
+        Me.stats_group.Controls.Add(Me.Label9)
+        Me.stats_group.Controls.Add(Me.maxstats)
+        Me.stats_group.Controls.Add(Me.Label8)
+        Me.stats_group.Controls.Add(Me.minstats)
+        Me.stats_group.Controls.Add(Me.Label12)
+        Me.stats_group.Controls.Add(Me.lqstats)
+        Me.stats_group.Controls.Add(Me.Label7)
+        Me.stats_group.Controls.Add(Me.uqstats)
+        Me.stats_group.Controls.Add(Me.Label11)
+        Me.stats_group.Controls.Add(Me.stdstats)
+        Me.stats_group.Controls.Add(Me.Label6)
+        Me.stats_group.Controls.Add(Me.rangestats)
+        Me.stats_group.Controls.Add(Me.Label5)
+        Me.stats_group.Controls.Add(Me.medianstats)
+        Me.stats_group.Controls.Add(Me.Label4)
+        Me.stats_group.Controls.Add(Me.meanstats)
+        Me.stats_group.Location = New System.Drawing.Point(7, 161)
+        Me.stats_group.Name = "stats_group"
+        Me.stats_group.Size = New System.Drawing.Size(400, 97)
+        Me.stats_group.TabIndex = 8
+        Me.stats_group.TabStop = False
+        Me.stats_group.Text = "Nearest Neighbor Statistics"
         '
         'Label9
         '
@@ -528,7 +540,7 @@ Partial Class frm_clustertool
         '
         Me.grpOUT.Controls.Add(Me.GroupBox4)
         Me.grpOUT.Controls.Add(Me.txtOUT)
-        Me.grpOUT.Location = New System.Drawing.Point(3, 479)
+        Me.grpOUT.Location = New System.Drawing.Point(-1, 538)
         Me.grpOUT.Name = "grpOUT"
         Me.grpOUT.Size = New System.Drawing.Size(404, 50)
         Me.grpOUT.TabIndex = 4
@@ -574,7 +586,7 @@ Partial Class frm_clustertool
         Me.Disttable.FormattingEnabled = True
         Me.Disttable.Location = New System.Drawing.Point(7, 68)
         Me.Disttable.Name = "Disttable"
-        Me.Disttable.Size = New System.Drawing.Size(277, 21)
+        Me.Disttable.Size = New System.Drawing.Size(400, 21)
         Me.Disttable.TabIndex = 5
         '
         'outlierdist_grp
@@ -601,7 +613,7 @@ Partial Class frm_clustertool
         'clustmeth_grp
         '
         Me.clustmeth_grp.Controls.Add(Me.tabcontrol)
-        Me.clustmeth_grp.Location = New System.Drawing.Point(7, 264)
+        Me.clustmeth_grp.Location = New System.Drawing.Point(3, 323)
         Me.clustmeth_grp.Name = "clustmeth_grp"
         Me.clustmeth_grp.Size = New System.Drawing.Size(400, 209)
         Me.clustmeth_grp.TabIndex = 9
@@ -688,7 +700,7 @@ Partial Class frm_clustertool
         Me.Panel1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Panel1.Location = New System.Drawing.Point(12, 0)
         Me.Panel1.Name = "Panel1"
-        Me.Panel1.Size = New System.Drawing.Size(178, 591)
+        Me.Panel1.Size = New System.Drawing.Size(9, 96)
         Me.Panel1.TabIndex = 2
         '
         'rtxtHELP_CNT
@@ -702,7 +714,7 @@ Partial Class frm_clustertool
         Me.rtxtHELP_CNT.Name = "rtxtHELP_CNT"
         Me.rtxtHELP_CNT.ReadOnly = True
         Me.rtxtHELP_CNT.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical
-        Me.rtxtHELP_CNT.Size = New System.Drawing.Size(178, 591)
+        Me.rtxtHELP_CNT.Size = New System.Drawing.Size(9, 96)
         Me.rtxtHELP_CNT.TabIndex = 0
         Me.rtxtHELP_CNT.TabStop = False
         Me.rtxtHELP_CNT.Text = ""
@@ -713,7 +725,7 @@ Partial Class frm_clustertool
         Me.Panel2.Dock = System.Windows.Forms.DockStyle.Left
         Me.Panel2.Location = New System.Drawing.Point(0, 0)
         Me.Panel2.Name = "Panel2"
-        Me.Panel2.Size = New System.Drawing.Size(12, 591)
+        Me.Panel2.Size = New System.Drawing.Size(12, 96)
         Me.Panel2.TabIndex = 14
         '
         'Label2
@@ -731,14 +743,14 @@ Partial Class frm_clustertool
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.btnCANCEL
-        Me.ClientSize = New System.Drawing.Size(415, 626)
+        Me.ClientSize = New System.Drawing.Size(415, 682)
         Me.Controls.Add(Me.splcHELP)
         Me.Controls.Add(Me.btnCANCEL)
         Me.Controls.Add(Me.btnOK)
         Me.Controls.Add(Me.btnSHHELP)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
-        Me.MaximumSize = New System.Drawing.Size(1000, 664)
+        Me.MaximumSize = New System.Drawing.Size(1000, 1000)
         Me.MinimizeBox = False
         Me.MinimumSize = New System.Drawing.Size(431, 664)
         Me.Name = "frm_clustertool"
@@ -751,12 +763,14 @@ Partial Class frm_clustertool
         Me.splcHELP.Panel1.PerformLayout()
         Me.splcHELP.Panel2.ResumeLayout(False)
         Me.splcHELP.ResumeLayout(False)
-        Me.GroupBox5.ResumeLayout(False)
-        Me.GroupBox5.PerformLayout()
+        Me.grpMEASSPACE.ResumeLayout(False)
+        Me.grpMEASSPACE.PerformLayout()
+        Me.log_grp.ResumeLayout(False)
+        Me.log_grp.PerformLayout()
         Me.GroupBox6.ResumeLayout(False)
         Me.GroupBox6.PerformLayout()
-        Me.GroupBox1.ResumeLayout(False)
-        Me.GroupBox1.PerformLayout()
+        Me.stats_group.ResumeLayout(False)
+        Me.stats_group.PerformLayout()
         Me.grpOUT.ResumeLayout(False)
         Me.grpOUT.PerformLayout()
         Me.GroupBox4.ResumeLayout(False)
@@ -803,7 +817,7 @@ Partial Class frm_clustertool
     Friend WithEvents DBScan As System.Windows.Forms.TabPage
     Friend WithEvents Panel1 As System.Windows.Forms.Panel
     Friend WithEvents Panel2 As System.Windows.Forms.Panel
-    Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
+    Friend WithEvents stats_group As System.Windows.Forms.GroupBox
     Friend WithEvents Label12 As System.Windows.Forms.Label
     Friend WithEvents lqstats As System.Windows.Forms.TextBox
     Friend WithEvents Label7 As System.Windows.Forms.Label
@@ -821,17 +835,18 @@ Partial Class frm_clustertool
     Friend WithEvents maxstats As System.Windows.Forms.TextBox
     Friend WithEvents Label8 As System.Windows.Forms.Label
     Friend WithEvents minstats As System.Windows.Forms.TextBox
-    Friend WithEvents radMEASGEO As System.Windows.Forms.RadioButton
-    Friend WithEvents radMEASPLAN As System.Windows.Forms.RadioButton
     Friend WithEvents GroupBox3 As System.Windows.Forms.GroupBox
     Friend WithEvents minpts As System.Windows.Forms.TextBox
     Friend WithEvents kgraph As System.Windows.Forms.Button
     Friend WithEvents TextBox1 As System.Windows.Forms.TextBox
-    Friend WithEvents GroupBox5 As System.Windows.Forms.GroupBox
+    Friend WithEvents log_grp As System.Windows.Forms.GroupBox
     Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
     Friend WithEvents TextBox3 As System.Windows.Forms.TextBox
     Friend WithEvents LogFileName As System.Windows.Forms.TextBox
     Friend WithEvents GroupBox4 As System.Windows.Forms.GroupBox
     Friend WithEvents TextBox2 As System.Windows.Forms.TextBox
     Friend WithEvents LogSaveDialog As System.Windows.Forms.Button
+    Friend WithEvents grpMEASSPACE As System.Windows.Forms.GroupBox
+    Friend WithEvents radMEASPLAN As System.Windows.Forms.RadioButton
+    Friend WithEvents radMEASGEO As System.Windows.Forms.RadioButton
 End Class
