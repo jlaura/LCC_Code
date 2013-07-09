@@ -24,7 +24,7 @@ Partial Class frm_dirdistool
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frm_dirdistool))
         Me.splcHELP = New System.Windows.Forms.SplitContainer()
-        Me.GroupBox5 = New System.Windows.Forms.GroupBox()
+        Me.log_grp = New System.Windows.Forms.GroupBox()
         Me.LogSaveDialog = New System.Windows.Forms.Button()
         Me.GroupBox6 = New System.Windows.Forms.GroupBox()
         Me.TextBox3 = New System.Windows.Forms.TextBox()
@@ -45,15 +45,18 @@ Partial Class frm_dirdistool
         Me.btnCANCEL = New System.Windows.Forms.Button()
         Me.btnOK = New System.Windows.Forms.Button()
         Me.btnSHHELP = New System.Windows.Forms.Button()
+        Me.std_grp = New System.Windows.Forms.GroupBox()
+        Me.std = New System.Windows.Forms.TextBox()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
-        Me.GroupBox5.SuspendLayout()
+        Me.log_grp.SuspendLayout()
         Me.GroupBox6.SuspendLayout()
         Me.grpOUT.SuspendLayout()
         Me.grpOUTGEOM.SuspendLayout()
         Me.grpDDPNUM.SuspendLayout()
         Me.Panel1.SuspendLayout()
+        Me.std_grp.SuspendLayout()
         Me.SuspendLayout()
         '
         'splcHELP
@@ -67,7 +70,8 @@ Partial Class frm_dirdistool
         '
         'splcHELP.Panel1
         '
-        Me.splcHELP.Panel1.Controls.Add(Me.GroupBox5)
+        Me.splcHELP.Panel1.Controls.Add(Me.std_grp)
+        Me.splcHELP.Panel1.Controls.Add(Me.log_grp)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUTGEOM)
         Me.splcHELP.Panel1.Controls.Add(Me.grpDDPNUM)
@@ -86,17 +90,17 @@ Partial Class frm_dirdistool
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
         '
-        'GroupBox5
+        'log_grp
         '
-        Me.GroupBox5.Controls.Add(Me.LogSaveDialog)
-        Me.GroupBox5.Controls.Add(Me.GroupBox6)
-        Me.GroupBox5.Controls.Add(Me.LogFileName)
-        Me.GroupBox5.Location = New System.Drawing.Point(7, 232)
-        Me.GroupBox5.Name = "GroupBox5"
-        Me.GroupBox5.Size = New System.Drawing.Size(338, 50)
-        Me.GroupBox5.TabIndex = 20
-        Me.GroupBox5.TabStop = False
-        Me.GroupBox5.Text = "Output Log File Name (Optional)"
+        Me.log_grp.Controls.Add(Me.LogSaveDialog)
+        Me.log_grp.Controls.Add(Me.GroupBox6)
+        Me.log_grp.Controls.Add(Me.LogFileName)
+        Me.log_grp.Location = New System.Drawing.Point(7, 232)
+        Me.log_grp.Name = "log_grp"
+        Me.log_grp.Size = New System.Drawing.Size(338, 50)
+        Me.log_grp.TabIndex = 20
+        Me.log_grp.TabStop = False
+        Me.log_grp.Text = "Output Log File Name (Optional)"
         '
         'LogSaveDialog
         '
@@ -154,7 +158,7 @@ Partial Class frm_dirdistool
         Me.grpOUTGEOM.Controls.Add(Me.radOUTELLIPSE)
         Me.grpOUTGEOM.Location = New System.Drawing.Point(7, 117)
         Me.grpOUTGEOM.Name = "grpOUTGEOM"
-        Me.grpOUTGEOM.Size = New System.Drawing.Size(338, 53)
+        Me.grpOUTGEOM.Size = New System.Drawing.Size(167, 53)
         Me.grpOUTGEOM.TabIndex = 2
         Me.grpOUTGEOM.TabStop = False
         Me.grpOUTGEOM.Text = "Output geometry"
@@ -297,6 +301,25 @@ Partial Class frm_dirdistool
         Me.btnSHHELP.Text = "Show Help >>"
         Me.btnSHHELP.UseVisualStyleBackColor = True
         '
+        'std_grp
+        '
+        Me.std_grp.Controls.Add(Me.std)
+        Me.std_grp.Location = New System.Drawing.Point(178, 117)
+        Me.std_grp.Name = "std_grp"
+        Me.std_grp.Size = New System.Drawing.Size(167, 53)
+        Me.std_grp.TabIndex = 3
+        Me.std_grp.TabStop = False
+        Me.std_grp.Text = "Standard Deviations"
+        '
+        'std
+        '
+        Me.std.Location = New System.Drawing.Point(6, 19)
+        Me.std.Name = "std"
+        Me.std.Size = New System.Drawing.Size(155, 20)
+        Me.std.TabIndex = 0
+        Me.std.Text = "3"
+        Me.std.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
         'frm_dirdistool
         '
         Me.AcceptButton = Me.btnOK
@@ -321,8 +344,8 @@ Partial Class frm_dirdistool
         Me.splcHELP.Panel1.PerformLayout()
         Me.splcHELP.Panel2.ResumeLayout(False)
         Me.splcHELP.ResumeLayout(False)
-        Me.GroupBox5.ResumeLayout(False)
-        Me.GroupBox5.PerformLayout()
+        Me.log_grp.ResumeLayout(False)
+        Me.log_grp.PerformLayout()
         Me.GroupBox6.ResumeLayout(False)
         Me.GroupBox6.PerformLayout()
         Me.grpOUT.ResumeLayout(False)
@@ -332,6 +355,8 @@ Partial Class frm_dirdistool
         Me.grpDDPNUM.ResumeLayout(False)
         Me.grpDDPNUM.PerformLayout()
         Me.Panel1.ResumeLayout(False)
+        Me.std_grp.ResumeLayout(False)
+        Me.std_grp.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -352,9 +377,11 @@ Partial Class frm_dirdistool
     Friend WithEvents grpOUTGEOM As System.Windows.Forms.GroupBox
     Friend WithEvents grpDDPNUM As System.Windows.Forms.GroupBox
     Friend WithEvents optimize As System.Windows.Forms.Button
-    Friend WithEvents GroupBox5 As System.Windows.Forms.GroupBox
+    Friend WithEvents log_grp As System.Windows.Forms.GroupBox
     Friend WithEvents LogSaveDialog As System.Windows.Forms.Button
     Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
     Friend WithEvents TextBox3 As System.Windows.Forms.TextBox
     Friend WithEvents LogFileName As System.Windows.Forms.TextBox
+    Friend WithEvents std_grp As System.Windows.Forms.GroupBox
+    Friend WithEvents std As System.Windows.Forms.TextBox
 End Class

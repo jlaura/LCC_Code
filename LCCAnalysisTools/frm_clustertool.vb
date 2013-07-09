@@ -1151,7 +1151,7 @@ Public Class frm_clustertool
 
                 'Progress Bar
                 pProDlg.Description = "Clustering using DBScan..."
-            pStepPro.Message = String.Format("Processed {0} / {1} points ...", Unvisited.Count, dist_lists.Count)
+            pStepPro.Message = String.Format("{0} / {1} Points Processed", Unvisited.Count, dist_lists.Count)
                 pStepPro.MinRange = 0
                 pStepPro.MaxRange = dist_lists.Count - 1
 
@@ -1186,7 +1186,7 @@ Public Class frm_clustertool
 
                 End If
                 pStepPro.StepValue = old_count - Unvisited.Count
-                pStepPro.Message = String.Format("Processed {0} / {1} points ...", Unvisited.Count, dist_lists.Count)
+                pStepPro.Message = String.Format("{0} / {1} Points Processed", Unvisited.Count, dist_lists.Count)
                 If Not pTrkCan.Continue Then
                     'SUMMARY PRINT: End program as interrupted
                     PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
@@ -1213,7 +1213,7 @@ Public Class frm_clustertool
             'PROGRESS UPDATE: 
             pProDlg.Description = "Counting number of features per cluster..."
             PRINTtxt += vbCrLf & " [Counting number of features per cluster...]"
-        pStepPro.Message = "Processing..."
+        pStepPro.Message = "Processing:"
             'Get the number of CID occurances from the CID master list for each main feature CID
             pTrkCan.Reset()
             For n As Integer = 0 To Ar.GetUpperBound(1)
@@ -1542,7 +1542,7 @@ Public Class frm_clustertool
                 'Get the neighbors to the new neighbor, i.e. is the cluster expanding by epsilon
                 new_neighbors = getNeighbors(epsilon, neighbor_node, semimajor, semiminor, measurement_space)
                 'If the number of new neighbors constitutes a new cluster, start adding that cluster as well.  Grow by density essentially.
-                If new_neighbors.Count + Unvisited.Count + neighbors.Count >= minpts - 1 Then
+                If new_neighbors.Count + Unvisited.Count + neighbors.Count > minpts Then
                     Do Until new_neighbors.Count = 0
                         new_neighbor = new_neighbors.Peek
                         If visited.Contains(new_neighbor) Or neighbors.Contains(new_neighbor) Then

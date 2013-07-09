@@ -9,6 +9,7 @@ Imports System.Drawing
 Imports ESRI.ArcGIS.Display
 Imports ESRI.ArcGIS.Framework
 Imports ESRI.ArcGIS.Geometry
+Imports System.Math
 
 Public Class frm_trajecttool
 
@@ -343,12 +344,16 @@ Public Class frm_trajecttool
             Me.Size = New Size(Me.MinimumSize.Width, Me.Size.Height)
             btnSHHELP.Text = "Show Help >>"
         Else
-            Me.MaximumSize = New Size(900, 495)
-            Me.Size = New Size(543, Me.Size.Height)
+            Me.MaximumSize = New Size(900, 579)
+            Me.Size = New Size(650, Me.Size.Height)
             splcHELP.Panel2Collapsed = False
             btnSHHELP.Text = "<< Hide Help"
         End If
 
+    End Sub
+
+    Private Sub Optimize_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles optimize.Click
+        Compute_DatasetStats()
     End Sub
 #End Region
 
@@ -389,7 +394,7 @@ Public Class frm_trajecttool
         ' layer list
         Dim featurelayerlist As New List(Of String)
         Dim featuredict As New Dictionary(Of Object, String)
-        If DataGridView1.RowCount = 0 Then
+        If DataGridView1.RowCount = 1 Then
             featurelayerlist.Add(cboLAYER.Text)
         Else
             For row As Integer = 0 To DataGridView1.Rows.Count - 1
@@ -946,6 +951,7 @@ Public Class frm_trajecttool
         Public IFlatMod As String
     End Structure
     Private p_TrajQuery As TRJQUERY
+
     Public Function FilterOutCDDsByMajAxis(ByVal cluster As ClusterDD) As Boolean
         Select Case p_TrajQuery.MajAxisLMod
             Case ">="
@@ -962,6 +968,7 @@ Public Class frm_trajecttool
                 End If
         End Select
     End Function
+
     Public Function FilterOutCDDsByIFlat(ByVal cluster As ClusterDD) As Boolean
         Select Case p_TrajQuery.IFlatMod
             Case ">="
@@ -978,6 +985,88 @@ Public Class frm_trajecttool
                 End If
         End Select
     End Function
+
+#Region "Compute Optimization Statistics"
+    Private Sub Compute_DatasetStats()
+
+        'Check to see if we are working on a single layer, not added to the layer list, or to one or more layers in the
+        ' layer list
+        Dim featurelayerlist As New List(Of String)
+        Dim featuredict As New Dictionary(Of Object, String)
+        Dim row As Integer = 0
+        If DataGridView1.RowCount = 1 Then
+            featurelayerlist.Add(cboLAYER.Text)
+        Else
+            For row = 0 To DataGridView1.Rows.Count - 1
+                If Not DataGridView1.Rows(row).Cells(0).Value = Nothing Then
+                    featurelayerlist.Add(DataGridView1.Rows(row).Cells(0).Value)
+                End If
+            Next
+        End If
+
+        'Grab the map document
+        Dim pMxDoc As IMxDocument = My.ArcMap.Document
+        Dim pFLayer As IFeatureLayer = Nothing
+        Dim pFClass As IFeatureClass = Nothing
+        Dim pSpatRef As ISpatialReference = Nothing
+        Dim pGCS As IGeographicCoordinateSystem = Nothing
+        Dim initialGCS As String
+        Dim totalRecordCounter As Integer = 0
+
+        'Iterate through the layers, get a count of the features for the tracker and confirm that the spatial reference is valid.
+        For i As Integer = 0 To featurelayerlist.Count - 1
+            pFLayer = GetFLayerByName(featurelayerlist(i))
+            pFClass = pFLayer.FeatureClass
+            pSpatRef = GetFLayerSpatRef(pFLayer)
+            pGCS = GetGCS(pSpatRef)
+
+            If i = 0 Then initialGCS = pGCS.Name
+            If Not pGCS.Name.Equals(initialGCS) Then
+                MsgBox("Spatial References do not match for one or more input files.", MsgBoxStyle.Exclamation, "Spatial Reference Error")
+            End If
+            totalRecordCounter = totalRecordCounter + pFClass.FeatureCount(Nothing)
+        Next
+
+        'We assume that all the datasets are in the same workspace.  This is only used to create the output later in the tool.
+        Dim pDataset As IDataset = pFClass
+        Dim pFDataset As IFeatureDataset = pFClass.FeatureDataset
+        Dim pWrkspc2 As IWorkspace2 = DirectCast(pDataset.Workspace, IWorkspace2)
+
+        Dim pFCursor1 As IFeatureCursor = Nothing 'pFClass.Search(Nothing, False)
+        Dim pFeature1 As IFeature = Nothing ' pFCursor1.NextFeature
+
+        Dim counter As Integer = 0 ' Count the number of input features
+        Dim sum As Double = 0.0 'Sum of the length fields for all input datasets
+        Dim iflat_sum As Double = 0.0 'Sum of the iflat if that input exists.
+
+        For i As Integer = 0 To featurelayerlist.Count - 1
+            pFLayer = GetFLayerByName(featurelayerlist(i))
+            pFClass = pFLayer.FeatureClass
+            pFCursor1 = pFClass.Search(Nothing, False)
+            pFeature1 = pFCursor1.NextFeature
+
+            While Not pFeature1 Is Nothing
+                counter = counter + 1
+                sum = sum + pFeature1.Value(pFeature1.Fields.FindField("SHAPE_Length"))
+                Try ' This field may or may not exist
+                    iflat_sum = iflat_sum + pFeature1.Value(pFeature1.Fields.FindField("iflat"))
+                Catch ex As Exception
+
+                End Try
+
+                pFeature1 = pFCursor1.NextFeature
+            End While
+        Next
+
+        txtEMAVAL.Text = String.Format("{0}", Math.Round(sum / counter, 2))
+        Try
+            txtEIFVAL.Text = String.Format("{0}", Math.Round(iflat_sum / counter, 2))
+        Catch ex As Exception
+
+        End Try
+
+    End Sub
+#End Region
 
 #Region "*** HELP CONTENT DISPLAY DYNAMICS ****************************************************"
 #End Region
@@ -1211,9 +1300,5 @@ Public Class frm_trajecttool
         If Not DataGridView1.CurrentRow.IsNewRow Then
             DataGridView1.Rows.Remove(DataGridView1.CurrentRow)
         End If
-    End Sub
-
-    Private Sub LogSaveDialog_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
-
     End Sub
 End Class

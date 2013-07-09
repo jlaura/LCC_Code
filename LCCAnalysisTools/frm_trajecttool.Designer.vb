@@ -67,6 +67,7 @@ Partial Class frm_trajecttool
         Me.btnSHHELP = New System.Windows.Forms.Button()
         Me.btnOK = New System.Windows.Forms.Button()
         Me.btnCANCEL = New System.Windows.Forms.Button()
+        Me.optimize = New System.Windows.Forms.Button()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
@@ -108,7 +109,7 @@ Partial Class frm_trajecttool
         Me.splcHELP.Panel2.Controls.Add(Me.pnlMARGIN1)
         Me.splcHELP.Panel2Collapsed = True
         Me.splcHELP.Panel2MinSize = 0
-        Me.splcHELP.Size = New System.Drawing.Size(356, 476)
+        Me.splcHELP.Size = New System.Drawing.Size(356, 513)
         Me.splcHELP.SplitterDistance = 356
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
@@ -118,7 +119,7 @@ Partial Class frm_trajecttool
         Me.GroupBox5.Controls.Add(Me.LogSaveDialog)
         Me.GroupBox5.Controls.Add(Me.GroupBox6)
         Me.GroupBox5.Controls.Add(Me.LogFileName)
-        Me.GroupBox5.Location = New System.Drawing.Point(7, 424)
+        Me.GroupBox5.Location = New System.Drawing.Point(7, 453)
         Me.GroupBox5.Name = "GroupBox5"
         Me.GroupBox5.Size = New System.Drawing.Size(338, 50)
         Me.GroupBox5.TabIndex = 20
@@ -161,7 +162,7 @@ Partial Class frm_trajecttool
         'grpOUT
         '
         Me.grpOUT.Controls.Add(Me.txtOUT)
-        Me.grpOUT.Location = New System.Drawing.Point(7, 366)
+        Me.grpOUT.Location = New System.Drawing.Point(7, 395)
         Me.grpOUT.Name = "grpOUT"
         Me.grpOUT.Size = New System.Drawing.Size(338, 50)
         Me.grpOUT.TabIndex = 4
@@ -183,7 +184,7 @@ Partial Class frm_trajecttool
         Me.grpCOREFF.Controls.Add(Me.chkCEEJV)
         Me.grpCOREFF.Controls.Add(Me.txtCEEJVVAL)
         Me.grpCOREFF.Controls.Add(Me.lblCEEJVUNITS)
-        Me.grpCOREFF.Location = New System.Drawing.Point(7, 284)
+        Me.grpCOREFF.Location = New System.Drawing.Point(7, 313)
         Me.grpCOREFF.Name = "grpCOREFF"
         Me.grpCOREFF.Size = New System.Drawing.Size(338, 76)
         Me.grpCOREFF.TabIndex = 3
@@ -255,7 +256,7 @@ Partial Class frm_trajecttool
         Me.grpTRAJDIST.Controls.Add(Me.cboTDDEGVAL)
         Me.grpTRAJDIST.Controls.Add(Me.txtTDDISTVAL)
         Me.grpTRAJDIST.Controls.Add(Me.lblTDDISTUNITS)
-        Me.grpTRAJDIST.Location = New System.Drawing.Point(7, 228)
+        Me.grpTRAJDIST.Location = New System.Drawing.Point(7, 257)
         Me.grpTRAJDIST.Name = "grpTRAJDIST"
         Me.grpTRAJDIST.Size = New System.Drawing.Size(338, 50)
         Me.grpTRAJDIST.TabIndex = 2
@@ -323,6 +324,7 @@ Partial Class frm_trajecttool
         '
         'grpCLUSTERREQ
         '
+        Me.grpCLUSTERREQ.Controls.Add(Me.optimize)
         Me.grpCLUSTERREQ.Controls.Add(Me.pnlIF)
         Me.grpCLUSTERREQ.Controls.Add(Me.lblEMAUNITS)
         Me.grpCLUSTERREQ.Controls.Add(Me.txtEMAVAL)
@@ -330,7 +332,7 @@ Partial Class frm_trajecttool
         Me.grpCLUSTERREQ.Controls.Add(Me.lblEMA)
         Me.grpCLUSTERREQ.Location = New System.Drawing.Point(7, 146)
         Me.grpCLUSTERREQ.Name = "grpCLUSTERREQ"
-        Me.grpCLUSTERREQ.Size = New System.Drawing.Size(338, 76)
+        Me.grpCLUSTERREQ.Size = New System.Drawing.Size(338, 105)
         Me.grpCLUSTERREQ.TabIndex = 1
         Me.grpCLUSTERREQ.TabStop = False
         Me.grpCLUSTERREQ.Text = "Cluster requirements"
@@ -525,7 +527,7 @@ Partial Class frm_trajecttool
         'btnSHHELP
         '
         Me.btnSHHELP.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnSHHELP.Location = New System.Drawing.Point(263, 482)
+        Me.btnSHHELP.Location = New System.Drawing.Point(263, 516)
         Me.btnSHHELP.Name = "btnSHHELP"
         Me.btnSHHELP.Size = New System.Drawing.Size(84, 23)
         Me.btnSHHELP.TabIndex = 3
@@ -535,7 +537,7 @@ Partial Class frm_trajecttool
         'btnOK
         '
         Me.btnOK.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnOK.Location = New System.Drawing.Point(101, 482)
+        Me.btnOK.Location = New System.Drawing.Point(101, 516)
         Me.btnOK.Name = "btnOK"
         Me.btnOK.Size = New System.Drawing.Size(75, 23)
         Me.btnOK.TabIndex = 1
@@ -546,12 +548,22 @@ Partial Class frm_trajecttool
         '
         Me.btnCANCEL.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.btnCANCEL.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.btnCANCEL.Location = New System.Drawing.Point(182, 482)
+        Me.btnCANCEL.Location = New System.Drawing.Point(182, 516)
         Me.btnCANCEL.Name = "btnCANCEL"
         Me.btnCANCEL.Size = New System.Drawing.Size(75, 23)
         Me.btnCANCEL.TabIndex = 2
         Me.btnCANCEL.Text = "Close"
         Me.btnCANCEL.UseVisualStyleBackColor = True
+        '
+        'optimize
+        '
+        Me.optimize.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.optimize.Location = New System.Drawing.Point(6, 77)
+        Me.optimize.Name = "optimize"
+        Me.optimize.Size = New System.Drawing.Size(329, 23)
+        Me.optimize.TabIndex = 23
+        Me.optimize.Text = "Optimize"
+        Me.optimize.UseVisualStyleBackColor = True
         '
         'frm_trajecttool
         '
@@ -559,14 +571,14 @@ Partial Class frm_trajecttool
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.btnCANCEL
-        Me.ClientSize = New System.Drawing.Size(356, 507)
+        Me.ClientSize = New System.Drawing.Size(356, 541)
         Me.Controls.Add(Me.btnSHHELP)
         Me.Controls.Add(Me.btnOK)
         Me.Controls.Add(Me.btnCANCEL)
         Me.Controls.Add(Me.splcHELP)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
-        Me.MaximumSize = New System.Drawing.Size(372, 545)
+        Me.MaximumSize = New System.Drawing.Size(372, 579)
         Me.MinimizeBox = False
         Me.MinimumSize = New System.Drawing.Size(372, 545)
         Me.Name = "frm_trajecttool"
@@ -640,4 +652,5 @@ Partial Class frm_trajecttool
     Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
     Friend WithEvents TextBox3 As System.Windows.Forms.TextBox
     Friend WithEvents LogFileName As System.Windows.Forms.TextBox
+    Friend WithEvents optimize As System.Windows.Forms.Button
 End Class

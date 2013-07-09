@@ -241,6 +241,11 @@ Public Class frm_dirdistool
             Return
         End If
 
+        If CInt(std.Text) <= 0 Then
+            MsgBox("Please enter an integer greater than or equal to 1.", MsgBoxStyle.Exclamation, "Standard Deviation Error")
+            Return
+        End If
+
         'If all errors are handled, load progress form
         LoadProgressForm()
 
@@ -258,7 +263,7 @@ Public Class frm_dirdistool
             btnSHHELP.Text = "Show Help >>"
         Else
             Me.MaximumSize = New Size(900, 495)
-            Me.Size = New Size(543, Me.Size.Height)
+            Me.Size = New Size(643, Me.Size.Height)
             splcHELP.Panel2Collapsed = False
             btnSHHELP.Text = "<< Hide Help"
         End If
@@ -481,7 +486,7 @@ Public Class frm_dirdistool
             pMultipoint.SpatialReference = pTMSpatialReference
 
             'Calculate: CenterPoint, semiMajorAxis length, semiMinorAxis length, and semiMajorAxis azimuth
-            Dim stdDevs As Integer = 3 'Used to get a major axis line large enough to reach the extents
+            Dim stdDevs As Integer = CInt(std.Text) 'Used to get a major axis line large enough to reach the extents
             ' of the point collection used to compute it
 
             Dim pGeodeticEllipseParams As st_6PointEllipseParameters = _
@@ -894,6 +899,28 @@ Public Class frm_dirdistool
         HELP_Form()
     End Sub
 
+    Private Sub HELPCntUpdate(ByVal Title As String, ByVal Text As String)
+
+        rtxtHELP_CNT.Clear()
+
+        rtxtHELP_CNT.AppendText("   " & vbCrLf & Title)
+        rtxtHELP_CNT.Find(Title, RichTextBoxFinds.MatchCase)
+        rtxtHELP_CNT.SelectionFont = New Font("Arial", 12, FontStyle.Bold)
+        rtxtHELP_CNT.SelectionColor = Color.Black
+        rtxtHELP_CNT.DeselectAll()
+        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf)
+
+        rtxtHELP_CNT.AppendText(Text)
+
+        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf & vbCrLf)
+        rtxtHELP_CNT.Find("   ", RichTextBoxFinds.MatchCase)
+        rtxtHELP_CNT.ScrollToCaret()
+        rtxtHELP_CNT.DeselectAll()
+
+        rtxtHELP_CNT.Refresh()
+
+    End Sub
+
 #Region "***** LAYER ********"
 #End Region
     Private Sub lblLAYER_Click(ByVal sender As System.Object, _
@@ -1013,27 +1040,59 @@ Public Class frm_dirdistool
 
     End Sub
 
-    Private Sub HELPCntUpdate(ByVal Title As String, ByVal Text As String)
+#Region "Standard Deviation"
+    Private Sub std_grp_Enter(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) Handles std_grp.Click
 
-        rtxtHELP_CNT.Clear()
+        HELP_Std()
+    End Sub
 
-        rtxtHELP_CNT.AppendText("   " & vbCrLf & Title)
-        rtxtHELP_CNT.Find(Title, RichTextBoxFinds.MatchCase)
-        rtxtHELP_CNT.SelectionFont = New Font("Arial", 12, FontStyle.Bold)
-        rtxtHELP_CNT.SelectionColor = Color.Black
-        rtxtHELP_CNT.DeselectAll()
-        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf)
+    Private Sub std_name_Click(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) Handles std.Enter
 
-        rtxtHELP_CNT.AppendText(Text)
+        HELP_Std()
+    End Sub
 
-        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf & vbCrLf)
-        rtxtHELP_CNT.Find("   ", RichTextBoxFinds.MatchCase)
-        rtxtHELP_CNT.ScrollToCaret()
-        rtxtHELP_CNT.DeselectAll()
+    Private Sub HELP_Std()
 
-        rtxtHELP_CNT.Refresh()
+        'Update help panel
+        Dim strText As String = _
+            "The number of standard deviations at which to compute the bound ellipsoid" & _
+            Environment.NewLine & _
+            "This field is optional."
+
+        HELPCntUpdate("Standard Deviation", strText)
 
     End Sub
+#End Region
+
+#Region "Log File"
+    Private Sub log_grp_Enter(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) Handles log_grp.Click
+
+        HELP_Out()
+    End Sub
+
+    Private Sub log_name_Click(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs) Handles LogFileName.Enter
+
+        HELP_Log()
+    End Sub
+
+    Private Sub HELP_Log()
+
+        'Update help panel
+        Dim strText As String = _
+            "The output log file name." & _
+            Environment.NewLine & _
+            "This field is optional."
+
+        HELPCntUpdate("Output Log File Name", strText)
+
+    End Sub
+#End Region
+
+
 
 
     Private Function CalcEllipStats(ByVal features)
