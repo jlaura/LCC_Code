@@ -24,6 +24,13 @@ Partial Class frm_intersecttool
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frm_intersecttool))
         Me.splcHELP = New System.Windows.Forms.SplitContainer()
+        Me.log_grp = New System.Windows.Forms.GroupBox()
+        Me.LogSaveDialog = New System.Windows.Forms.Button()
+        Me.GroupBox6 = New System.Windows.Forms.GroupBox()
+        Me.TextBox3 = New System.Windows.Forms.TextBox()
+        Me.LogFileName = New System.Windows.Forms.TextBox()
+        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.weightedCentroids = New System.Windows.Forms.CheckBox()
         Me.grpOUT = New System.Windows.Forms.GroupBox()
         Me.txtOUT = New System.Windows.Forms.TextBox()
         Me.grpCPNUM = New System.Windows.Forms.GroupBox()
@@ -50,25 +57,18 @@ Partial Class frm_intersecttool
         Me.btnSHHELP = New System.Windows.Forms.Button()
         Me.btnCANCEL = New System.Windows.Forms.Button()
         Me.btnOK = New System.Windows.Forms.Button()
-        Me.weightedCentroids = New System.Windows.Forms.CheckBox()
-        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
-        Me.GroupBox5 = New System.Windows.Forms.GroupBox()
-        Me.LogSaveDialog = New System.Windows.Forms.Button()
-        Me.GroupBox6 = New System.Windows.Forms.GroupBox()
-        Me.TextBox3 = New System.Windows.Forms.TextBox()
-        Me.LogFileName = New System.Windows.Forms.TextBox()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
+        Me.log_grp.SuspendLayout()
+        Me.GroupBox6.SuspendLayout()
+        Me.GroupBox2.SuspendLayout()
         Me.grpOUT.SuspendLayout()
         Me.grpCPNUM.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
         Me.grpMEASSPACE.SuspendLayout()
         Me.grpNQUERY.SuspendLayout()
         Me.pnlMARGIN2.SuspendLayout()
-        Me.GroupBox2.SuspendLayout()
-        Me.GroupBox5.SuspendLayout()
-        Me.GroupBox6.SuspendLayout()
         Me.SuspendLayout()
         '
         'splcHELP
@@ -82,7 +82,7 @@ Partial Class frm_intersecttool
         '
         'splcHELP.Panel1
         '
-        Me.splcHELP.Panel1.Controls.Add(Me.GroupBox5)
+        Me.splcHELP.Panel1.Controls.Add(Me.log_grp)
         Me.splcHELP.Panel1.Controls.Add(Me.GroupBox2)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
         Me.splcHELP.Panel1.Controls.Add(Me.grpCPNUM)
@@ -104,10 +104,77 @@ Partial Class frm_intersecttool
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
         '
+        'log_grp
+        '
+        Me.log_grp.Controls.Add(Me.LogSaveDialog)
+        Me.log_grp.Controls.Add(Me.GroupBox6)
+        Me.log_grp.Controls.Add(Me.LogFileName)
+        Me.log_grp.Location = New System.Drawing.Point(7, 422)
+        Me.log_grp.Name = "log_grp"
+        Me.log_grp.Size = New System.Drawing.Size(338, 50)
+        Me.log_grp.TabIndex = 20
+        Me.log_grp.TabStop = False
+        Me.log_grp.Text = "Output Log File Name (Optional)"
+        '
+        'LogSaveDialog
+        '
+        Me.LogSaveDialog.Image = Global.LCCAnalysisTools.My.Resources.Resources.normal_folder
+        Me.LogSaveDialog.Location = New System.Drawing.Point(299, 16)
+        Me.LogSaveDialog.Name = "LogSaveDialog"
+        Me.LogSaveDialog.Size = New System.Drawing.Size(22, 23)
+        Me.LogSaveDialog.TabIndex = 19
+        Me.LogSaveDialog.UseVisualStyleBackColor = True
+        '
+        'GroupBox6
+        '
+        Me.GroupBox6.Controls.Add(Me.TextBox3)
+        Me.GroupBox6.Location = New System.Drawing.Point(1, 50)
+        Me.GroupBox6.Name = "GroupBox6"
+        Me.GroupBox6.Size = New System.Drawing.Size(404, 50)
+        Me.GroupBox6.TabIndex = 18
+        Me.GroupBox6.TabStop = False
+        Me.GroupBox6.Text = "Output layer name"
+        '
+        'TextBox3
+        '
+        Me.TextBox3.Location = New System.Drawing.Point(14, 19)
+        Me.TextBox3.Name = "TextBox3"
+        Me.TextBox3.Size = New System.Drawing.Size(384, 20)
+        Me.TextBox3.TabIndex = 0
+        '
+        'LogFileName
+        '
+        Me.LogFileName.Location = New System.Drawing.Point(14, 19)
+        Me.LogFileName.Name = "LogFileName"
+        Me.LogFileName.Size = New System.Drawing.Size(279, 20)
+        Me.LogFileName.TabIndex = 0
+        '
+        'GroupBox2
+        '
+        Me.GroupBox2.Controls.Add(Me.weightedCentroids)
+        Me.GroupBox2.Location = New System.Drawing.Point(180, 104)
+        Me.GroupBox2.Name = "GroupBox2"
+        Me.GroupBox2.Size = New System.Drawing.Size(165, 53)
+        Me.GroupBox2.TabIndex = 3
+        Me.GroupBox2.TabStop = False
+        Me.GroupBox2.Text = "Weight Centroid"
+        '
+        'weightedCentroids
+        '
+        Me.weightedCentroids.AutoSize = True
+        Me.weightedCentroids.Checked = True
+        Me.weightedCentroids.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.weightedCentroids.Location = New System.Drawing.Point(11, 24)
+        Me.weightedCentroids.Name = "weightedCentroids"
+        Me.weightedCentroids.Size = New System.Drawing.Size(107, 17)
+        Me.weightedCentroids.TabIndex = 0
+        Me.weightedCentroids.Text = "Weight Centroids"
+        Me.weightedCentroids.UseVisualStyleBackColor = True
+        '
         'grpOUT
         '
         Me.grpOUT.Controls.Add(Me.txtOUT)
-        Me.grpOUT.Location = New System.Drawing.Point(7, 370)
+        Me.grpOUT.Location = New System.Drawing.Point(7, 366)
         Me.grpOUT.Name = "grpOUT"
         Me.grpOUT.Size = New System.Drawing.Size(338, 50)
         Me.grpOUT.TabIndex = 5
@@ -124,7 +191,7 @@ Partial Class frm_intersecttool
         'grpCPNUM
         '
         Me.grpCPNUM.Controls.Add(Me.txtCPNUM)
-        Me.grpCPNUM.Location = New System.Drawing.Point(7, 314)
+        Me.grpCPNUM.Location = New System.Drawing.Point(7, 310)
         Me.grpCPNUM.Name = "grpCPNUM"
         Me.grpCPNUM.Size = New System.Drawing.Size(338, 50)
         Me.grpCPNUM.TabIndex = 4
@@ -159,7 +226,7 @@ Partial Class frm_intersecttool
         Me.GroupBox1.Controls.Add(Me.txtCMSVAL)
         Me.GroupBox1.Controls.Add(Me.txtCMBSVAL)
         Me.GroupBox1.Controls.Add(Me.txtCMBFVAL)
-        Me.GroupBox1.Location = New System.Drawing.Point(7, 167)
+        Me.GroupBox1.Location = New System.Drawing.Point(7, 163)
         Me.GroupBox1.Name = "GroupBox1"
         Me.GroupBox1.Size = New System.Drawing.Size(338, 141)
         Me.GroupBox1.TabIndex = 3
@@ -260,7 +327,7 @@ Partial Class frm_intersecttool
         '
         Me.grpMEASSPACE.Controls.Add(Me.radMEASPLAN)
         Me.grpMEASSPACE.Controls.Add(Me.radMEASGEO)
-        Me.grpMEASSPACE.Location = New System.Drawing.Point(7, 108)
+        Me.grpMEASSPACE.Location = New System.Drawing.Point(7, 104)
         Me.grpMEASSPACE.Name = "grpMEASSPACE"
         Me.grpMEASSPACE.Size = New System.Drawing.Size(167, 53)
         Me.grpMEASSPACE.TabIndex = 2
@@ -297,7 +364,7 @@ Partial Class frm_intersecttool
         Me.grpNQUERY.Controls.Add(Me.txtNQUERY)
         Me.grpNQUERY.Location = New System.Drawing.Point(7, 49)
         Me.grpNQUERY.Name = "grpNQUERY"
-        Me.grpNQUERY.Size = New System.Drawing.Size(338, 53)
+        Me.grpNQUERY.Size = New System.Drawing.Size(338, 49)
         Me.grpNQUERY.TabIndex = 1
         Me.grpNQUERY.TabStop = False
         Me.grpNQUERY.Text = "Only when Nearest Neighbor distance is less than or equal to (m)"
@@ -377,73 +444,6 @@ Partial Class frm_intersecttool
         Me.btnOK.Text = "OK"
         Me.btnOK.UseVisualStyleBackColor = True
         '
-        'weightedCentroids
-        '
-        Me.weightedCentroids.AutoSize = True
-        Me.weightedCentroids.Checked = True
-        Me.weightedCentroids.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.weightedCentroids.Location = New System.Drawing.Point(11, 24)
-        Me.weightedCentroids.Name = "weightedCentroids"
-        Me.weightedCentroids.Size = New System.Drawing.Size(107, 17)
-        Me.weightedCentroids.TabIndex = 0
-        Me.weightedCentroids.Text = "Weight Centroids"
-        Me.weightedCentroids.UseVisualStyleBackColor = True
-        '
-        'GroupBox2
-        '
-        Me.GroupBox2.Controls.Add(Me.weightedCentroids)
-        Me.GroupBox2.Location = New System.Drawing.Point(180, 108)
-        Me.GroupBox2.Name = "GroupBox2"
-        Me.GroupBox2.Size = New System.Drawing.Size(165, 53)
-        Me.GroupBox2.TabIndex = 3
-        Me.GroupBox2.TabStop = False
-        Me.GroupBox2.Text = "Weight Centroid"
-        '
-        'GroupBox5
-        '
-        Me.GroupBox5.Controls.Add(Me.LogSaveDialog)
-        Me.GroupBox5.Controls.Add(Me.GroupBox6)
-        Me.GroupBox5.Controls.Add(Me.LogFileName)
-        Me.GroupBox5.Location = New System.Drawing.Point(7, 426)
-        Me.GroupBox5.Name = "GroupBox5"
-        Me.GroupBox5.Size = New System.Drawing.Size(338, 50)
-        Me.GroupBox5.TabIndex = 20
-        Me.GroupBox5.TabStop = False
-        Me.GroupBox5.Text = "Output Log File Name (Optional)"
-        '
-        'LogSaveDialog
-        '
-        Me.LogSaveDialog.Image = Global.LCCAnalysisTools.My.Resources.Resources.normal_folder
-        Me.LogSaveDialog.Location = New System.Drawing.Point(299, 16)
-        Me.LogSaveDialog.Name = "LogSaveDialog"
-        Me.LogSaveDialog.Size = New System.Drawing.Size(22, 23)
-        Me.LogSaveDialog.TabIndex = 19
-        Me.LogSaveDialog.UseVisualStyleBackColor = True
-        '
-        'GroupBox6
-        '
-        Me.GroupBox6.Controls.Add(Me.TextBox3)
-        Me.GroupBox6.Location = New System.Drawing.Point(1, 50)
-        Me.GroupBox6.Name = "GroupBox6"
-        Me.GroupBox6.Size = New System.Drawing.Size(404, 50)
-        Me.GroupBox6.TabIndex = 18
-        Me.GroupBox6.TabStop = False
-        Me.GroupBox6.Text = "Output layer name"
-        '
-        'TextBox3
-        '
-        Me.TextBox3.Location = New System.Drawing.Point(14, 19)
-        Me.TextBox3.Name = "TextBox3"
-        Me.TextBox3.Size = New System.Drawing.Size(384, 20)
-        Me.TextBox3.TabIndex = 0
-        '
-        'LogFileName
-        '
-        Me.LogFileName.Location = New System.Drawing.Point(14, 19)
-        Me.LogFileName.Name = "LogFileName"
-        Me.LogFileName.Size = New System.Drawing.Size(279, 20)
-        Me.LogFileName.TabIndex = 0
-        '
         'frm_intersecttool
         '
         Me.AcceptButton = Me.btnOK
@@ -468,6 +468,12 @@ Partial Class frm_intersecttool
         Me.splcHELP.Panel1.PerformLayout()
         Me.splcHELP.Panel2.ResumeLayout(False)
         Me.splcHELP.ResumeLayout(False)
+        Me.log_grp.ResumeLayout(False)
+        Me.log_grp.PerformLayout()
+        Me.GroupBox6.ResumeLayout(False)
+        Me.GroupBox6.PerformLayout()
+        Me.GroupBox2.ResumeLayout(False)
+        Me.GroupBox2.PerformLayout()
         Me.grpOUT.ResumeLayout(False)
         Me.grpOUT.PerformLayout()
         Me.grpCPNUM.ResumeLayout(False)
@@ -479,12 +485,6 @@ Partial Class frm_intersecttool
         Me.grpNQUERY.ResumeLayout(False)
         Me.grpNQUERY.PerformLayout()
         Me.pnlMARGIN2.ResumeLayout(False)
-        Me.GroupBox2.ResumeLayout(False)
-        Me.GroupBox2.PerformLayout()
-        Me.GroupBox5.ResumeLayout(False)
-        Me.GroupBox5.PerformLayout()
-        Me.GroupBox6.ResumeLayout(False)
-        Me.GroupBox6.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -517,7 +517,7 @@ Partial Class frm_intersecttool
     Friend WithEvents txtOUT As System.Windows.Forms.TextBox
     Friend WithEvents GroupBox2 As System.Windows.Forms.GroupBox
     Friend WithEvents weightedCentroids As System.Windows.Forms.CheckBox
-    Friend WithEvents GroupBox5 As System.Windows.Forms.GroupBox
+    Friend WithEvents log_grp As System.Windows.Forms.GroupBox
     Friend WithEvents LogSaveDialog As System.Windows.Forms.Button
     Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
     Friend WithEvents TextBox3 As System.Windows.Forms.TextBox

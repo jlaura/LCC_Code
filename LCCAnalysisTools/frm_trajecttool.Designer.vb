@@ -24,7 +24,7 @@ Partial Class frm_trajecttool
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frm_trajecttool))
         Me.splcHELP = New System.Windows.Forms.SplitContainer()
-        Me.GroupBox5 = New System.Windows.Forms.GroupBox()
+        Me.log_grp = New System.Windows.Forms.GroupBox()
         Me.LogSaveDialog = New System.Windows.Forms.Button()
         Me.GroupBox6 = New System.Windows.Forms.GroupBox()
         Me.TextBox3 = New System.Windows.Forms.TextBox()
@@ -46,6 +46,7 @@ Partial Class frm_trajecttool
         Me.txtTDDISTVAL = New System.Windows.Forms.TextBox()
         Me.lblTDDISTUNITS = New System.Windows.Forms.Label()
         Me.grpCLUSTERREQ = New System.Windows.Forms.GroupBox()
+        Me.optimize = New System.Windows.Forms.Button()
         Me.pnlIF = New System.Windows.Forms.Panel()
         Me.lblEIFUNITS = New System.Windows.Forms.Label()
         Me.txtEIFVAL = New System.Windows.Forms.TextBox()
@@ -67,11 +68,10 @@ Partial Class frm_trajecttool
         Me.btnSHHELP = New System.Windows.Forms.Button()
         Me.btnOK = New System.Windows.Forms.Button()
         Me.btnCANCEL = New System.Windows.Forms.Button()
-        Me.optimize = New System.Windows.Forms.Button()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
-        Me.GroupBox5.SuspendLayout()
+        Me.log_grp.SuspendLayout()
         Me.GroupBox6.SuspendLayout()
         Me.grpOUT.SuspendLayout()
         Me.grpCOREFF.SuspendLayout()
@@ -94,7 +94,7 @@ Partial Class frm_trajecttool
         '
         'splcHELP.Panel1
         '
-        Me.splcHELP.Panel1.Controls.Add(Me.GroupBox5)
+        Me.splcHELP.Panel1.Controls.Add(Me.log_grp)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
         Me.splcHELP.Panel1.Controls.Add(Me.grpCOREFF)
         Me.splcHELP.Panel1.Controls.Add(Me.grpTRAJDIST)
@@ -114,17 +114,17 @@ Partial Class frm_trajecttool
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
         '
-        'GroupBox5
+        'log_grp
         '
-        Me.GroupBox5.Controls.Add(Me.LogSaveDialog)
-        Me.GroupBox5.Controls.Add(Me.GroupBox6)
-        Me.GroupBox5.Controls.Add(Me.LogFileName)
-        Me.GroupBox5.Location = New System.Drawing.Point(7, 453)
-        Me.GroupBox5.Name = "GroupBox5"
-        Me.GroupBox5.Size = New System.Drawing.Size(338, 50)
-        Me.GroupBox5.TabIndex = 20
-        Me.GroupBox5.TabStop = False
-        Me.GroupBox5.Text = "Output Log File Name (Optional)"
+        Me.log_grp.Controls.Add(Me.LogSaveDialog)
+        Me.log_grp.Controls.Add(Me.GroupBox6)
+        Me.log_grp.Controls.Add(Me.LogFileName)
+        Me.log_grp.Location = New System.Drawing.Point(7, 453)
+        Me.log_grp.Name = "log_grp"
+        Me.log_grp.Size = New System.Drawing.Size(338, 50)
+        Me.log_grp.TabIndex = 20
+        Me.log_grp.TabStop = False
+        Me.log_grp.Text = "Output Log File Name (Optional)"
         '
         'LogSaveDialog
         '
@@ -336,6 +336,16 @@ Partial Class frm_trajecttool
         Me.grpCLUSTERREQ.TabIndex = 1
         Me.grpCLUSTERREQ.TabStop = False
         Me.grpCLUSTERREQ.Text = "Cluster requirements"
+        '
+        'optimize
+        '
+        Me.optimize.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.optimize.Location = New System.Drawing.Point(6, 77)
+        Me.optimize.Name = "optimize"
+        Me.optimize.Size = New System.Drawing.Size(329, 23)
+        Me.optimize.TabIndex = 23
+        Me.optimize.Text = "Optimize"
+        Me.optimize.UseVisualStyleBackColor = True
         '
         'pnlIF
         '
@@ -555,16 +565,6 @@ Partial Class frm_trajecttool
         Me.btnCANCEL.Text = "Close"
         Me.btnCANCEL.UseVisualStyleBackColor = True
         '
-        'optimize
-        '
-        Me.optimize.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.optimize.Location = New System.Drawing.Point(6, 77)
-        Me.optimize.Name = "optimize"
-        Me.optimize.Size = New System.Drawing.Size(329, 23)
-        Me.optimize.TabIndex = 23
-        Me.optimize.Text = "Optimize"
-        Me.optimize.UseVisualStyleBackColor = True
-        '
         'frm_trajecttool
         '
         Me.AcceptButton = Me.btnOK
@@ -588,8 +588,8 @@ Partial Class frm_trajecttool
         Me.splcHELP.Panel1.ResumeLayout(False)
         Me.splcHELP.Panel2.ResumeLayout(False)
         Me.splcHELP.ResumeLayout(False)
-        Me.GroupBox5.ResumeLayout(False)
-        Me.GroupBox5.PerformLayout()
+        Me.log_grp.ResumeLayout(False)
+        Me.log_grp.PerformLayout()
         Me.GroupBox6.ResumeLayout(False)
         Me.GroupBox6.PerformLayout()
         Me.grpOUT.ResumeLayout(False)
@@ -647,7 +647,7 @@ Partial Class frm_trajecttool
     Friend WithEvents AddData As System.Windows.Forms.Button
     Friend WithEvents inputds As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents remove_layer As System.Windows.Forms.Button
-    Friend WithEvents GroupBox5 As System.Windows.Forms.GroupBox
+    Friend WithEvents log_grp As System.Windows.Forms.GroupBox
     Friend WithEvents LogSaveDialog As System.Windows.Forms.Button
     Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
     Friend WithEvents TextBox3 As System.Windows.Forms.TextBox

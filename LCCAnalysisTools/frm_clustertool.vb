@@ -1747,6 +1747,7 @@ Public Class frm_clustertool
         'Update help panel
         Dim strText As String = _
             "The point layer." & vbCrLf & vbCrLf & _
+            Environment.NewLine & _
             "Requirement: The input layer must be projected in meters."
 
         HELPCntUpdate("Input point layer", strText)
@@ -1783,11 +1784,9 @@ Public Class frm_clustertool
 
     Private Sub HELP_Distance()
         'Update help panel
-        Dim strText As String = "The distance table associated with this input layer." & _
-            Environment.NewLine & _
-            "Requirement: A distance table generated using the distance table tool." & _
-            Environment.NewLine & _
-            "Select 'Planar' if the distance table was generated using planar distances or 'Geodetic' if the distance table was computed using geodesic distances."
+        Dim strText As String = _
+            "The distance table associated with this input layer." & vbCrLf & vbCrLf & _
+            "Requirement: A distance table generated using the distance table tool."
 
         HELPCntUpdate("Input Distance Table", strText)
     End Sub
@@ -1805,7 +1804,39 @@ Public Class frm_clustertool
 #End Region
 
 #Region "Stats"
-    Private Sub stats_group_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles stats_group.Enter
+    Private Sub stats_group_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles stats_group.Click
+        HELP_stats()
+    End Sub
+
+    Private Sub meanstats_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles meanstats.Click
+        HELP_stats()
+    End Sub
+
+    Private Sub medianstats_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles medianstats.Click
+        HELP_stats()
+    End Sub
+
+    Private Sub rangestats_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rangestats.Click
+        HELP_stats()
+    End Sub
+
+    Private Sub stdstats_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles stdstats.Click
+        HELP_stats()
+    End Sub
+
+    Private Sub uqstats_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles uqstats.Click
+        HELP_stats()
+    End Sub
+
+    Private Sub lqstats_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles lqstats.Click
+        HELP_stats()
+    End Sub
+
+    Private Sub minstats_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles minstats.Click
+        HELP_stats()
+    End Sub
+
+    Private Sub maxstats_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles maxstats.Click
         HELP_stats()
     End Sub
 
@@ -1916,6 +1947,18 @@ Public Class frm_clustertool
                                  ByVal e As System.EventArgs) _
                                  Handles txtCMBSVAL.GotFocus
         HELP_ClusterMethodBSameDist()
+    End Sub
+
+    Private Sub TextBox1_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles TextBox1.Click
+        Help_ClusterMethod()
+    End Sub
+
+    Private Sub GroupBox3_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles GroupBox3.Enter
+        HELP_DBScan()
+    End Sub
+
+    Private Sub minpts_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles minpts.Click
+        HELP_DBScan()
     End Sub
 
     Private Sub Help_ClusterMethod()
@@ -2042,13 +2085,17 @@ Public Class frm_clustertool
 #Region "Log File"
     Private Sub log_grp_Enter(ByVal sender As System.Object, _
                              ByVal e As System.EventArgs) _
-                             Handles log_grp.Enter
+                             Handles log_grp.Click
         HELP_Out()
     End Sub
 
     Private Sub log_name_Click(ByVal sender As System.Object, _
                              ByVal e As System.EventArgs) _
                              Handles LogFileName.Click
+        HELP_Log()
+    End Sub
+
+    Private Sub LogFileName_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles LogFileName.Click
         HELP_Log()
     End Sub
 
@@ -2065,5 +2112,9 @@ Public Class frm_clustertool
     End Sub
 #End Region
 #End Region
+
+   
+
+
 
 End Class

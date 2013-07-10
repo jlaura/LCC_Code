@@ -24,6 +24,8 @@ Partial Class frm_dirdistool
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frm_dirdistool))
         Me.splcHELP = New System.Windows.Forms.SplitContainer()
+        Me.std_grp = New System.Windows.Forms.GroupBox()
+        Me.std = New System.Windows.Forms.TextBox()
         Me.log_grp = New System.Windows.Forms.GroupBox()
         Me.LogSaveDialog = New System.Windows.Forms.Button()
         Me.GroupBox6 = New System.Windows.Forms.GroupBox()
@@ -45,18 +47,16 @@ Partial Class frm_dirdistool
         Me.btnCANCEL = New System.Windows.Forms.Button()
         Me.btnOK = New System.Windows.Forms.Button()
         Me.btnSHHELP = New System.Windows.Forms.Button()
-        Me.std_grp = New System.Windows.Forms.GroupBox()
-        Me.std = New System.Windows.Forms.TextBox()
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
+        Me.std_grp.SuspendLayout()
         Me.log_grp.SuspendLayout()
         Me.GroupBox6.SuspendLayout()
         Me.grpOUT.SuspendLayout()
         Me.grpOUTGEOM.SuspendLayout()
         Me.grpDDPNUM.SuspendLayout()
         Me.Panel1.SuspendLayout()
-        Me.std_grp.SuspendLayout()
         Me.SuspendLayout()
         '
         'splcHELP
@@ -89,6 +89,25 @@ Partial Class frm_dirdistool
         Me.splcHELP.SplitterDistance = 356
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
+        '
+        'std_grp
+        '
+        Me.std_grp.Controls.Add(Me.std)
+        Me.std_grp.Location = New System.Drawing.Point(178, 117)
+        Me.std_grp.Name = "std_grp"
+        Me.std_grp.Size = New System.Drawing.Size(167, 53)
+        Me.std_grp.TabIndex = 3
+        Me.std_grp.TabStop = False
+        Me.std_grp.Text = "Standard Deviations"
+        '
+        'std
+        '
+        Me.std.Location = New System.Drawing.Point(6, 19)
+        Me.std.Name = "std"
+        Me.std.Size = New System.Drawing.Size(155, 20)
+        Me.std.TabIndex = 0
+        Me.std.Text = "3"
+        Me.std.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'log_grp
         '
@@ -301,25 +320,6 @@ Partial Class frm_dirdistool
         Me.btnSHHELP.Text = "Show Help >>"
         Me.btnSHHELP.UseVisualStyleBackColor = True
         '
-        'std_grp
-        '
-        Me.std_grp.Controls.Add(Me.std)
-        Me.std_grp.Location = New System.Drawing.Point(178, 117)
-        Me.std_grp.Name = "std_grp"
-        Me.std_grp.Size = New System.Drawing.Size(167, 53)
-        Me.std_grp.TabIndex = 3
-        Me.std_grp.TabStop = False
-        Me.std_grp.Text = "Standard Deviations"
-        '
-        'std
-        '
-        Me.std.Location = New System.Drawing.Point(6, 19)
-        Me.std.Name = "std"
-        Me.std.Size = New System.Drawing.Size(155, 20)
-        Me.std.TabIndex = 0
-        Me.std.Text = "3"
-        Me.std.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
         'frm_dirdistool
         '
         Me.AcceptButton = Me.btnOK
@@ -344,6 +344,8 @@ Partial Class frm_dirdistool
         Me.splcHELP.Panel1.PerformLayout()
         Me.splcHELP.Panel2.ResumeLayout(False)
         Me.splcHELP.ResumeLayout(False)
+        Me.std_grp.ResumeLayout(False)
+        Me.std_grp.PerformLayout()
         Me.log_grp.ResumeLayout(False)
         Me.log_grp.PerformLayout()
         Me.GroupBox6.ResumeLayout(False)
@@ -355,8 +357,6 @@ Partial Class frm_dirdistool
         Me.grpDDPNUM.ResumeLayout(False)
         Me.grpDDPNUM.PerformLayout()
         Me.Panel1.ResumeLayout(False)
-        Me.std_grp.ResumeLayout(False)
-        Me.std_grp.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub

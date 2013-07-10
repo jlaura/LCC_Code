@@ -1173,6 +1173,35 @@ Public Class frm_trajecttool
         HELP_Out()
     End Sub
 
+#Region "Log File"
+    Private Sub log_grp_Enter(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs)
+
+        HELP_Out()
+    End Sub
+
+    Private Sub log_name_Click(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs)
+
+        HELP_Log()
+    End Sub
+
+    Private Sub LogFileName_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles LogFileName.Click
+        HELP_Log()
+    End Sub
+
+    Private Sub HELP_Log()
+
+        'Update help panel
+        Dim strText As String = _
+            "The output log file name." & _
+            Environment.NewLine & _
+            "This field is optional."
+
+        HELPCntUpdate("Output layer name", strText)
+
+    End Sub
+#End Region
 
 #Region "*** HELP PANEL UPDATE CONTENT ********************************************************"
 #End Region
@@ -1196,9 +1225,11 @@ Public Class frm_trajecttool
 
         'Update help panel
         Dim strText As String = _
-          "The polyline layer to generate trajectories for." & _
+          "The polyline or ellipsoid layer(s) to generate trajectories for." & _
           vbCrLf & vbCrLf & _
-          "Requirement: The input layer must be projected in meters."
+          "Add one or more layers to the source list.  These layers will be joined and treated as a single input when computing trajectories." & _
+          vbCrLf & vbCrLf & _
+          "Requirement: The input layer must be projected to the same GCS and must be supplied in meters."
 
         HELPCntUpdate("Input Features", strText)
 
@@ -1218,8 +1249,9 @@ Public Class frm_trajecttool
             "-Inverse flattening:" & _
             vbCrLf & _
             "Only clusters with an inverse flattening value inside this threshold " & _
-            "will be used to generate the trajectories."
-
+            "will be used to generate the trajectories." & _
+            vbCrLf & vbCrLf & _
+            "Optimization provides our best guess parameters."
         HELPCntUpdate("Cluster distribution filter", strText)
 
     End Sub
@@ -1300,5 +1332,17 @@ Public Class frm_trajecttool
         If Not DataGridView1.CurrentRow.IsNewRow Then
             DataGridView1.Rows.Remove(DataGridView1.CurrentRow)
         End If
+    End Sub
+
+    Private Sub GroupBox1_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles GroupBox1.Enter
+        HELP_Layer()
+    End Sub
+
+    Private Sub GroupBox1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles GroupBox1.Click
+        HELP_Layer()
+    End Sub
+
+    Private Sub DataGridView1_CellContentClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.DataGridViewCellEventArgs) Handles DataGridView1.CellContentClick
+        HELP_Layer()
     End Sub
 End Class

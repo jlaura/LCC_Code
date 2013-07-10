@@ -1007,6 +1007,10 @@ Public Class frm_dirdistool
 
     End Sub
 
+    Private Sub txtDDPNUM_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtDDPNUM.Click
+        HELP_PntCount()
+    End Sub
+
     Private Sub HELP_PntCount()
 
         'Update help panel
@@ -1233,4 +1237,6 @@ Public Class frm_dirdistool
 
         Return sReport
     End Function
+
+
 End Class

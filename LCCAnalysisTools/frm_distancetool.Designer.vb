@@ -22,6 +22,7 @@ Partial Class frm_distancetool
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frm_distancetool))
         Me.btnSHHELP = New System.Windows.Forms.Button()
         Me.okay = New System.Windows.Forms.Button()
         Me.btnCANCEL = New System.Windows.Forms.Button()
@@ -240,6 +241,7 @@ Partial Class frm_distancetool
         Me.Controls.Add(Me.okay)
         Me.Controls.Add(Me.btnCANCEL)
         Me.Controls.Add(Me.splcHELP)
+        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
         Me.MaximumSize = New System.Drawing.Size(900, 314)
         Me.MinimizeBox = False

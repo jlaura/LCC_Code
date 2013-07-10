@@ -269,8 +269,8 @@ Public Class frm_intersecttool
             Me.Size = New Size(Me.MinimumSize.Width, Me.Size.Height)
             btnSHHELP.Text = "Show Help >>"
         Else
-            Me.MaximumSize = New Size(900, 495)
-            Me.Size = New Size(543, Me.Size.Height)
+            Me.MaximumSize = New Size(900, 550)
+            Me.Size = New Size(643, Me.Size.Height)
             splcHELP.Panel2Collapsed = False
             btnSHHELP.Text = "<< Hide Help"
         End If
@@ -1970,5 +1970,64 @@ Public Class frm_intersecttool
           (String.Format(f400, "_")) & vbCrLf
         Return sReport
     End Function
+
+
+
+#Region "Weighted Help"
+    Private Sub GroupBox2_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles GroupBox2.Enter
+        HELP_weighted()
+    End Sub
+
+    Private Sub GroupBox2_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles GroupBox2.Click
+        HELP_weighted()
+    End Sub
+
+    Private Sub weightedCentroids_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles weightedCentroids.CheckedChanged
+        HELP_weighted()
+    End Sub
+
+    Private Sub HELP_weighted()
+        'Update help panel
+        Dim strText As String = _
+            "If the input polyline layer contains an inverse flattening attribute weight the center of the intersections based upon (1 / iflat1 * iflat2)." & _
+            Environment.NewLine & _
+            "The means that two intersecting lines with lower inverse flattenings will pull the centroid of the global population of intersections closer than two lines with higher inverse flattenings." & _
+            Environment.NewLine & _
+            "In testing this results in a shift on the order of 1km for most observations.  This is clearly data dependent though."
+
+        HELPCntUpdate("Weighted Centroids", strText)
+    End Sub
+#End Region
+
+#Region "Log File"
+    Private Sub log_grp_Enter(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs)
+
+        HELP_Out()
+    End Sub
+
+    Private Sub log_name_Click(ByVal sender As System.Object, _
+                             ByVal e As System.EventArgs)
+
+        HELP_Log()
+    End Sub
+
+    Private Sub LogFileName_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles LogFileName.Click
+        HELP_Log()
+    End Sub
+
+    Private Sub HELP_Log()
+
+        'Update help panel
+        Dim strText As String = _
+            "The output log file name." & _
+            Environment.NewLine & _
+            "This field is optional."
+
+        HELPCntUpdate("Output layer name", strText)
+
+    End Sub
+#End Region
+
 
 End Class
