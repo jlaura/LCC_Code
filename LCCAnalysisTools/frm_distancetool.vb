@@ -12,11 +12,12 @@ Imports ESRI.ArcGIS.Geometry
 Imports System.Math
 Imports ESRI.ArcGIS.Geoprocessor
 Imports ESRI.ArcGIS.AnalysisTools
+Imports System.Threading
+Imports ESRI.ArcGIS.Geoprocessing
 
 
 
 Public Class frm_distancetool
-
     Private Sub distancetool_Load(ByVal sender As System.Object, _
                                         ByVal e As System.EventArgs) _
                                         Handles MyBase.Load
@@ -323,41 +324,88 @@ Public Class frm_distancetool
 
     Private Sub generateNearTable(ByVal distlayer, ByVal knn, ByVal DistanceTableOut)
         'Setup the geoprocessor
-        Dim gp As New ESRI.ArcGIS.Geoprocessor.Geoprocessor
+        Dim gp As ESRI.ArcGIS.Geoprocessor.Geoprocessor = New ESRI.ArcGIS.Geoprocessor.Geoprocessor()
+        AddHandler gp.ToolExecuted, AddressOf gpToolExecuted
 
         'Access the feature layer twice so we can aim at it twice with the gp tool.
         Dim FeatureLayer = GetFLayerByName(distlayer)
         Dim dataset As IDataset = CType(FeatureLayer, IDataset)
         Dim working_dir As String = dataset.Workspace.PathName
 
+
+        '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        ' Create a CancelTracker
+        Dim pTrkCan As ITrackCancel = New CancelTracker
+
+        ' Create the ProgressDialog. This automatically displays the dialog
+        Dim pProDlgFact As IProgressDialogFactory = New ProgressDialogFactory
+        Dim pProDlg As IProgressDialog2 = pProDlgFact.Create(pTrkCan, My.ArcMap.Application.hWnd)
+
+        ' Set the properties of the ProgressDialog
+        pProDlg.CancelEnabled = True
+        pProDlg.Title = "Distance Table Tool"
+        pProDlg.Animation = esriProgressAnimationTypes.esriProgressSpiral
+
+        '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         'Setup Params
         Dim lcount As Long = knn
 
-        'Get the generate near table tool
-        Dim genneartable As GenerateNearTable = New GenerateNearTable()
+        ' Create an IVariantArray to hold the parameter values.
+        Dim parameters As IVariantArray = New VarArray
 
-        'Setup the Gp Environment
-        Dim addtomap As Boolean = gp.AddOutputsToMap
-        gp.TemporaryMapLayers = False
-        gp.AddOutputsToMap = True 'Add the derived table to the map doc.
-        gp.OverwriteOutput = True
+        ' Populate the variant array with parameter values.
+        parameters.Add(FeatureLayer)
+        parameters.Add(distlayer.ToString())
+        parameters.Add(working_dir + "\\" + DistanceTableOut.ToString())
+        parameters.Add("")
+        parameters.Add("LOCATION")
+        parameters.Add("NO_ANGLE")
+        parameters.Add("CLOSEST")
+        parameters.Add(lcount)
+
+        Dim gpResult As IGeoProcessorResult2 = CType(gp.ExecuteAsync("GenerateNearTable", parameters), IGeoProcessorResult2)
 
 
-        'Set Params 
-        genneartable.in_features = FeatureLayer
-        genneartable.near_features = distlayer.ToString()
-        'genneartable.near_features = "C:\Users\jlaura\Desktop\Zunil\Zunil_secondaries_proj.shp"
-        genneartable.out_table = working_dir + "\\" + DistanceTableOut.ToString()
-        genneartable.closest = False
-        genneartable.location = True
-        genneartable.closest_count = lcount
+        ''Get the generate near table tool
+        'Dim genneartable As GenerateNearTable = New GenerateNearTable()
 
+        ''Setup the Gp Environment
+        'Dim addtomap As Boolean = gp.AddOutputsToMap
+        'gp.TemporaryMapLayers = False
+        'gp.AddOutputsToMap = True 'Add the derived table to the map doc.
+        'gp.OverwriteOutput = True
+
+        ''Set Params 
+        'genneartable.in_features = FeatureLayer
+        'genneartable.near_features = distlayer.ToString()
+        ''genneartable.near_features = "C:\Users\jlaura\Desktop\Zunil\Zunil_secondaries_proj.shp"
+        'genneartable.out_table = working_dir + "\\" + DistanceTableOut.ToString()
+        'genneartable.closest = False
+        'genneartable.location = True
+        'genneartable.closest_count = lcount
+
+        Dim results As IGeoProcessorResult = CType(gp.Execute(genneartable, pTrkCan), IGeoProcessorResult)
+        While results.Status <> esriJobStatus.esriJobSucceeded
+            System.Diagnostics.Debug.Write(gp.GetMessage(0))
+        End While
         'Execute
-        Try
-            gp.Execute(genneartable, Nothing)
-        Catch ex As Exception
+        'Try
+        '    gp.Execute(genneartable, Nothing)
+        '    If gp.MessageCount > 0 Then
 
-        End Try
+        '        For Count As Integer = 0 To gp.MessageCount - 1
+
+        '            MsgBox(gp.GetMessage(Count), MsgBoxStyle.Exclamation, "Progress")
+
+        '        Next Count
+
+        '    End If
+
+        ProgressDialogDispose(pProDlg, Nothing, pTrkCan, pProDlgFact)
+
+        'Catch ex As Exception
+
+        'End Try
 
 
 
