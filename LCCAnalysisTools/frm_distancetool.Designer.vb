@@ -234,8 +234,10 @@ Partial Class frm_distancetool
         '
         'frm_distancetool
         '
+        Me.AcceptButton = Me.okay
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.CancelButton = Me.btnCANCEL
         Me.ClientSize = New System.Drawing.Size(422, 276)
         Me.Controls.Add(Me.btnSHHELP)
         Me.Controls.Add(Me.okay)

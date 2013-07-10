@@ -1555,7 +1555,7 @@ Public Module mod_public
 
     End Function
 
-    Public Sub FindNearestGeo(ByVal Ar(,) As Double, ByRef feature(,) As Double, ByRef dist(,) As Double, ByVal dSemiMajAxis As Double, ByVal dSemiMinAxis As Double, ByVal knn As Double)
+    Public Sub FindNearestBF(ByVal Ar(,) As Double, ByRef feature(,) As Double, ByRef dist(,) As Double, ByVal dSemiMajAxis As Double, ByVal dSemiMinAxis As Double, ByVal knn As Double, ByVal bPlan As Boolean)
 
         Dim distance As Double
         Dim maxdistance As Double = 0
@@ -1563,7 +1563,7 @@ Public Module mod_public
         Dim index As Integer = 0
 
         For i As Integer = 0 To Ar.GetUpperBound(1) - 1
-            distance = GetDist(Ar(2, i), Ar(3, i), feature(1, 0), feature(2, 0), dSemiMajAxis, dSemiMinAxis, False)
+            distance = GetDist(Ar(2, i), Ar(3, i), feature(1, 0), feature(2, 0), dSemiMajAxis, dSemiMinAxis, bPlan)
             If distance <> 0 Then
                 If counter <= knn Then
                     'Autoload the first n distances and track where the max distance is in the array

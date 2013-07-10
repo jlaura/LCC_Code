@@ -177,10 +177,10 @@ Public Class frm_distancetool
             generateNearTable(distlayer, knn, distanceTableOut)
         ElseIf distance_measure = "Geodesic" Then
             'Generate a near table manually using geodesic distance
-            generateNearGeodesicTable(distlayer, knn, distanceTableOut, workspace)
+            bruteforceNearTable(distlayer, knn, distanceTableOut, workspace, False)
         Else
             'Generate a near table manually using planar distance
-            generateNearTablePlanar(distlayer, knn, distanceTableOut, workspace)
+            bruteforceNearTable(distlayer, knn, distanceTableOut, workspace, True)
         End If
 
         'Close and dispose of form
@@ -190,11 +190,7 @@ Public Class frm_distancetool
 
     End Sub
 
-    Private Sub generateNearTablePlanar(ByVal distlayer, ByVal knn, ByVal distanceTableOut, ByRef workspace)
-        MsgBox("ALERT: NOT YET IMPLEMENTED", MsgBoxStyle.Exclamation, "ERROR")
-    End Sub
-
-    Private Sub generateNearGeodesicTable(ByVal distlayer, ByVal knn, ByVal distanceTableOut, ByRef workspace)
+    Private Sub bruteforceNearTable(ByVal distlayer As String, ByVal knn As String, ByVal distanceTableOut As String, ByRef workspace As IWorkspace2, ByVal bPlan As Boolean)
         'This method generates a geodesic KNN table.  This is signifigantly slower than using near in planar space due to the additional math involved.
 
         'Get a hook into the application
@@ -285,7 +281,7 @@ Public Class frm_distancetool
             Dim dist(3, knn) As Double ' Indices are OID | xcoord | ycoord | distance
 
             'Find the K-Nearest Neighbors in Geodesic space.
-            FindNearestGeo(Ar, feature, dist, semi_major_axis, semi_minor_axis, knn)
+            FindNearestBF(Ar, feature, dist, semi_major_axis, semi_minor_axis, knn, bPlan)
 
             'Insert the returned distances into the distance table
             Dim InFID = tTable.FindField("IN_FID")
@@ -332,21 +328,6 @@ Public Class frm_distancetool
         Dim dataset As IDataset = CType(FeatureLayer, IDataset)
         Dim working_dir As String = dataset.Workspace.PathName
 
-
-        '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        ' Create a CancelTracker
-        Dim pTrkCan As ITrackCancel = New CancelTracker
-
-        ' Create the ProgressDialog. This automatically displays the dialog
-        Dim pProDlgFact As IProgressDialogFactory = New ProgressDialogFactory
-        Dim pProDlg As IProgressDialog2 = pProDlgFact.Create(pTrkCan, My.ArcMap.Application.hWnd)
-
-        ' Set the properties of the ProgressDialog
-        pProDlg.CancelEnabled = True
-        pProDlg.Title = "Distance Table Tool"
-        pProDlg.Animation = esriProgressAnimationTypes.esriProgressSpiral
-
-        '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         'Setup Params
         Dim lcount As Long = knn
 
@@ -360,55 +341,34 @@ Public Class frm_distancetool
         parameters.Add("")
         parameters.Add("LOCATION")
         parameters.Add("NO_ANGLE")
-        parameters.Add("CLOSEST")
+        parameters.Add("ALL")
         parameters.Add(lcount)
 
         Dim gpResult As IGeoProcessorResult2 = CType(gp.ExecuteAsync("GenerateNearTable", parameters), IGeoProcessorResult2)
 
+    End Sub
 
-        ''Get the generate near table tool
-        'Dim genneartable As GenerateNearTable = New GenerateNearTable()
-
-        ''Setup the Gp Environment
-        'Dim addtomap As Boolean = gp.AddOutputsToMap
-        'gp.TemporaryMapLayers = False
-        'gp.AddOutputsToMap = True 'Add the derived table to the map doc.
-        'gp.OverwriteOutput = True
-
-        ''Set Params 
-        'genneartable.in_features = FeatureLayer
-        'genneartable.near_features = distlayer.ToString()
-        ''genneartable.near_features = "C:\Users\jlaura\Desktop\Zunil\Zunil_secondaries_proj.shp"
-        'genneartable.out_table = working_dir + "\\" + DistanceTableOut.ToString()
-        'genneartable.closest = False
-        'genneartable.location = True
-        'genneartable.closest_count = lcount
-
-        Dim results As IGeoProcessorResult = CType(gp.Execute(genneartable, pTrkCan), IGeoProcessorResult)
-        While results.Status <> esriJobStatus.esriJobSucceeded
-            System.Diagnostics.Debug.Write(gp.GetMessage(0))
-        End While
-        'Execute
-        'Try
-        '    gp.Execute(genneartable, Nothing)
-        '    If gp.MessageCount > 0 Then
-
-        '        For Count As Integer = 0 To gp.MessageCount - 1
-
-        '            MsgBox(gp.GetMessage(Count), MsgBoxStyle.Exclamation, "Progress")
-
-        '        Next Count
-
-        '    End If
-
-        ProgressDialogDispose(pProDlg, Nothing, pTrkCan, pProDlgFact)
-
-        'Catch ex As Exception
-
-        'End Try
-
-
-
+    Public Sub gpToolExecuted(ByVal sender As Object, ByVal e As ToolExecutedEventArgs)
+        Dim result As IGeoProcessorResult2 = CType(e.GPResult, IGeoProcessorResult2)
+        If (result.Status.Equals(esriJobStatus.esriJobSucceeded)) Then
+            'Check that there are no information or warning messages.
+            If (result.MaxSeverity = 0) Then
+                'Get the return value.
+                Dim returnValue As Object = result.ReturnValue
+                'Application specific code,
+                'for example, find the layer to which this return value corresponds.
+            Else
+                'Application specific code.
+            End If
+        Else
+            'Get all messages.
+            Dim msgs As IGPMessages = result.GetResultMessages()
+            Dim i As Integer
+            For i = 0 To result.MessageCount
+                Dim msg As IGPMessage2 = CType(msgs.GetMessage(i), IGPMessage2)
+                'Application specific code.
+            Next i
+        End If
     End Sub
 
     Private Function CreateTable(ByVal workspace As IWorkspace2, ByVal tableName As System.String, ByVal fields As IFields) As ITable
@@ -699,8 +659,5 @@ Public Class frm_distancetool
     End Sub
 
 #End Region
-
-
-
 
 End Class
