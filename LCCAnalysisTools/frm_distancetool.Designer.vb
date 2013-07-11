@@ -123,12 +123,10 @@ Partial Class frm_distancetool
         '
         Me.planar_measure.Appearance = System.Windows.Forms.Appearance.Button
         Me.planar_measure.AutoSize = True
-        Me.planar_measure.Checked = True
-        Me.planar_measure.Location = New System.Drawing.Point(18, 19)
+        Me.planar_measure.Location = New System.Drawing.Point(78, 19)
         Me.planar_measure.Name = "planar_measure"
         Me.planar_measure.Size = New System.Drawing.Size(47, 23)
         Me.planar_measure.TabIndex = 0
-        Me.planar_measure.TabStop = True
         Me.planar_measure.Text = "Planar"
         Me.planar_measure.UseVisualStyleBackColor = True
         '
@@ -136,7 +134,8 @@ Partial Class frm_distancetool
         '
         Me.geodesic_measure.Appearance = System.Windows.Forms.Appearance.Button
         Me.geodesic_measure.AutoSize = True
-        Me.geodesic_measure.Location = New System.Drawing.Point(71, 19)
+        Me.geodesic_measure.Checked = True
+        Me.geodesic_measure.Location = New System.Drawing.Point(10, 19)
         Me.geodesic_measure.Name = "geodesic_measure"
         Me.geodesic_measure.Size = New System.Drawing.Size(62, 23)
         Me.geodesic_measure.TabIndex = 1

@@ -75,7 +75,8 @@ Partial Class frm_clustertool
         Me.clustmeth_grp = New System.Windows.Forms.GroupBox()
         Me.tabcontrol = New System.Windows.Forms.TabControl()
         Me.DBScan = New System.Windows.Forms.TabPage()
-        Me.TextBox1 = New System.Windows.Forms.TextBox()
+        Me.eps_grp = New System.Windows.Forms.GroupBox()
+        Me.eps = New System.Windows.Forms.TextBox()
         Me.kgraph = New System.Windows.Forms.Button()
         Me.GroupBox3 = New System.Windows.Forms.GroupBox()
         Me.minpts = New System.Windows.Forms.TextBox()
@@ -98,6 +99,7 @@ Partial Class frm_clustertool
         Me.clustmeth_grp.SuspendLayout()
         Me.tabcontrol.SuspendLayout()
         Me.DBScan.SuspendLayout()
+        Me.eps_grp.SuspendLayout()
         Me.GroupBox3.SuspendLayout()
         Me.TabPage1.SuspendLayout()
         Me.Panel1.SuspendLayout()
@@ -309,12 +311,10 @@ Partial Class frm_clustertool
         '
         Me.radMEASPLAN.Appearance = System.Windows.Forms.Appearance.Button
         Me.radMEASPLAN.AutoSize = True
-        Me.radMEASPLAN.Checked = True
-        Me.radMEASPLAN.Location = New System.Drawing.Point(18, 19)
+        Me.radMEASPLAN.Location = New System.Drawing.Point(74, 19)
         Me.radMEASPLAN.Name = "radMEASPLAN"
         Me.radMEASPLAN.Size = New System.Drawing.Size(47, 23)
         Me.radMEASPLAN.TabIndex = 0
-        Me.radMEASPLAN.TabStop = True
         Me.radMEASPLAN.Text = "Planar"
         Me.radMEASPLAN.UseVisualStyleBackColor = True
         '
@@ -322,7 +322,8 @@ Partial Class frm_clustertool
         '
         Me.radMEASGEO.Appearance = System.Windows.Forms.Appearance.Button
         Me.radMEASGEO.AutoSize = True
-        Me.radMEASGEO.Location = New System.Drawing.Point(71, 19)
+        Me.radMEASGEO.Checked = True
+        Me.radMEASGEO.Location = New System.Drawing.Point(6, 19)
         Me.radMEASGEO.Name = "radMEASGEO"
         Me.radMEASGEO.Size = New System.Drawing.Size(62, 23)
         Me.radMEASGEO.TabIndex = 1
@@ -632,7 +633,7 @@ Partial Class frm_clustertool
         '
         'DBScan
         '
-        Me.DBScan.Controls.Add(Me.TextBox1)
+        Me.DBScan.Controls.Add(Me.eps_grp)
         Me.DBScan.Controls.Add(Me.kgraph)
         Me.DBScan.Controls.Add(Me.GroupBox3)
         Me.DBScan.Location = New System.Drawing.Point(4, 22)
@@ -642,18 +643,24 @@ Partial Class frm_clustertool
         Me.DBScan.Text = "DBSCAN"
         Me.DBScan.UseVisualStyleBackColor = True
         '
-        'TextBox1
+        'eps_grp
         '
-        Me.TextBox1.BackColor = System.Drawing.SystemColors.Window
-        Me.TextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.TextBox1.Location = New System.Drawing.Point(8, 12)
-        Me.TextBox1.Multiline = True
-        Me.TextBox1.Name = "TextBox1"
-        Me.TextBox1.ReadOnly = True
-        Me.TextBox1.Size = New System.Drawing.Size(354, 33)
-        Me.TextBox1.TabIndex = 6
-        Me.TextBox1.Text = "A high speed density based clustering method.  Use the K-Distance graph to improv" & _
-            "e the optimized threshold distance we estimate."
+        Me.eps_grp.Controls.Add(Me.eps)
+        Me.eps_grp.Location = New System.Drawing.Point(8, 68)
+        Me.eps_grp.Name = "eps_grp"
+        Me.eps_grp.Size = New System.Drawing.Size(360, 49)
+        Me.eps_grp.TabIndex = 1
+        Me.eps_grp.TabStop = False
+        Me.eps_grp.Text = "Epsilon (Minimum Distance)"
+        '
+        'eps
+        '
+        Me.eps.Location = New System.Drawing.Point(6, 20)
+        Me.eps.Name = "eps"
+        Me.eps.Size = New System.Drawing.Size(347, 20)
+        Me.eps.TabIndex = 0
+        Me.eps.Text = "1500"
+        Me.eps.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'kgraph
         '
@@ -667,7 +674,7 @@ Partial Class frm_clustertool
         'GroupBox3
         '
         Me.GroupBox3.Controls.Add(Me.minpts)
-        Me.GroupBox3.Location = New System.Drawing.Point(8, 51)
+        Me.GroupBox3.Location = New System.Drawing.Point(8, 13)
         Me.GroupBox3.Name = "GroupBox3"
         Me.GroupBox3.Size = New System.Drawing.Size(360, 49)
         Me.GroupBox3.TabIndex = 0
@@ -780,7 +787,8 @@ Partial Class frm_clustertool
         Me.clustmeth_grp.ResumeLayout(False)
         Me.tabcontrol.ResumeLayout(False)
         Me.DBScan.ResumeLayout(False)
-        Me.DBScan.PerformLayout()
+        Me.eps_grp.ResumeLayout(False)
+        Me.eps_grp.PerformLayout()
         Me.GroupBox3.ResumeLayout(False)
         Me.GroupBox3.PerformLayout()
         Me.TabPage1.ResumeLayout(False)
@@ -838,7 +846,6 @@ Partial Class frm_clustertool
     Friend WithEvents GroupBox3 As System.Windows.Forms.GroupBox
     Friend WithEvents minpts As System.Windows.Forms.TextBox
     Friend WithEvents kgraph As System.Windows.Forms.Button
-    Friend WithEvents TextBox1 As System.Windows.Forms.TextBox
     Friend WithEvents log_grp As System.Windows.Forms.GroupBox
     Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
     Friend WithEvents TextBox3 As System.Windows.Forms.TextBox
@@ -849,4 +856,6 @@ Partial Class frm_clustertool
     Friend WithEvents grpMEASSPACE As System.Windows.Forms.GroupBox
     Friend WithEvents radMEASPLAN As System.Windows.Forms.RadioButton
     Friend WithEvents radMEASGEO As System.Windows.Forms.RadioButton
+    Friend WithEvents eps_grp As System.Windows.Forms.GroupBox
+    Friend WithEvents eps As System.Windows.Forms.TextBox
 End Class

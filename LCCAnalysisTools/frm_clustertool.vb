@@ -212,6 +212,16 @@ Public Class frm_clustertool
                    "Invalid Parameter")
             minpts.Text = "1500"
         End Try
+
+        'Epsilon
+        Try
+            If CInt(eps.Text) < 1 Then eps.Text = CStr(eps.Text)
+        Catch ex As Exception
+            MsgBox("Please enter an integer greater than or equal to 1.", MsgBoxStyle.Exclamation, "Invalid Parameter")
+            eps.Text = "1500"
+        End Try
+
+
     End Sub
 
     Private Sub btnOK_Click(ByVal sender As System.Object, _
@@ -1151,7 +1161,7 @@ Public Class frm_clustertool
 
                 'Progress Bar
                 pProDlg.Description = "Clustering using DBScan..."
-            pStepPro.Message = String.Format("{0} / {1} Points Processed", Unvisited.Count, dist_lists.Count)
+            pStepPro.Message = String.Format("{0} / {1} Points Processed", dist_lists.Count - Unvisited.Count, dist_lists.Count)
                 pStepPro.MinRange = 0
                 pStepPro.MaxRange = dist_lists.Count - 1
 
@@ -1176,17 +1186,17 @@ Public Class frm_clustertool
                 node_index = GetNodeIndex(node)
 
                 'Get the neighbors to the current node
-                Dim neighbors = getNeighbors(txtNQUERY.Text, node_index, dSemiMajAxis, dSemiMinAxis, measurement_space)
+                Dim neighbors = getNeighbors(eps.Text, node_index, dSemiMajAxis, dSemiMinAxis, measurement_space)
 
                 'If we are greater than epsilon we have a cluster, otherwise we have noise.  Unmarked nodes are implicitly noise.
                 If neighbors.Count >= CInt(minpts.Text) Then 'neighbors includes the source point in the list
 
                     'Attempt to expand the cluster
-                    Unvisited = ExpandCluster(neighbors, cluster_id, txtNQUERY.Text, minpts.Text, Ar2, Unvisited, dSemiMajAxis, dSemiMinAxis, measurement_space)
+                    Unvisited = ExpandCluster(neighbors, cluster_id, eps.Text, minpts.Text, Ar2, Unvisited, dSemiMajAxis, dSemiMinAxis, measurement_space)
 
                 End If
                 pStepPro.StepValue = old_count - Unvisited.Count
-                pStepPro.Message = String.Format("{0} / {1} Points Processed", Unvisited.Count, dist_lists.Count)
+                pStepPro.Message = String.Format("{0} / {1} Points Processed", dist_lists.Count - Unvisited.Count, dist_lists.Count)
                 If Not pTrkCan.Continue Then
                     'SUMMARY PRINT: End program as interrupted
                     PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
@@ -1690,7 +1700,8 @@ Public Class frm_clustertool
 
         'Populate the mininum distance text box with the optimized distance
 
-        txtNQUERY.Text = CStr(Math.Round(dMean, 0))
+        txtNQUERY.Text = CStr(Math.Round(dLQ, 0))
+        eps.Text = CStr(Math.Round(2 * dLQ, 0))
         meanstats.Text = CStr(Math.Round(dMean, 3))
         rangestats.Text = CStr(Math.Round(dRange, 3))
         stdstats.Text = CStr(Math.Round(dStd, 3))
@@ -1949,7 +1960,7 @@ Public Class frm_clustertool
         HELP_ClusterMethodBSameDist()
     End Sub
 
-    Private Sub TextBox1_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles TextBox1.Click
+    Private Sub TextBox1_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs)
         Help_ClusterMethod()
     End Sub
 
@@ -1972,10 +1983,20 @@ Public Class frm_clustertool
         HELPCntUpdate("Clustering Method", strText)
     End Sub
 
+    Private Sub eps_grp_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles eps_grp.Enter
+        HELP_DBScan()
+    End Sub
+
+    Private Sub eps_grp_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles eps_grp.Click
+        HELP_DBScan()
+    End Sub
+
     Private Sub HELP_DBScan()
         'Update help panel
         Dim strText As String = _
             "Minimum Cluster Seed Size determines the minimum number of clusters within the threshold distance in order to begin a new crater cluster." & _
+            Environment.NewLine & _
+            "Epsilon is the distance threshold at which points are clustered.  At distances beyond epsilon, a new cluster will be generated if the max seed size (density) is met." & _
             Environment.NewLine & _
            "The K-Distance graph provides a metric to assist in determining the distance at which outliers (noise) begin to impact cluster creation. " & _
            "A drastic increase in slope is indicative of the distance at which outliers should be thresholded as noise. " & _
@@ -2112,9 +2133,6 @@ Public Class frm_clustertool
     End Sub
 #End Region
 #End Region
-
-   
-
 
 
 End Class

@@ -1038,6 +1038,8 @@ Public Class frm_trajecttool
         Dim counter As Integer = 0 ' Count the number of input features
         Dim sum As Double = 0.0 'Sum of the length fields for all input datasets
         Dim iflat_sum As Double = 0.0 'Sum of the iflat if that input exists.
+        Dim iflat_list As New List(Of Double)
+        Dim value As Double = 0.0
 
         For i As Integer = 0 To featurelayerlist.Count - 1
             pFLayer = GetFLayerByName(featurelayerlist(i))
@@ -1047,9 +1049,11 @@ Public Class frm_trajecttool
 
             While Not pFeature1 Is Nothing
                 counter = counter + 1
-                sum = sum + pFeature1.Value(pFeature1.Fields.FindField("SHAPE_Length"))
+                sum = sum + pFeature1.Value(pFeature1.Fields.FindField("majaxis"))
                 Try ' This field may or may not exist
-                    iflat_sum = iflat_sum + pFeature1.Value(pFeature1.Fields.FindField("iflat"))
+                    value = pFeature1.Value(pFeature1.Fields.FindField("iflat"))
+                    iflat_sum = iflat_sum + value
+                    iflat_list.Add(value)
                 Catch ex As Exception
 
                 End Try
@@ -1060,7 +1064,20 @@ Public Class frm_trajecttool
 
         txtEMAVAL.Text = String.Format("{0}", Math.Round(sum / counter, 2))
         Try
-            txtEIFVAL.Text = String.Format("{0}", Math.Round(iflat_sum / counter, 2))
+            'Variable definitions
+            Dim dLQ As Double
+            Dim dcount As Integer = iflat_list.Count - 1
+            'Sort the list
+            iflat_list.Sort()
+            'Compute the approximate quartiles
+            If IEEERemainder(dCount, 2) = 0 Then
+                dLQ = (iflat_list(Round(dCount * 0.25)) + _
+                       iflat_list(Round((dCount * 0.25) + 1))) / 2
+            Else
+                dLQ = iflat_list(Round(dcount * 0.25))
+            End If
+            'Update the field
+            txtEIFVAL.Text = String.Format("{0}", Math.Round(dLQ, 2))
         Catch ex As Exception
 
         End Try
