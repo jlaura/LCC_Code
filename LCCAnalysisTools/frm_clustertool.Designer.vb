@@ -698,7 +698,7 @@ Partial Class frm_clustertool
         Me.TabPage1.Padding = New System.Windows.Forms.Padding(3)
         Me.TabPage1.Size = New System.Drawing.Size(376, 159)
         Me.TabPage1.TabIndex = 0
-        Me.TabPage1.Text = "Heirarchal"
+        Me.TabPage1.Text = "Hierarchical"
         Me.TabPage1.UseVisualStyleBackColor = True
         '
         'Panel1

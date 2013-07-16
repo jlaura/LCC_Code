@@ -3,11 +3,32 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Large Crater Cluster Analysis Tool's documentation!
+USGS Large Crater Cluster Analysis Tool
 ==============================================================
+.. image:: images/index/logo.png
 
+::
 
-Contents:
+   Last Update: July 16, 2013
+
+   Installation Files: LLC.exe
+   
+   Author:  Jay Laura
+            United States Geological Survey, Flagstaff
+            Astrogeology Science Center 
+            E-mail: jlaura@usgs.gov, jskinner@usgs.gov
+	
+   Requirements: ArcGIS 10.0 or greater	
+   
+
+Abstract
+--------
+Originally developed for Mars, LCC Analysis Suite provides a set of tools to backtrack secondary impact chains (Large Crater Clusters) to potential parent sites by means of a systematic five step process.
+
+   
+
+Contents
+---------
 
 .. toctree::
    :numbered:
@@ -21,5 +42,6 @@ Contents:
    ch6/direction_tool
    ch7/trajectory_tool
    ch8/impact_tool
+   appendix/appendix
 
 

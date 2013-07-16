@@ -1292,6 +1292,7 @@ Public Class frm_intersecttool
             'Get the centroid for the point collection
             Dim weighted As Boolean = False
             If weightedCentroids.Checked = True Then weighted = True
+            'ERROR OCCURS HERE IF WEIGHTED IS TRUE AND IFLAT IS NOT IN THE TABLE
             Dim dCentCoord As Lat2BLon2B = GetCentroid(pPColl4, cluster_weights, weighted)
             Dim dStats As Lat2BLon2B = GetClusterPointsFromCentroidStats(pPColl4, dCentCoord, _
                                                                          dSemiMajAxis, dSemiMinAxis, _

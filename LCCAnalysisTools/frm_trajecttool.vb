@@ -1040,6 +1040,7 @@ Public Class frm_trajecttool
         Dim iflat_sum As Double = 0.0 'Sum of the iflat if that input exists.
         Dim iflat_list As New List(Of Double)
         Dim value As Double = 0.0
+        Dim len_index As Integer = Nothing
 
         For i As Integer = 0 To featurelayerlist.Count - 1
             pFLayer = GetFLayerByName(featurelayerlist(i))
@@ -1049,7 +1050,16 @@ Public Class frm_trajecttool
 
             While Not pFeature1 Is Nothing
                 counter = counter + 1
-                sum = sum + pFeature1.Value(pFeature1.Fields.FindField("majaxis"))
+
+                Try
+                    sum = sum + pFeature1.Value(pFeature1.Fields.FindField("majaxis"))
+                Catch ex As Exception
+                    MsgBox("One or more input shapefile do not have a `majaxis field`.  Please add this field to the shapefile if you wish to utilize our optimization.", _
+                           MsgBoxStyle.Exclamation, _
+                           "Optimization Error")
+                    Return
+                End Try
+
                 Try ' This field may or may not exist
                     value = pFeature1.Value(pFeature1.Fields.FindField("iflat"))
                     iflat_sum = iflat_sum + value
