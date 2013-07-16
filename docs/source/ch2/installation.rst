@@ -9,7 +9,7 @@ Installation Requirements
 This tool has been designed to function with ArcMap version 10.0 and greater.  It is not possible to run the tool with versions less than 10.0.  Please download the old version of the tool at XXXX if you require support for ArcMap 9.3.
 
 .. note::
-   While the tool functions most efficiently with the advanced license (the old ArcInfo), it is possible to use other license versions.  Using a lesser license willr esult in some performance loss, but the final analysis remains identical.  The speed differential is most notable using the Distance Matrix tool as tje advanced tool provides the Generate Near Table analysis tool.
+   While the tool functions most efficiently with the advanced license (the old ArcInfo), it is possible to use other license versions.  Using a lesser license willr esult in some performance loss, but the final analysis remains identical.  The speed differential is most notable using the Distance Matrix tool as the advanced tool provides the Generate Near Table analysis tool.
    
 Installing the Tool
 -------------------
@@ -21,14 +21,15 @@ Adding the Tool to ArcMap
 3. Ensure that a checkmark appears next to the `LCC Analysis Tools` entry in the menu.
 4. The LCC toolbar should now appear in your ArcMap window.  This is a dockable toolbar, similar to the default toolbars you are familiar with.  It should appear each time you relaunch ArcMap until you manually close it.
 
-.. image:: images/installation/img1.png
+.. image:: ../images/installation/img1.png
 
 General Tool Descriptions
 -------------------------
 This section provides a brief overview of the purpose and functionality contained within each tool.
 
-.. image:: images/installation/img2.png
-    :align: left
+.. image:: ../images/installation/img2.png
+    :align: center
+	
 	
 ======= ================================== 
 Tool ID Tool Name 
