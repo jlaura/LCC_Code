@@ -24,6 +24,25 @@ Partial Class frm_intersecttool
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frm_intersecttool))
         Me.splcHELP = New System.Windows.Forms.SplitContainer()
+        Me.clustmeth_grp = New System.Windows.Forms.GroupBox()
+        Me.clustertab = New System.Windows.Forms.TabControl()
+        Me.dbscan = New System.Windows.Forms.TabPage()
+        Me.eps_grp = New System.Windows.Forms.GroupBox()
+        Me.eps = New System.Windows.Forms.TextBox()
+        Me.GroupBox3 = New System.Windows.Forms.GroupBox()
+        Me.minpts = New System.Windows.Forms.TextBox()
+        Me.hierarchical = New System.Windows.Forms.TabPage()
+        Me.grpCPNUM = New System.Windows.Forms.GroupBox()
+        Me.txtCPNUM = New System.Windows.Forms.TextBox()
+        Me.grpCLUSTER = New System.Windows.Forms.GroupBox()
+        Me.radCMS = New System.Windows.Forms.RadioButton()
+        Me.radCMBNND = New System.Windows.Forms.RadioButton()
+        Me.radCMBS = New System.Windows.Forms.RadioButton()
+        Me.Label1 = New System.Windows.Forms.Label()
+        Me.radCMBF = New System.Windows.Forms.RadioButton()
+        Me.txtCMSVAL = New System.Windows.Forms.TextBox()
+        Me.txtCMBSVAL = New System.Windows.Forms.TextBox()
+        Me.txtCMBFVAL = New System.Windows.Forms.TextBox()
         Me.log_grp = New System.Windows.Forms.GroupBox()
         Me.LogSaveDialog = New System.Windows.Forms.Button()
         Me.GroupBox6 = New System.Windows.Forms.GroupBox()
@@ -33,18 +52,7 @@ Partial Class frm_intersecttool
         Me.weightedCentroids = New System.Windows.Forms.CheckBox()
         Me.grpOUT = New System.Windows.Forms.GroupBox()
         Me.txtOUT = New System.Windows.Forms.TextBox()
-        Me.grpCPNUM = New System.Windows.Forms.GroupBox()
-        Me.txtCPNUM = New System.Windows.Forms.TextBox()
         Me.lblLAYER = New System.Windows.Forms.Label()
-        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
-        Me.radCMS = New System.Windows.Forms.RadioButton()
-        Me.radCMBNND = New System.Windows.Forms.RadioButton()
-        Me.radCMBS = New System.Windows.Forms.RadioButton()
-        Me.Label3 = New System.Windows.Forms.Label()
-        Me.radCMBF = New System.Windows.Forms.RadioButton()
-        Me.txtCMSVAL = New System.Windows.Forms.TextBox()
-        Me.txtCMBSVAL = New System.Windows.Forms.TextBox()
-        Me.txtCMBFVAL = New System.Windows.Forms.TextBox()
         Me.cboLAYER = New System.Windows.Forms.ComboBox()
         Me.grpMEASSPACE = New System.Windows.Forms.GroupBox()
         Me.radMEASPLAN = New System.Windows.Forms.RadioButton()
@@ -60,12 +68,18 @@ Partial Class frm_intersecttool
         Me.splcHELP.Panel1.SuspendLayout()
         Me.splcHELP.Panel2.SuspendLayout()
         Me.splcHELP.SuspendLayout()
+        Me.clustmeth_grp.SuspendLayout()
+        Me.clustertab.SuspendLayout()
+        Me.dbscan.SuspendLayout()
+        Me.eps_grp.SuspendLayout()
+        Me.GroupBox3.SuspendLayout()
+        Me.hierarchical.SuspendLayout()
+        Me.grpCPNUM.SuspendLayout()
+        Me.grpCLUSTER.SuspendLayout()
         Me.log_grp.SuspendLayout()
         Me.GroupBox6.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
         Me.grpOUT.SuspendLayout()
-        Me.grpCPNUM.SuspendLayout()
-        Me.GroupBox1.SuspendLayout()
         Me.grpMEASSPACE.SuspendLayout()
         Me.grpNQUERY.SuspendLayout()
         Me.pnlMARGIN2.SuspendLayout()
@@ -82,12 +96,11 @@ Partial Class frm_intersecttool
         '
         'splcHELP.Panel1
         '
+        Me.splcHELP.Panel1.Controls.Add(Me.clustmeth_grp)
         Me.splcHELP.Panel1.Controls.Add(Me.log_grp)
         Me.splcHELP.Panel1.Controls.Add(Me.GroupBox2)
         Me.splcHELP.Panel1.Controls.Add(Me.grpOUT)
-        Me.splcHELP.Panel1.Controls.Add(Me.grpCPNUM)
         Me.splcHELP.Panel1.Controls.Add(Me.lblLAYER)
-        Me.splcHELP.Panel1.Controls.Add(Me.GroupBox1)
         Me.splcHELP.Panel1.Controls.Add(Me.cboLAYER)
         Me.splcHELP.Panel1.Controls.Add(Me.grpMEASSPACE)
         Me.splcHELP.Panel1.Controls.Add(Me.grpNQUERY)
@@ -99,17 +112,215 @@ Partial Class frm_intersecttool
         Me.splcHELP.Panel2.Controls.Add(Me.pnlMARGIN1)
         Me.splcHELP.Panel2Collapsed = True
         Me.splcHELP.Panel2MinSize = 0
-        Me.splcHELP.Size = New System.Drawing.Size(356, 481)
+        Me.splcHELP.Size = New System.Drawing.Size(356, 546)
         Me.splcHELP.SplitterDistance = 356
         Me.splcHELP.SplitterWidth = 1
         Me.splcHELP.TabIndex = 0
+        '
+        'clustmeth_grp
+        '
+        Me.clustmeth_grp.Controls.Add(Me.clustertab)
+        Me.clustmeth_grp.Location = New System.Drawing.Point(8, 163)
+        Me.clustmeth_grp.Name = "clustmeth_grp"
+        Me.clustmeth_grp.Size = New System.Drawing.Size(337, 262)
+        Me.clustmeth_grp.TabIndex = 10
+        Me.clustmeth_grp.TabStop = False
+        Me.clustmeth_grp.Text = "Clustering Method"
+        '
+        'clustertab
+        '
+        Me.clustertab.Controls.Add(Me.dbscan)
+        Me.clustertab.Controls.Add(Me.hierarchical)
+        Me.clustertab.Location = New System.Drawing.Point(10, 19)
+        Me.clustertab.Name = "clustertab"
+        Me.clustertab.SelectedIndex = 0
+        Me.clustertab.Size = New System.Drawing.Size(321, 237)
+        Me.clustertab.TabIndex = 7
+        '
+        'dbscan
+        '
+        Me.dbscan.Controls.Add(Me.eps_grp)
+        Me.dbscan.Controls.Add(Me.GroupBox3)
+        Me.dbscan.Location = New System.Drawing.Point(4, 22)
+        Me.dbscan.Name = "dbscan"
+        Me.dbscan.Size = New System.Drawing.Size(313, 211)
+        Me.dbscan.TabIndex = 3
+        Me.dbscan.Text = "DBSCAN"
+        Me.dbscan.UseVisualStyleBackColor = True
+        '
+        'eps_grp
+        '
+        Me.eps_grp.Controls.Add(Me.eps)
+        Me.eps_grp.Location = New System.Drawing.Point(8, 71)
+        Me.eps_grp.Name = "eps_grp"
+        Me.eps_grp.Size = New System.Drawing.Size(298, 49)
+        Me.eps_grp.TabIndex = 1
+        Me.eps_grp.TabStop = False
+        Me.eps_grp.Text = "Epsilon (Minimum Distance)"
+        '
+        'eps
+        '
+        Me.eps.Location = New System.Drawing.Point(6, 20)
+        Me.eps.Name = "eps"
+        Me.eps.Size = New System.Drawing.Size(273, 20)
+        Me.eps.TabIndex = 0
+        Me.eps.Text = "1500"
+        Me.eps.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'GroupBox3
+        '
+        Me.GroupBox3.Controls.Add(Me.minpts)
+        Me.GroupBox3.Location = New System.Drawing.Point(8, 16)
+        Me.GroupBox3.Name = "GroupBox3"
+        Me.GroupBox3.Size = New System.Drawing.Size(298, 49)
+        Me.GroupBox3.TabIndex = 0
+        Me.GroupBox3.TabStop = False
+        Me.GroupBox3.Text = "Minimum Cluster Seed Size"
+        '
+        'minpts
+        '
+        Me.minpts.Location = New System.Drawing.Point(6, 20)
+        Me.minpts.Name = "minpts"
+        Me.minpts.Size = New System.Drawing.Size(273, 20)
+        Me.minpts.TabIndex = 0
+        Me.minpts.Text = "4"
+        Me.minpts.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'hierarchical
+        '
+        Me.hierarchical.Controls.Add(Me.grpCPNUM)
+        Me.hierarchical.Controls.Add(Me.grpCLUSTER)
+        Me.hierarchical.Location = New System.Drawing.Point(4, 22)
+        Me.hierarchical.Name = "hierarchical"
+        Me.hierarchical.Padding = New System.Windows.Forms.Padding(3)
+        Me.hierarchical.Size = New System.Drawing.Size(313, 211)
+        Me.hierarchical.TabIndex = 0
+        Me.hierarchical.Text = "Hierarchical"
+        Me.hierarchical.UseVisualStyleBackColor = True
+        '
+        'grpCPNUM
+        '
+        Me.grpCPNUM.Controls.Add(Me.txtCPNUM)
+        Me.grpCPNUM.Location = New System.Drawing.Point(6, 8)
+        Me.grpCPNUM.Name = "grpCPNUM"
+        Me.grpCPNUM.Size = New System.Drawing.Size(301, 50)
+        Me.grpCPNUM.TabIndex = 5
+        Me.grpCPNUM.TabStop = False
+        Me.grpCPNUM.Text = "Minimum Cluster Size"
+        '
+        'txtCPNUM
+        '
+        Me.txtCPNUM.Location = New System.Drawing.Point(18, 20)
+        Me.txtCPNUM.Name = "txtCPNUM"
+        Me.txtCPNUM.Size = New System.Drawing.Size(276, 20)
+        Me.txtCPNUM.TabIndex = 0
+        Me.txtCPNUM.Text = "5"
+        Me.txtCPNUM.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'grpCLUSTER
+        '
+        Me.grpCLUSTER.Controls.Add(Me.radCMS)
+        Me.grpCLUSTER.Controls.Add(Me.radCMBNND)
+        Me.grpCLUSTER.Controls.Add(Me.radCMBS)
+        Me.grpCLUSTER.Controls.Add(Me.Label1)
+        Me.grpCLUSTER.Controls.Add(Me.radCMBF)
+        Me.grpCLUSTER.Controls.Add(Me.txtCMSVAL)
+        Me.grpCLUSTER.Controls.Add(Me.txtCMBSVAL)
+        Me.grpCLUSTER.Controls.Add(Me.txtCMBFVAL)
+        Me.grpCLUSTER.Location = New System.Drawing.Point(6, 64)
+        Me.grpCLUSTER.Name = "grpCLUSTER"
+        Me.grpCLUSTER.Size = New System.Drawing.Size(300, 141)
+        Me.grpCLUSTER.TabIndex = 3
+        Me.grpCLUSTER.TabStop = False
+        Me.grpCLUSTER.Text = "Cluster Distance"
+        '
+        'radCMS
+        '
+        Me.radCMS.AutoSize = True
+        Me.radCMS.Location = New System.Drawing.Point(18, 18)
+        Me.radCMS.Name = "radCMS"
+        Me.radCMS.Size = New System.Drawing.Size(110, 17)
+        Me.radCMS.TabIndex = 0
+        Me.radCMS.TabStop = True
+        Me.radCMS.Text = "Fixed distance (m)"
+        Me.radCMS.UseVisualStyleBackColor = True
+        '
+        'radCMBNND
+        '
+        Me.radCMBNND.AutoSize = True
+        Me.radCMBNND.Location = New System.Drawing.Point(19, 66)
+        Me.radCMBNND.Name = "radCMBNND"
+        Me.radCMBNND.Size = New System.Drawing.Size(149, 17)
+        Me.radCMBNND.TabIndex = 1
+        Me.radCMBNND.TabStop = True
+        Me.radCMBNND.Text = "Nearest neighbor distance"
+        Me.radCMBNND.UseVisualStyleBackColor = True
+        '
+        'radCMBS
+        '
+        Me.radCMBS.AutoSize = True
+        Me.radCMBS.Location = New System.Drawing.Point(19, 112)
+        Me.radCMBS.Name = "radCMBS"
+        Me.radCMBS.Size = New System.Drawing.Size(110, 17)
+        Me.radCMBS.TabIndex = 3
+        Me.radCMBS.TabStop = True
+        Me.radCMBS.Text = "Fixed distance (m)"
+        Me.radCMBS.UseVisualStyleBackColor = True
+        '
+        'Label1
+        '
+        Me.Label1.AutoSize = True
+        Me.Label1.Location = New System.Drawing.Point(7, 48)
+        Me.Label1.Name = "Label1"
+        Me.Label1.Size = New System.Drawing.Size(75, 13)
+        Me.Label1.TabIndex = 5
+        Me.Label1.Text = "Buffer options:"
+        '
+        'radCMBF
+        '
+        Me.radCMBF.AutoSize = True
+        Me.radCMBF.Checked = True
+        Me.radCMBF.Location = New System.Drawing.Point(19, 89)
+        Me.radCMBF.Name = "radCMBF"
+        Me.radCMBF.Size = New System.Drawing.Size(166, 17)
+        Me.radCMBF.TabIndex = 2
+        Me.radCMBF.TabStop = True
+        Me.radCMBF.Text = "Nearest neighbor distance    x"
+        Me.radCMBF.UseVisualStyleBackColor = True
+        '
+        'txtCMSVAL
+        '
+        Me.txtCMSVAL.Location = New System.Drawing.Point(149, 18)
+        Me.txtCMSVAL.Name = "txtCMSVAL"
+        Me.txtCMSVAL.Size = New System.Drawing.Size(132, 20)
+        Me.txtCMSVAL.TabIndex = 4
+        Me.txtCMSVAL.Text = "1700"
+        Me.txtCMSVAL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'txtCMBSVAL
+        '
+        Me.txtCMBSVAL.Location = New System.Drawing.Point(149, 111)
+        Me.txtCMBSVAL.Name = "txtCMBSVAL"
+        Me.txtCMBSVAL.Size = New System.Drawing.Size(132, 20)
+        Me.txtCMBSVAL.TabIndex = 6
+        Me.txtCMBSVAL.Text = "1700"
+        Me.txtCMBSVAL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'txtCMBFVAL
+        '
+        Me.txtCMBFVAL.Location = New System.Drawing.Point(202, 88)
+        Me.txtCMBFVAL.Name = "txtCMBFVAL"
+        Me.txtCMBFVAL.Size = New System.Drawing.Size(79, 20)
+        Me.txtCMBFVAL.TabIndex = 5
+        Me.txtCMBFVAL.Text = "1.5"
+        Me.txtCMBFVAL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'log_grp
         '
         Me.log_grp.Controls.Add(Me.LogSaveDialog)
         Me.log_grp.Controls.Add(Me.GroupBox6)
         Me.log_grp.Controls.Add(Me.LogFileName)
-        Me.log_grp.Location = New System.Drawing.Point(7, 422)
+        Me.log_grp.Location = New System.Drawing.Point(7, 487)
         Me.log_grp.Name = "log_grp"
         Me.log_grp.Size = New System.Drawing.Size(338, 50)
         Me.log_grp.TabIndex = 20
@@ -174,7 +385,7 @@ Partial Class frm_intersecttool
         'grpOUT
         '
         Me.grpOUT.Controls.Add(Me.txtOUT)
-        Me.grpOUT.Location = New System.Drawing.Point(7, 366)
+        Me.grpOUT.Location = New System.Drawing.Point(7, 431)
         Me.grpOUT.Name = "grpOUT"
         Me.grpOUT.Size = New System.Drawing.Size(338, 50)
         Me.grpOUT.TabIndex = 5
@@ -188,25 +399,6 @@ Partial Class frm_intersecttool
         Me.txtOUT.Size = New System.Drawing.Size(303, 20)
         Me.txtOUT.TabIndex = 0
         '
-        'grpCPNUM
-        '
-        Me.grpCPNUM.Controls.Add(Me.txtCPNUM)
-        Me.grpCPNUM.Location = New System.Drawing.Point(7, 310)
-        Me.grpCPNUM.Name = "grpCPNUM"
-        Me.grpCPNUM.Size = New System.Drawing.Size(338, 50)
-        Me.grpCPNUM.TabIndex = 4
-        Me.grpCPNUM.TabStop = False
-        Me.grpCPNUM.Text = "Only when number of points in cluster is greater than or equal to"
-        '
-        'txtCPNUM
-        '
-        Me.txtCPNUM.Location = New System.Drawing.Point(18, 20)
-        Me.txtCPNUM.Name = "txtCPNUM"
-        Me.txtCPNUM.Size = New System.Drawing.Size(303, 20)
-        Me.txtCPNUM.TabIndex = 0
-        Me.txtCPNUM.Text = "5"
-        Me.txtCPNUM.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
         'lblLAYER
         '
         Me.lblLAYER.AutoSize = True
@@ -215,104 +407,6 @@ Partial Class frm_intersecttool
         Me.lblLAYER.Size = New System.Drawing.Size(94, 13)
         Me.lblLAYER.TabIndex = 0
         Me.lblLAYER.Text = "Input polyline layer"
-        '
-        'GroupBox1
-        '
-        Me.GroupBox1.Controls.Add(Me.radCMS)
-        Me.GroupBox1.Controls.Add(Me.radCMBNND)
-        Me.GroupBox1.Controls.Add(Me.radCMBS)
-        Me.GroupBox1.Controls.Add(Me.Label3)
-        Me.GroupBox1.Controls.Add(Me.radCMBF)
-        Me.GroupBox1.Controls.Add(Me.txtCMSVAL)
-        Me.GroupBox1.Controls.Add(Me.txtCMBSVAL)
-        Me.GroupBox1.Controls.Add(Me.txtCMBFVAL)
-        Me.GroupBox1.Location = New System.Drawing.Point(7, 163)
-        Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Size = New System.Drawing.Size(338, 141)
-        Me.GroupBox1.TabIndex = 3
-        Me.GroupBox1.TabStop = False
-        Me.GroupBox1.Text = "Cluster method"
-        '
-        'radCMS
-        '
-        Me.radCMS.AutoSize = True
-        Me.radCMS.Location = New System.Drawing.Point(18, 19)
-        Me.radCMS.Name = "radCMS"
-        Me.radCMS.Size = New System.Drawing.Size(110, 17)
-        Me.radCMS.TabIndex = 0
-        Me.radCMS.TabStop = True
-        Me.radCMS.Text = "Fixed distance (m)"
-        Me.radCMS.UseVisualStyleBackColor = True
-        '
-        'radCMBNND
-        '
-        Me.radCMBNND.AutoSize = True
-        Me.radCMBNND.Location = New System.Drawing.Point(19, 66)
-        Me.radCMBNND.Name = "radCMBNND"
-        Me.radCMBNND.Size = New System.Drawing.Size(149, 17)
-        Me.radCMBNND.TabIndex = 1
-        Me.radCMBNND.TabStop = True
-        Me.radCMBNND.Text = "Nearest neighbor distance"
-        Me.radCMBNND.UseVisualStyleBackColor = True
-        '
-        'radCMBS
-        '
-        Me.radCMBS.AutoSize = True
-        Me.radCMBS.Location = New System.Drawing.Point(19, 112)
-        Me.radCMBS.Name = "radCMBS"
-        Me.radCMBS.Size = New System.Drawing.Size(110, 17)
-        Me.radCMBS.TabIndex = 3
-        Me.radCMBS.TabStop = True
-        Me.radCMBS.Text = "Fixed distance (m)"
-        Me.radCMBS.UseVisualStyleBackColor = True
-        '
-        'Label3
-        '
-        Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(7, 48)
-        Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(75, 13)
-        Me.Label3.TabIndex = 5
-        Me.Label3.Text = "Buffer options:"
-        '
-        'radCMBF
-        '
-        Me.radCMBF.AutoSize = True
-        Me.radCMBF.Checked = True
-        Me.radCMBF.Location = New System.Drawing.Point(19, 89)
-        Me.radCMBF.Name = "radCMBF"
-        Me.radCMBF.Size = New System.Drawing.Size(166, 17)
-        Me.radCMBF.TabIndex = 2
-        Me.radCMBF.TabStop = True
-        Me.radCMBF.Text = "Nearest neighbor distance    x"
-        Me.radCMBF.UseVisualStyleBackColor = True
-        '
-        'txtCMSVAL
-        '
-        Me.txtCMSVAL.Location = New System.Drawing.Point(149, 18)
-        Me.txtCMSVAL.Name = "txtCMSVAL"
-        Me.txtCMSVAL.Size = New System.Drawing.Size(172, 20)
-        Me.txtCMSVAL.TabIndex = 4
-        Me.txtCMSVAL.Text = "40000"
-        Me.txtCMSVAL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'txtCMBSVAL
-        '
-        Me.txtCMBSVAL.Location = New System.Drawing.Point(149, 111)
-        Me.txtCMBSVAL.Name = "txtCMBSVAL"
-        Me.txtCMBSVAL.Size = New System.Drawing.Size(172, 20)
-        Me.txtCMBSVAL.TabIndex = 6
-        Me.txtCMBSVAL.Text = "40000"
-        Me.txtCMBSVAL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'txtCMBFVAL
-        '
-        Me.txtCMBFVAL.Location = New System.Drawing.Point(202, 88)
-        Me.txtCMBFVAL.Name = "txtCMBFVAL"
-        Me.txtCMBFVAL.Size = New System.Drawing.Size(119, 20)
-        Me.txtCMBFVAL.TabIndex = 5
-        Me.txtCMBFVAL.Text = "1.7"
-        Me.txtCMBFVAL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'cboLAYER
         '
@@ -416,7 +510,7 @@ Partial Class frm_intersecttool
         'btnSHHELP
         '
         Me.btnSHHELP.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnSHHELP.Location = New System.Drawing.Point(263, 487)
+        Me.btnSHHELP.Location = New System.Drawing.Point(263, 552)
         Me.btnSHHELP.Name = "btnSHHELP"
         Me.btnSHHELP.Size = New System.Drawing.Size(84, 23)
         Me.btnSHHELP.TabIndex = 3
@@ -427,7 +521,7 @@ Partial Class frm_intersecttool
         '
         Me.btnCANCEL.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.btnCANCEL.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.btnCANCEL.Location = New System.Drawing.Point(182, 487)
+        Me.btnCANCEL.Location = New System.Drawing.Point(182, 552)
         Me.btnCANCEL.Name = "btnCANCEL"
         Me.btnCANCEL.Size = New System.Drawing.Size(75, 23)
         Me.btnCANCEL.TabIndex = 2
@@ -437,7 +531,7 @@ Partial Class frm_intersecttool
         'btnOK
         '
         Me.btnOK.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.btnOK.Location = New System.Drawing.Point(101, 487)
+        Me.btnOK.Location = New System.Drawing.Point(101, 552)
         Me.btnOK.Name = "btnOK"
         Me.btnOK.Size = New System.Drawing.Size(75, 23)
         Me.btnOK.TabIndex = 1
@@ -450,16 +544,16 @@ Partial Class frm_intersecttool
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.btnCANCEL
-        Me.ClientSize = New System.Drawing.Size(356, 512)
+        Me.ClientSize = New System.Drawing.Size(356, 577)
         Me.Controls.Add(Me.splcHELP)
         Me.Controls.Add(Me.btnSHHELP)
         Me.Controls.Add(Me.btnCANCEL)
         Me.Controls.Add(Me.btnOK)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
-        Me.MaximumSize = New System.Drawing.Size(372, 550)
+        Me.MaximumSize = New System.Drawing.Size(372, 615)
         Me.MinimizeBox = False
-        Me.MinimumSize = New System.Drawing.Size(372, 550)
+        Me.MinimumSize = New System.Drawing.Size(372, 615)
         Me.Name = "frm_intersecttool"
         Me.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
@@ -468,6 +562,18 @@ Partial Class frm_intersecttool
         Me.splcHELP.Panel1.PerformLayout()
         Me.splcHELP.Panel2.ResumeLayout(False)
         Me.splcHELP.ResumeLayout(False)
+        Me.clustmeth_grp.ResumeLayout(False)
+        Me.clustertab.ResumeLayout(False)
+        Me.dbscan.ResumeLayout(False)
+        Me.eps_grp.ResumeLayout(False)
+        Me.eps_grp.PerformLayout()
+        Me.GroupBox3.ResumeLayout(False)
+        Me.GroupBox3.PerformLayout()
+        Me.hierarchical.ResumeLayout(False)
+        Me.grpCPNUM.ResumeLayout(False)
+        Me.grpCPNUM.PerformLayout()
+        Me.grpCLUSTER.ResumeLayout(False)
+        Me.grpCLUSTER.PerformLayout()
         Me.log_grp.ResumeLayout(False)
         Me.log_grp.PerformLayout()
         Me.GroupBox6.ResumeLayout(False)
@@ -476,10 +582,6 @@ Partial Class frm_intersecttool
         Me.GroupBox2.PerformLayout()
         Me.grpOUT.ResumeLayout(False)
         Me.grpOUT.PerformLayout()
-        Me.grpCPNUM.ResumeLayout(False)
-        Me.grpCPNUM.PerformLayout()
-        Me.GroupBox1.ResumeLayout(False)
-        Me.GroupBox1.PerformLayout()
         Me.grpMEASSPACE.ResumeLayout(False)
         Me.grpMEASSPACE.PerformLayout()
         Me.grpNQUERY.ResumeLayout(False)
@@ -502,17 +604,6 @@ Partial Class frm_intersecttool
     Friend WithEvents grpMEASSPACE As System.Windows.Forms.GroupBox
     Friend WithEvents radMEASPLAN As System.Windows.Forms.RadioButton
     Friend WithEvents radMEASGEO As System.Windows.Forms.RadioButton
-    Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
-    Friend WithEvents radCMS As System.Windows.Forms.RadioButton
-    Friend WithEvents radCMBNND As System.Windows.Forms.RadioButton
-    Friend WithEvents radCMBS As System.Windows.Forms.RadioButton
-    Friend WithEvents Label3 As System.Windows.Forms.Label
-    Friend WithEvents radCMBF As System.Windows.Forms.RadioButton
-    Friend WithEvents txtCMSVAL As System.Windows.Forms.TextBox
-    Friend WithEvents txtCMBSVAL As System.Windows.Forms.TextBox
-    Friend WithEvents txtCMBFVAL As System.Windows.Forms.TextBox
-    Friend WithEvents grpCPNUM As System.Windows.Forms.GroupBox
-    Friend WithEvents txtCPNUM As System.Windows.Forms.TextBox
     Friend WithEvents grpOUT As System.Windows.Forms.GroupBox
     Friend WithEvents txtOUT As System.Windows.Forms.TextBox
     Friend WithEvents GroupBox2 As System.Windows.Forms.GroupBox
@@ -522,4 +613,23 @@ Partial Class frm_intersecttool
     Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
     Friend WithEvents TextBox3 As System.Windows.Forms.TextBox
     Friend WithEvents LogFileName As System.Windows.Forms.TextBox
+    Friend WithEvents clustmeth_grp As System.Windows.Forms.GroupBox
+    Friend WithEvents clustertab As System.Windows.Forms.TabControl
+    Friend WithEvents dbscan As System.Windows.Forms.TabPage
+    Friend WithEvents eps_grp As System.Windows.Forms.GroupBox
+    Friend WithEvents eps As System.Windows.Forms.TextBox
+    Friend WithEvents GroupBox3 As System.Windows.Forms.GroupBox
+    Friend WithEvents minpts As System.Windows.Forms.TextBox
+    Friend WithEvents hierarchical As System.Windows.Forms.TabPage
+    Friend WithEvents grpCPNUM As System.Windows.Forms.GroupBox
+    Friend WithEvents txtCPNUM As System.Windows.Forms.TextBox
+    Friend WithEvents grpCLUSTER As System.Windows.Forms.GroupBox
+    Friend WithEvents radCMS As System.Windows.Forms.RadioButton
+    Friend WithEvents radCMBNND As System.Windows.Forms.RadioButton
+    Friend WithEvents radCMBS As System.Windows.Forms.RadioButton
+    Friend WithEvents Label1 As System.Windows.Forms.Label
+    Friend WithEvents radCMBF As System.Windows.Forms.RadioButton
+    Friend WithEvents txtCMSVAL As System.Windows.Forms.TextBox
+    Friend WithEvents txtCMBSVAL As System.Windows.Forms.TextBox
+    Friend WithEvents txtCMBFVAL As System.Windows.Forms.TextBox
 End Class

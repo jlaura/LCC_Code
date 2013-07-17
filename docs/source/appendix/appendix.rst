@@ -1,8 +1,11 @@
 .. appendix1
 
 ==========
-Appendix 1
+Appendix
 ==========
+
+Key Terms
+-----------
 
 .. _app-distance_matrix:
 
@@ -22,11 +25,11 @@ Appendix 1
 
 .. _app-geodesic:
 
-**Geodesic Distance Measurement**: TODO
+**Geodesic Distance Measurement**: The distance between two points along the spheroid or geoid.  This distance measure is more accurate than a planar (euclidean) measurement, but incurs additional computational cost.
 
 .. _app-planar:
 
-**Planar Distance Measurement**: TODO
+**Planar Distance Measurement**: The euclidean distance between two points.  This measurement assumes that the points are coincident to a single plane and is computationally efficient to compute.  The planar distance between two points on a spheroid is inaccurate and the level of inaccuracy increases with the distance between both points.
 
 Citations:
 ----------

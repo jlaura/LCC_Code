@@ -54,7 +54,7 @@ Distance Matrix Tool
 
 Clustering Tool
 +++++++++++++++
-**Description**: Using the nearest neighbor data stored in the distance matrix table, this tool analyzes the spatial distribution of the secondaries and locates clusters of craters.  It is possible to cluster the data heirarchally or using a density based scan.
+**Description**: Using the nearest neighbor data stored in the distance matrix table, this tool analyzes the spatial distribution of the secondaries and locates clusters of craters.  It is possible to cluster the data Hierarchically or using a density based scan.
 
 **Inputs**: A point shapefile or features class of digitized craters and a distance matrix table with at least 1 nearest neighbor for each input point (*k* = 1 using the Distance Matrix Tool).
 
@@ -68,7 +68,7 @@ Directional Distribution Tool
 
 **Inputs**: A point shapefile or featureclass of clustered secondaries.
 
-**Required Fields**: ?????
+**Required Fields**: [cid] - The cluster ID, [cnt] - The count of craters per cluster
 
 **Output**: A polyline shapefile showing either the bounding ellipsoid or the semi-major axis of the bounding ellipsoid.
 
@@ -81,7 +81,7 @@ Trajectory Tool
 
 **Inputs**: One ore more polyline shapefiles.
 
-**Required Fields**: ??????
+**Required Fields**: [iflat] - Inverse Flattening, [majaxis] - The geodesic length of the major axis
 
 **Output**: A polyline shapefile or featureclass depicting the trajectories for clusters of secondaries.
 
@@ -91,7 +91,7 @@ Primary Impact Approximation Tool
 
 **Inputs**: A polyline trajectory shapefile.
 
-**Required Fields**: ????
+**Required Fields**: [iflat] - Inverse Flattening
 
 **Output**: A point shapefile or featureclass with one or more primary impacts identified.
 

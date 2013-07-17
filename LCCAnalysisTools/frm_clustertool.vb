@@ -597,8 +597,6 @@ Public Class frm_clustertool
         pProDlg.Description = "Extracting Nearest Neighbor Distances From Table..."
         'PRINTtxt += vbCrLf & " [Calculating Nearest Neighbor distances...]"
 
-        'Populate array with NDIST for all records in feature class
-        'TODO: This finds nearest twice, and can be 100% faster.
         Dim dFeature1(2, 0) As Double
         pTrkCan.Reset()
 
@@ -1508,78 +1506,78 @@ Public Class frm_clustertool
         Return sReport
     End Function
 
-#Region "DBScan"
-    Private Function getNeighbors(ByVal epsilon As Double, ByVal index As Double, ByVal semimajor As Double, ByVal semiminor As Double, ByVal measurement_space As Boolean) As Stack(Of Integer)
-        Dim neighbors As New Stack(Of Integer)
-        Dim dist As Double = 0.0
-        For i As Integer = 0 To dist_lists.Count - 1
-            dist = GetDist(dist_lists(index)(2), dist_lists(index)(3), dist_lists(i)(2), dist_lists(i)(3), semimajor, semiminor, measurement_space)
-            If dist <= epsilon Then
-                neighbors.Push(i) 'By Index
-            End If
-        Next
+    '#Region "DBScan"
+    '    Private Function getNeighbors(ByVal epsilon As Double, ByVal index As Double, ByVal semimajor As Double, ByVal semiminor As Double, ByVal measurement_space As Boolean) As Stack(Of Integer)
+    '        Dim neighbors As New Stack(Of Integer)
+    '        Dim dist As Double = 0.0
+    '        For i As Integer = 0 To dist_lists.Count - 1
+    '            dist = GetDist(dist_lists(index)(2), dist_lists(index)(3), dist_lists(i)(2), dist_lists(i)(3), semimajor, semiminor, measurement_space)
+    '            If dist <= epsilon Then
+    '                neighbors.Push(i) 'By Index
+    '            End If
+    '        Next
 
-        Return neighbors
-    End Function
+    '        Return neighbors
+    '    End Function
 
-    Private Function ExpandCluster(ByRef neighbors As Stack(Of Integer), ByRef cluster_id As Integer, ByVal epsilon As Double, ByVal minpts As Integer, _
-                                   ByRef Ar2() As Double, ByVal Unvisited As List(Of Integer), ByVal semimajor As Double, ByVal semiminor As Double, ByVal measurement_space As Boolean) As List(Of Integer)
+    '    Private Function ExpandCluster(ByRef neighbors As Stack(Of Integer), ByRef cluster_id As Integer, ByVal epsilon As Double, ByVal minpts As Integer, _
+    '                                   ByRef Ar2() As Double, ByVal Unvisited As List(Of Integer), ByVal semimajor As Double, ByVal semiminor As Double, ByVal measurement_space As Boolean) As List(Of Integer)
 
-        Dim new_neighbors As New Stack(Of Integer)
-        Dim neighbor_node As Integer = 0
-        'Dim node_index As Integer = 0
-        Dim new_neighbor As Integer = 0
-        Dim visited As New List(Of Integer)
+    '        Dim new_neighbors As New Stack(Of Integer)
+    '        Dim neighbor_node As Integer = 0
+    '        'Dim node_index As Integer = 0
+    '        Dim new_neighbor As Integer = 0
+    '        Dim visited As New List(Of Integer)
 
-        'Increment the cluster counter
-        cluster_id = cluster_id + 1
+    '        'Increment the cluster counter
+    '        cluster_id = cluster_id + 1
 
 
-        'For each neighbor in neighbors
-        While neighbors.Count > 0
+    '        'For each neighbor in neighbors
+    '        While neighbors.Count > 0
 
-            'Iterate over the neighbors, popping one at a time from the stack
-            neighbor_node = neighbors.Pop
-            'Add node to the visited list
-            visited.Add(neighbor_node)
+    '            'Iterate over the neighbors, popping one at a time from the stack
+    '            neighbor_node = neighbors.Pop
+    '            'Add node to the visited list
+    '            visited.Add(neighbor_node)
 
-            'If we have not visited the node yet, check to see if the cluster extends
-            If Unvisited.Contains(dist_lists(neighbor_node)(0)) Then
-                'Mark neighbor as visited
-                Unvisited.Remove(dist_lists(neighbor_node)(0))
-                'Get the index of the neighbor_node in the dist_lists
-                'node_index = GetNodeIndex(neighbor_node)
-                'Get the neighbors to the new neighbor, i.e. is the cluster expanding by epsilon
-                new_neighbors = getNeighbors(epsilon, neighbor_node, semimajor, semiminor, measurement_space)
-                'If the number of new neighbors constitutes a new cluster, start adding that cluster as well.  Grow by density essentially.
-                If new_neighbors.Count + Unvisited.Count + neighbors.Count > minpts Then
-                    Do Until new_neighbors.Count = 0
-                        new_neighbor = new_neighbors.Peek
-                        If visited.Contains(new_neighbor) Or neighbors.Contains(new_neighbor) Then
-                            new_neighbors.Pop()
-                        Else
-                            neighbors.Push(new_neighbors.Pop)
-                        End If
-                    Loop
-                End If
-            End If
+    '            'If we have not visited the node yet, check to see if the cluster extends
+    '            If Unvisited.Contains(dist_lists(neighbor_node)(0)) Then
+    '                'Mark neighbor as visited
+    '                Unvisited.Remove(dist_lists(neighbor_node)(0))
+    '                'Get the index of the neighbor_node in the dist_lists
+    '                'node_index = GetNodeIndex(neighbor_node)
+    '                'Get the neighbors to the new neighbor, i.e. is the cluster expanding by epsilon
+    '                new_neighbors = getNeighbors(epsilon, neighbor_node, semimajor, semiminor, measurement_space)
+    '                'If the number of new neighbors constitutes a new cluster, start adding that cluster as well.  Grow by density essentially.
+    '                If new_neighbors.Count + Unvisited.Count + neighbors.Count > minpts Then
+    '                    Do Until new_neighbors.Count = 0
+    '                        new_neighbor = new_neighbors.Peek
+    '                        If visited.Contains(new_neighbor) Or neighbors.Contains(new_neighbor) Then
+    '                            new_neighbors.Pop()
+    '                        Else
+    '                            neighbors.Push(new_neighbors.Pop)
+    '                        End If
+    '                    Loop
+    '                End If
+    '            End If
 
-            'If the neighbor is not part of a cluster, add it to the current cluster.
-            If Ar2(dist_lists(neighbor_node)(0)) = -1 Then Ar2(dist_lists(neighbor_node)(0)) = cluster_id
+    '            'If the neighbor is not part of a cluster, add it to the current cluster.
+    '            If Ar2(dist_lists(neighbor_node)(0)) = -1 Then Ar2(dist_lists(neighbor_node)(0)) = cluster_id
 
-        End While
-        Return Unvisited
-    End Function
+    '        End While
+    '        Return Unvisited
+    '    End Function
 
-    Private Function GetNodeIndex(ByVal node As Integer) As Integer
-        For i As Integer = 0 To dist_lists.Count - 1
-            If dist_lists(i)(0) = node Then
-                node = i
-            End If
-        Next
-        Return node
-    End Function
-#End Region
+    '    Private Function GetNodeIndex(ByVal node As Integer) As Integer
+    '        For i As Integer = 0 To dist_lists.Count - 1
+    '            If dist_lists(i)(0) = node Then
+    '                node = i
+    '            End If
+    '        Next
+    '        Return node
+    '    End Function
+    '#End Region
 
 #Region "Compute Optimization Statistics"
     Private Sub Compute_DatasetStats()
@@ -1653,7 +1651,8 @@ Public Class frm_clustertool
                     Return
                 End If
             Catch ex As Exception
-                MsgBox(row.Value(InFid), MsgBoxStyle.MsgBoxHelp, "Row OID")
+                row = cursor.NextRow
+                'MsgBox(row.Value(InFid), MsgBoxStyle.MsgBoxHelp, "Row OID")
             End Try
 
         Loop

@@ -96,11 +96,7 @@ Public Class frm_intersecttool
 
     Private Sub TextBoxes_Update(ByVal sender As Object, _
                                  ByVal e As System.EventArgs) _
-                                 Handles txtNQUERY.Leave, _
-                                 txtCMSVAL.Leave, txtCMBFVAL.Leave, _
-                                 txtCMBSVAL.Leave, radCMS.Click, _
-                                 radCMBNND.Click, radCMBF.Click, _
-                                 radCMBS.Click, txtCPNUM.Leave
+                                 Handles txtNQUERY.Leave
 
         'Round the near 'Distance to closest point' value
         Try
@@ -158,6 +154,40 @@ Public Class frm_intersecttool
                    "Invalid Parameter")
             txtCPNUM.Text = "5"
         End Try
+
+    End Sub
+
+    Private Sub DBScan_Update(ByVal Sender As Object, ByVal e As System.EventArgs) Handles minpts.Leave
+        'Distance Around point
+        Try
+            If CInt(txtNQUERY.Text) > 0 Then txtNQUERY.Text = _
+                                    CInt(txtNQUERY.Text).ToString
+        Catch ex As Exception
+            MsgBox("Please enter a 'Search Distance'.  Points outside this distance cannot initiate cluster generation.", _
+                   MsgBoxStyle.Exclamation, _
+                   "Invalid Parameter")
+            txtNQUERY.Text = "1500"
+        End Try
+
+        'Min Points
+        Try
+            If CInt(minpts.Text) > 0 Then minpts.Text = _
+                                    CInt(minpts.Text).ToString
+        Catch ex As Exception
+            MsgBox("Please enter a 'Minimum Number of Points'. Clusters must meet this threshold to be created.", _
+                   MsgBoxStyle.Exclamation, _
+                   "Invalid Parameter")
+            minpts.Text = "1500"
+        End Try
+
+        'Epsilon
+        Try
+            If CInt(eps.Text) < 1 Then eps.Text = CStr(eps.Text)
+        Catch ex As Exception
+            MsgBox("Please enter an integer greater than or equal to 1.", MsgBoxStyle.Exclamation, "Invalid Parameter")
+            eps.Text = "1500"
+        End Try
+
 
     End Sub
 
@@ -253,6 +283,12 @@ Public Class frm_intersecttool
             Return
         End If
 
+        'Check to see which tab is active to know which clustering method to use.
+        '0: Heirarchal, 1: S-Link, 2: D-Link, 3: DBScan
+        Dim clusteringmethod = New Dictionary(Of Integer, String) From {{0, "dbscan"}, {1, "heirarchal"}, {2, "slink"}, {3, "dlink"}}
+        Dim currenttab As Integer = clustertab.SelectedIndex
+        c_method = clusteringmethod(currenttab)
+
         'If all errors are handled, load progress form
         LoadProgressForm()
 
@@ -269,7 +305,7 @@ Public Class frm_intersecttool
             Me.Size = New Size(Me.MinimumSize.Width, Me.Size.Height)
             btnSHHELP.Text = "Show Help >>"
         Else
-            Me.MaximumSize = New Size(900, 550)
+            Me.MaximumSize = New Size(900, 615)
             Me.Size = New Size(643, Me.Size.Height)
             splcHELP.Panel2Collapsed = False
             btnSHHELP.Text = "<< Hide Help"
@@ -645,511 +681,591 @@ Public Class frm_intersecttool
 
         PRINTtxt = compute_intersection_stats(Ar, IAF.sNQUERY)
 
-        'If the the clustering method is 'Same distance'
-        If IAF.bCMS = True Then
+        'Clustering
+        If c_method = "heirarchal" Then
 
-            'PROGRESS UPDATE: 
-            pProDlg.Description = "Clustering calculation 'Same distance'..."
-            PRINTtxt += vbCrLf & " [Clustering calculation 'Same distance'...]"
+            'If the the clustering method is 'Same distance'
+            If IAF.bCMS = True Then
 
-            Dim dGroup(3, 0) As Double
-            'Main feature iteration
-            pTrkCan.Reset()
-            For j As Integer = 0 To Ar.GetUpperBound(1)
-                'If the main feature NDIST is less than or equal to the user
-                'distance query
-                If Ar(4, j) <= CDbl(IAF.sNQUERY) Then
-                    'Leave a single blank line in the group table
-                    ReDim dGroup(3, 0)
-                    'Add the record to the potential cluster group
-                    dGroup(0, 0) = Ar(0, j) 'AID
-                    dGroup(1, 0) = Ar(1, j) 'OID
-                    dGroup(2, 0) = Ar(2, j) 'X
-                    dGroup(3, 0) = Ar(3, j) 'Y
-                    'Current feature iteration: GROUP construction of features within Near distance
-                    For k As Integer = 0 To Ar.GetUpperBound(1)
-                        'If the OID of current feature does not equal OID of main feature
-                        'and the distance threshold is that specified by user:
-                        '1. If the OID of the main feature does not equal the OID the
-                        '   current feature
-                        '2. The distance between the main feature and the current feature
-                        '   is less than or equal to the 'Same distance' value
-                        If Not Ar(1, k) = Ar(1, j) And Ar(4, k) <= CDbl(IAF.sNQUERY) And _
-                           GetDist(Ar(2, k), Ar(3, k), Ar(2, j), Ar(3, j), _
-                                   dSemiMajAxis, dSemiMinAxis, IAF.bMEASPLAN) <= _
-                           CDbl(IAF.sCMSVAL) Then
-                            'Add a single row to the end of the group table
-                            ReDim Preserve dGroup(3, dGroup.GetUpperBound(1) + 1)
-                            'Add the current feature to the potential cluster gorup
-                            dGroup(0, dGroup.GetUpperBound(1)) = Ar(0, k) 'AID
-                            dGroup(1, dGroup.GetUpperBound(1)) = Ar(1, k) 'OID
-                            dGroup(2, dGroup.GetUpperBound(1)) = Ar(2, k) 'X
-                            dGroup(3, dGroup.GetUpperBound(1)) = Ar(3, k) 'Y
-                        End If
+                'PROGRESS UPDATE: 
+                pProDlg.Description = "Clustering calculation 'Same distance'..."
+                PRINTtxt += vbCrLf & " [Clustering calculation 'Same distance'...]"
 
-                    Next
-                    'If there are features in the group other than the main feature
-                    'If there are only two features in group:
-                    If dGroup.GetUpperBound(1) = 1 Then
-                        'If the second feature has a CID:
-                        If Ar2(dGroup(0, 1)) <> -1 Then
-                            'Assign the second current feature CID to the group's main feature CID
-                            Ar2(dGroup(0, 0)) = Ar2(dGroup(0, 1))
-                        Else
-                            'Assign the second current feature OID to the group's main feature CID
-                            Ar2(dGroup(0, 0)) = dGroup(1, 1)
-                        End If
-                    ElseIf dGroup.GetUpperBound(1) > 1 Then
-                        'If there are more than two features in the group:
-                        Dim nRepeat As Integer = 0
-                        Dim nRepeatOld As Integer = 0
-                        'Sort array with field: CID for ordering
-                        Dim Ar2Sorted(Ar2.GetUpperBound(0)) As Double
-                        System.Array.Copy(Ar2, 0, Ar2Sorted, 0, Ar2.Length)
-                        System.Array.Sort(Ar2Sorted)
+                Dim dGroup(3, 0) As Double
+                'Main feature iteration
+                pTrkCan.Reset()
+                For j As Integer = 0 To Ar.GetUpperBound(1)
+                    'If the main feature NDIST is less than or equal to the user
+                    'distance query
+                    If Ar(4, j) <= CDbl(IAF.sNQUERY) Then
+                        'Leave a single blank line in the group table
+                        ReDim dGroup(3, 0)
+                        'Add the record to the potential cluster group
+                        dGroup(0, 0) = Ar(0, j) 'AID
+                        dGroup(1, 0) = Ar(1, j) 'OID
+                        dGroup(2, 0) = Ar(2, j) 'X
+                        dGroup(3, 0) = Ar(3, j) 'Y
+                        'Current feature iteration: GROUP construction of features within Near distance
+                        For k As Integer = 0 To Ar.GetUpperBound(1)
+                            'If the OID of current feature does not equal OID of main feature
+                            'and the distance threshold is that specified by user:
+                            '1. If the OID of the main feature does not equal the OID the
+                            '   current feature
+                            '2. The distance between the main feature and the current feature
+                            '   is less than or equal to the 'Same distance' value
+                            If Not Ar(1, k) = Ar(1, j) And Ar(4, k) <= CDbl(IAF.sNQUERY) And _
+                               GetDist(Ar(2, k), Ar(3, k), Ar(2, j), Ar(3, j), _
+                                       dSemiMajAxis, dSemiMinAxis, IAF.bMEASPLAN) <= _
+                               CDbl(IAF.sCMSVAL) Then
+                                'Add a single row to the end of the group table
+                                ReDim Preserve dGroup(3, dGroup.GetUpperBound(1) + 1)
+                                'Add the current feature to the potential cluster gorup
+                                dGroup(0, dGroup.GetUpperBound(1)) = Ar(0, k) 'AID
+                                dGroup(1, dGroup.GetUpperBound(1)) = Ar(1, k) 'OID
+                                dGroup(2, dGroup.GetUpperBound(1)) = Ar(2, k) 'X
+                                dGroup(3, dGroup.GetUpperBound(1)) = Ar(3, k) 'Y
+                            End If
 
-                        'Iterate through the group starting with second feature
-                        For m As Integer = 1 To dGroup.GetUpperBound(1)
-                            'If the CID of the group feature is set:
-                            If Ar2(dGroup(0, m)) <> -1 Then
-                                'Find the number of occurrances of this CID
-                                Dim n1stIndex, nLastIndex As Integer
-                                n1stIndex = System.Array.IndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
-                                nLastIndex = System.Array.LastIndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
-                                nRepeatOld = nRepeat
-                                nRepeat = (nLastIndex - n1stIndex) + 1
-                                'Set the CID of the main feature from the group to the CID
-                                'having the most occurrances in the group
-                                If Not nRepeat = 0 And nRepeat > nRepeatOld Then
-                                    'Assign the CID with most occurrances in the group
-                                    'to the main feature
-                                    Ar2(dGroup(0, 0)) = Ar2(dGroup(0, m))
+                        Next
+                        'If there are features in the group other than the main feature
+                        'If there are only two features in group:
+                        If dGroup.GetUpperBound(1) = 1 Then
+                            'If the second feature has a CID:
+                            If Ar2(dGroup(0, 1)) <> -1 Then
+                                'Assign the second current feature CID to the group's main feature CID
+                                Ar2(dGroup(0, 0)) = Ar2(dGroup(0, 1))
+                            Else
+                                'Assign the second current feature OID to the group's main feature CID
+                                Ar2(dGroup(0, 0)) = dGroup(1, 1)
+                            End If
+                        ElseIf dGroup.GetUpperBound(1) > 1 Then
+                            'If there are more than two features in the group:
+                            Dim nRepeat As Integer = 0
+                            Dim nRepeatOld As Integer = 0
+                            'Sort array with field: CID for ordering
+                            Dim Ar2Sorted(Ar2.GetUpperBound(0)) As Double
+                            System.Array.Copy(Ar2, 0, Ar2Sorted, 0, Ar2.Length)
+                            System.Array.Sort(Ar2Sorted)
+
+                            'Iterate through the group starting with second feature
+                            For m As Integer = 1 To dGroup.GetUpperBound(1)
+                                'If the CID of the group feature is set:
+                                If Ar2(dGroup(0, m)) <> -1 Then
+                                    'Find the number of occurrances of this CID
+                                    Dim n1stIndex, nLastIndex As Integer
+                                    n1stIndex = System.Array.IndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
+                                    nLastIndex = System.Array.LastIndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
+                                    nRepeatOld = nRepeat
+                                    nRepeat = (nLastIndex - n1stIndex) + 1
+                                    'Set the CID of the main feature from the group to the CID
+                                    'having the most occurrances in the group
+                                    If Not nRepeat = 0 And nRepeat > nRepeatOld Then
+                                        'Assign the CID with most occurrances in the group
+                                        'to the main feature
+                                        Ar2(dGroup(0, 0)) = Ar2(dGroup(0, m))
+                                    End If
                                 End If
+                            Next
+                            'If there were no CIDs in the group:
+                            If Ar2(dGroup(0, 0)) = -1 Then
+                                'Assign the second current feature OID to the group's main feature CID
+                                'and the rest of the group's CIDs
+                                Ar2(dGroup(0, 0)) = dGroup(1, 1)
+                                For a As Integer = 0 To dGroup.GetUpperBound(1)
+                                    Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
+                                Next
+                            Else
+                                'If a CID was chosen as most repeated in the group:
+                                'Find all the group feature CID occurrances in the main CID list
+                                'and replace them with the most repeated CID (found above)
+                                For a As Integer = 1 To dGroup.GetUpperBound(1)
+                                    For f As Integer = 0 To Ar2.GetUpperBound(0)
+                                        If Not Ar2(dGroup(0, a)) = -1 And Ar2(f) = Ar2(dGroup(0, a)) Then
+                                            'Replace the found CID with the most repeated CID
+                                            Ar2(f) = Ar2(dGroup(0, 0))
+                                        End If
+                                    Next
+                                Next
+                                'Replace all the CIDs of the group for the main CID
+                                For a As Integer = 1 To dGroup.GetUpperBound(1)
+                                    Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
+                                Next
+                            End If
+                        End If
+                    End If
+                    If Not pTrkCan.Continue Then
+                        'SUMMARY PRINT: End program as interrupted
+                        PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+                                                  sSDate, sSTime)
+                        'Destroy the progress dialog
+                        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                        If LogFileName.Text <> "" Then
+                            SaveLog(LogFileName.Text, PRINTtxt)
+                        End If
+                        Return
+                    End If
+                Next
+                '********************************************************************************************
+                'If the clustering method is 'Buffer: Nearest neighbor distance'
+            ElseIf IAF.bCMBNND = True Then
+
+                'PROGRESS UPDATE: 
+                pProDlg.Description = "Clustering calculation 'Buffer: Nearest neighbor distance'..."
+                PRINTtxt += vbCrLf & " [Clustering calculation 'Buffer: Nearest neighbor distance'...]"
+
+                Dim dGroup(3, 0) As Double
+                'Main feature iteration
+                pTrkCan.Reset()
+                For j As Integer = 0 To Ar.GetUpperBound(1)
+                    'If the main feature NDIST is less than or equal to the user
+                    'distance query
+                    If Ar(4, j) <= CDbl(IAF.sNQUERY) Then
+                        'Leave a single blank line in the group table
+                        ReDim dGroup(3, 0)
+                        'Add the record to the potential cluster group
+                        dGroup(0, 0) = Ar(0, j) 'AID
+                        dGroup(1, 0) = Ar(1, j) 'OID
+                        dGroup(2, 0) = Ar(2, j) 'X
+                        dGroup(3, 0) = Ar(3, j) 'Y
+                        'Current feature iteration: GROUP construction of features within Near distance
+                        For k As Integer = 0 To Ar.GetUpperBound(1)
+                            '1. The OID of the main feature does not equal the OID the
+                            '   current feature
+                            '2. The distance between the main feature and the current feature
+                            '   is less than or equal to the sum of each feature's nearest
+                            '   neighbor distance value
+                            If Not Ar(1, k) = Ar(1, j) And Ar(4, k) <= CDbl(IAF.sNQUERY) And _
+                               GetDist(Ar(2, k), Ar(3, k), Ar(2, j), Ar(3, j), _
+                                       dSemiMajAxis, dSemiMinAxis, IAF.bMEASPLAN) <= _
+                               (Ar(4, k) + Ar(4, j)) Then
+                                'Add a single row to the end of the group table
+                                ReDim Preserve dGroup(3, dGroup.GetUpperBound(1) + 1)
+                                'Add the current feature to the potential cluster gorup
+                                dGroup(0, dGroup.GetUpperBound(1)) = Ar(0, k) 'AID
+                                dGroup(1, dGroup.GetUpperBound(1)) = Ar(1, k) 'OID
+                                dGroup(2, dGroup.GetUpperBound(1)) = Ar(2, k) 'X
+                                dGroup(3, dGroup.GetUpperBound(1)) = Ar(3, k) 'Y
                             End If
                         Next
-                        'If there were no CIDs in the group:
-                        If Ar2(dGroup(0, 0)) = -1 Then
-                            'Assign the second current feature OID to the group's main feature CID
-                            'and the rest of the group's CIDs
-                            Ar2(dGroup(0, 0)) = dGroup(1, 1)
-                            For a As Integer = 0 To dGroup.GetUpperBound(1)
-                                Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
-                            Next
-                        Else
-                            'If a CID was chosen as most repeated in the group:
-                            'Find all the group feature CID occurrances in the main CID list
-                            'and replace them with the most repeated CID (found above)
-                            For a As Integer = 1 To dGroup.GetUpperBound(1)
-                                For f As Integer = 0 To Ar2.GetUpperBound(0)
-                                    If Not Ar2(dGroup(0, a)) = -1 And Ar2(f) = Ar2(dGroup(0, a)) Then
-                                        'Replace the found CID with the most repeated CID
-                                        Ar2(f) = Ar2(dGroup(0, 0))
+                        'If there are features in the group other than the main feature
+                        'If there are only two features in group:
+                        If dGroup.GetUpperBound(1) = 1 Then
+                            'If the second feature has a CID:
+                            If Ar2(dGroup(0, 1)) <> -1 Then
+                                'Assign the second current feature CID to the group's main feature CID
+                                Ar2(dGroup(0, 0)) = Ar2(dGroup(0, 1))
+                            Else
+                                'Assign the second current feature OID to the group's main feature CID
+                                Ar2(dGroup(0, 0)) = dGroup(1, 1)
+                            End If
+                        ElseIf dGroup.GetUpperBound(1) > 1 Then
+                            'If there are more than two features in the group:
+                            Dim nRepeat As Integer = 0
+                            Dim nRepeatOld As Integer = 0
+                            'Sort array with field: CID for ordering
+                            Dim Ar2Sorted(Ar2.GetUpperBound(0)) As Double
+                            System.Array.Copy(Ar2, 0, Ar2Sorted, 0, Ar2.Length)
+                            System.Array.Sort(Ar2Sorted)
+
+                            'Iterate through the group starting with second feature
+                            For m As Integer = 1 To dGroup.GetUpperBound(1)
+                                'If the CID of the group feature is set:
+                                If Ar2(dGroup(0, m)) <> -1 Then
+                                    'Find the number of occurrances of this CID
+                                    Dim n1stIndex, nLastIndex As Integer
+                                    n1stIndex = System.Array.IndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
+                                    nLastIndex = System.Array.LastIndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
+                                    nRepeatOld = nRepeat
+                                    nRepeat = (nLastIndex - n1stIndex) + 1
+                                    'Set the CID of the main feature from the group to the CID
+                                    'having the most occurrances in the group
+                                    If Not nRepeat = 0 And nRepeat > nRepeatOld Then
+                                        'Assign the CID with most occurrances in the group
+                                        'to the main feature
+                                        Ar2(dGroup(0, 0)) = Ar2(dGroup(0, m))
                                     End If
+                                End If
+                            Next
+                            'If there were no CIDs in the group:
+                            If Ar2(dGroup(0, 0)) = -1 Then
+                                'Assign the second current feature OID to the group's main feature CID
+                                'and the rest of the group's CIDs
+                                Ar2(dGroup(0, 0)) = dGroup(1, 1)
+                                For a As Integer = 0 To dGroup.GetUpperBound(1)
+                                    Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
                                 Next
-                            Next
-                            'Replace all the CIDs of the group for the main CID
-                            For a As Integer = 1 To dGroup.GetUpperBound(1)
-                                Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
-                            Next
+                            Else
+                                'If a CID was chosen as most repeated in the group:
+                                'Find all the group feature CID occurrances in the main CID list
+                                'and replace them with the most repeated CID (found above)
+                                For a As Integer = 1 To dGroup.GetUpperBound(1)
+                                    For f As Integer = 0 To Ar2.GetUpperBound(0)
+                                        If Not Ar2(dGroup(0, a)) = -1 And Ar2(f) = Ar2(dGroup(0, a)) Then
+                                            'Replace the found CID with the most repeated CID
+                                            Ar2(f) = Ar2(dGroup(0, 0))
+                                        End If
+                                    Next
+                                Next
+                                'Replace all the CIDs of the group for the main CID
+                                For a As Integer = 1 To dGroup.GetUpperBound(1)
+                                    Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
+                                Next
+                            End If
                         End If
                     End If
-                End If
-                If Not pTrkCan.Continue Then
-                    'SUMMARY PRINT: End program as interrupted
-                    PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
-                                              sSDate, sSTime)
-                    'Destroy the progress dialog
-                    ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                    If LogFileName.Text <> "" Then
-                        SaveLog(LogFileName.Text, PRINTtxt)
+                    If Not pTrkCan.Continue Then
+                        'SUMMARY PRINT: End program as interrupted
+                        PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+                                                  sSDate, sSTime)
+                        'Destroy the progress dialog
+                        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                        If LogFileName.Text <> "" Then
+                            SaveLog(LogFileName.Text, PRINTtxt)
+                        End If
+                        Return
                     End If
-                    Return
-                End If
-            Next
+                Next
+                '********************************************************************************************
+                'If the clustering method is 'Buffer: NND x factor'
+            ElseIf IAF.bCMBF = True Then
+
+                'PROGRESS UPDATE: 
+                pProDlg.Description = "Clustering calculation 'Buffer: NND x factor'..."
+                PRINTtxt += vbCrLf & " [Clustering calculation 'Buffer: NND x factor'...]"
+
+                Dim dGroup(3, 0) As Double
+                'Main feature iteration
+                pTrkCan.Reset()
+                For j As Integer = 0 To Ar.GetUpperBound(1)
+                    'If the main feature NDIST is less than or equal to the user
+                    'distance query
+                    If Ar(4, j) <= CDbl(IAF.sNQUERY) Then
+                        'Leave a single blank line in the group table
+                        ReDim dGroup(3, 0)
+                        'Add the record to the potential cluster group
+                        dGroup(0, 0) = Ar(0, j) 'AID
+                        dGroup(1, 0) = Ar(1, j) 'OID
+                        dGroup(2, 0) = Ar(2, j) 'X
+                        dGroup(3, 0) = Ar(3, j) 'Y
+                        'Current feature iteration: GROUP construction of features within Near distance
+                        For k As Integer = 0 To Ar.GetUpperBound(1)
+                            '1. The OID of the main feature does not equal the OID the
+                            '   current feature
+                            '2. The current feature's nearest neighbor distance is less than or
+                            '   equal to the 'Distance to closest point' value
+                            '3. The distance between the main feature and the current feature
+                            '   is less than or equal to the sum of: each feature's nearest
+                            '   neighbor distance value time the factor value
+                            '- OR -
+                            '1. The OID of the main feature does not equal the OID the
+                            '   current feature
+                            '3. The distance between the main feature and the current feature
+                            '   is less than or equal to the main feature's nearest neighbor 
+                            '   distance value time the factor value
+                            If (Not Ar(1, k) = Ar(1, j) And Ar(4, k) <= CDbl(IAF.sNQUERY) And _
+                                 GetDist(Ar(2, k), Ar(3, k), Ar(2, j), Ar(3, j), _
+                                         dSemiMajAxis, dSemiMinAxis, IAF.bMEASPLAN) <= _
+                                 (Ar(4, k) * CDbl(IAF.sCMBFVAL)) + (Ar(4, j) * CDbl(IAF.sCMBFVAL))) Or _
+                               (Not Ar(1, k) = Ar(1, j) And GetDist(Ar(2, k), Ar(3, k), Ar(2, j), Ar(3, j), _
+                                                                    dSemiMajAxis, dSemiMinAxis, IAF.bMEASPLAN) <= _
+                                (Ar(4, j) * CDbl(IAF.sCMBFVAL))) Then
+                                'Add a single row to the end of the group table
+                                ReDim Preserve dGroup(3, dGroup.GetUpperBound(1) + 1)
+                                'Add the current feature to the potential cluster gorup
+                                dGroup(0, dGroup.GetUpperBound(1)) = Ar(0, k) 'AID
+                                dGroup(1, dGroup.GetUpperBound(1)) = Ar(1, k) 'OID
+                                dGroup(2, dGroup.GetUpperBound(1)) = Ar(2, k) 'X
+                                dGroup(3, dGroup.GetUpperBound(1)) = Ar(3, k) 'Y
+                            End If
+                        Next
+
+                        'If there are only two features in group:
+                        If dGroup.GetUpperBound(1) = 1 Then
+                            'If the second feature has a CID:
+                            If Ar2(dGroup(0, 1)) <> -1 Then
+                                'Assign the second current feature CID to the group's main feature CID
+                                Ar2(dGroup(0, 0)) = Ar2(dGroup(0, 1))
+                            Else
+                                'Assign the second current feature OID to the group's main feature CID
+                                Ar2(dGroup(0, 0)) = dGroup(1, 1)
+                            End If
+                        ElseIf dGroup.GetUpperBound(1) > 1 Then
+                            'If there are more than two features in the group:
+                            Dim nRepeat As Integer = 0
+                            Dim nRepeatOld As Integer = 0
+                            'Sort array with field: CID for ordering
+                            Dim Ar2Sorted(Ar2.GetUpperBound(0)) As Double
+                            System.Array.Copy(Ar2, 0, Ar2Sorted, 0, Ar2.Length)
+                            System.Array.Sort(Ar2Sorted)
+
+                            'Iterate through the group starting with second feature
+                            For m As Integer = 1 To dGroup.GetUpperBound(1)
+                                'If the CID of the group feature is set:
+                                If Ar2(dGroup(0, m)) <> -1 Then
+                                    'Find the number of occurrances of this CID
+                                    Dim n1stIndex, nLastIndex As Integer
+                                    n1stIndex = System.Array.IndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
+                                    nLastIndex = System.Array.LastIndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
+                                    nRepeatOld = nRepeat
+                                    nRepeat = (nLastIndex - n1stIndex) + 1
+                                    'Set the CID of the main feature from the group to the CID
+                                    'having the most occurrances in the group
+                                    If Not nRepeat = 0 And nRepeat > nRepeatOld Then
+                                        'Assign the CID with most occurrances in the group
+                                        'to the main feature
+                                        Ar2(dGroup(0, 0)) = Ar2(dGroup(0, m))
+                                    End If
+                                End If
+                            Next
+                            'If there were no CIDs in the group:
+                            If Ar2(dGroup(0, 0)) = -1 Then
+                                'Assign the second current feature OID to the group's main feature CID
+                                'and the rest of the group's CIDs
+                                Ar2(dGroup(0, 0)) = dGroup(1, 1)
+                                For a As Integer = 0 To dGroup.GetUpperBound(1)
+                                    Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
+                                Next
+                            Else
+                                'If a CID was chosen as most repeated in the group:
+                                'Find all the group feature CID occurrances in the main CID list
+                                'and replace them with the most repeated CID (found above)
+                                For a As Integer = 1 To dGroup.GetUpperBound(1)
+                                    For f As Integer = 0 To Ar2.GetUpperBound(0)
+                                        If Not Ar2(dGroup(0, a)) = -1 And Ar2(f) = Ar2(dGroup(0, a)) Then
+                                            'Replace the found CID with the most repeated CID
+                                            Ar2(f) = Ar2(dGroup(0, 0))
+                                        End If
+                                    Next
+                                Next
+                                'Replace all the CIDs of the group for the main CID
+                                For a As Integer = 1 To dGroup.GetUpperBound(1)
+                                    Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
+                                Next
+                            End If
+                        End If
+                    End If
+                    If Not pTrkCan.Continue Then
+                        'SUMMARY PRINT: End program as interrupted
+                        PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+                                                  sSDate, sSTime)
+                        'Destroy the progress dialog
+                        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                        If LogFileName.Text <> "" Then
+                            SaveLog(LogFileName.Text, PRINTtxt)
+                        End If
+                        Return
+                    End If
+                Next
+                '********************************************************************************************
+                'If the clustering method is 'Buffer: Same distance'
+            Else
+
+                'PROGRESS UPDATE: 
+                pProDlg.Description = "Clustering calculation 'Buffer: Same distance'..."
+                PRINTtxt += vbCrLf & " [Clustering calculation 'Buffer: Same distance'...]"
+
+                Dim dGroup(3, 0) As Double
+                'Main feature iteration
+                pTrkCan.Reset()
+                For j As Integer = 0 To Ar.GetUpperBound(1)
+                    'If the main feature NDIST is less than or equal to the user
+                    'distance query
+                    If Ar(4, j) <= CDbl(IAF.sNQUERY) Then
+                        'Leave a single blank line in the group table
+                        ReDim dGroup(3, 0)
+                        'Add the record to the potential cluster group
+                        dGroup(0, 0) = Ar(0, j) 'AID
+                        dGroup(1, 0) = Ar(1, j) 'OID
+                        dGroup(2, 0) = Ar(2, j) 'X
+                        dGroup(3, 0) = Ar(3, j) 'Y
+                        'Current feature iteration: GROUP construction of features within Near distance
+                        For k As Integer = 0 To Ar.GetUpperBound(1)
+                            '1. The OID of the main feature does not equal the OID the
+                            '   current feature
+                            '2. The current feature's nearest neighbor distance is less than or
+                            '   equal to the 'Distance to closest point' value
+                            '3. The distance between the main feature and the current feature
+                            '   is less than or equal to the 'Buffer option: Same distance' value
+                            '   times two
+                            '- OR -
+                            '1. The OID of the main feature does not equal the OID the
+                            '   current feature
+                            '3. The distance between the main feature and the current feature
+                            '   is less than or equal to the 'Buffer option: Same distance' value
+                            If (Not Ar(1, k) = Ar(1, j) And Ar(4, k) <= CDbl(IAF.sNQUERY) And _
+                                 GetDist(Ar(2, k), Ar(3, k), Ar(2, j), Ar(3, j), _
+                                         dSemiMajAxis, dSemiMinAxis, IAF.bMEASPLAN) <= _
+                                 (CDbl(IAF.sCMBSVAL) * 2)) Or _
+                               (Not Ar(1, k) = Ar(1, j) And GetDist(Ar(2, k), Ar(3, k), Ar(2, j), Ar(3, j), _
+                                                                    dSemiMajAxis, dSemiMinAxis, IAF.bMEASPLAN) <= _
+                                CDbl(IAF.sCMBSVAL)) Then
+                                'Add a single row to the end of the group table
+                                ReDim Preserve dGroup(3, dGroup.GetUpperBound(1) + 1)
+                                'Add the current feature to the potential cluster gorup
+                                dGroup(0, dGroup.GetUpperBound(1)) = Ar(0, k) 'AID
+                                dGroup(1, dGroup.GetUpperBound(1)) = Ar(1, k) 'OID
+                                dGroup(2, dGroup.GetUpperBound(1)) = Ar(2, k) 'X
+                                dGroup(3, dGroup.GetUpperBound(1)) = Ar(3, k) 'Y
+                            End If
+                        Next
+                        'If there are features in the group other than the main feature
+                        'If there are only two features in group:
+                        If dGroup.GetUpperBound(1) = 1 Then
+                            'If the second feature has a CID:
+                            If Ar2(dGroup(0, 1)) <> -1 Then
+                                'Assign the second current feature CID to the group's main feature CID
+                                Ar2(dGroup(0, 0)) = Ar2(dGroup(0, 1))
+                            Else
+                                'Assign the second current feature OID to the group's main feature CID
+                                Ar2(dGroup(0, 0)) = dGroup(1, 1)
+                            End If
+                        ElseIf dGroup.GetUpperBound(1) > 1 Then
+                            'If there are more than two features in the group:
+                            Dim nRepeat As Integer = 0
+                            Dim nRepeatOld As Integer = 0
+                            'Sort array with field: CID for ordering
+                            Dim Ar2Sorted(Ar2.GetUpperBound(0)) As Double
+                            System.Array.Copy(Ar2, 0, Ar2Sorted, 0, Ar2.Length)
+                            System.Array.Sort(Ar2Sorted)
+
+                            'Iterate through the group starting with second feature
+                            For m As Integer = 1 To dGroup.GetUpperBound(1)
+                                'If the CID of the group feature is set:
+                                If Ar2(dGroup(0, m)) <> -1 Then
+                                    'Find the number of occurrances of this CID
+                                    Dim n1stIndex, nLastIndex As Integer
+                                    n1stIndex = System.Array.IndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
+                                    nLastIndex = System.Array.LastIndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
+                                    nRepeatOld = nRepeat
+                                    nRepeat = (nLastIndex - n1stIndex) + 1
+                                    'Set the CID of the main feature from the group to the CID
+                                    'having the most occurrances in the group
+                                    If Not nRepeat = 0 And nRepeat > nRepeatOld Then
+                                        'Assign the CID with most occurrances in the group
+                                        'to the main feature
+                                        Ar2(dGroup(0, 0)) = Ar2(dGroup(0, m))
+                                    End If
+                                End If
+                            Next
+                            'If there were no CIDs in the group:
+                            If Ar2(dGroup(0, 0)) = -1 Then
+                                'Assign the second current feature OID to the group's main feature CID
+                                'and the rest of the group's CIDs
+                                Ar2(dGroup(0, 0)) = dGroup(1, 1)
+                                For a As Integer = 0 To dGroup.GetUpperBound(1)
+                                    Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
+                                Next
+                            Else
+                                'If a CID was chosen as most repeated in the group:
+                                'Find all the group feature CID occurrances in the main CID list
+                                'and replace them with the most repeated CID (found above)
+                                For a As Integer = 1 To dGroup.GetUpperBound(1)
+                                    For f As Integer = 0 To Ar2.GetUpperBound(0)
+                                        If Not Ar2(dGroup(0, a)) = -1 And Ar2(f) = Ar2(dGroup(0, a)) Then
+                                            'Replace the found CID with the most repeated CID
+                                            Ar2(f) = Ar2(dGroup(0, 0))
+                                        End If
+                                    Next
+                                Next
+                                'Replace all the CIDs of the group for the main CID
+                                For a As Integer = 1 To dGroup.GetUpperBound(1)
+                                    Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
+                                Next
+                            End If
+                        End If
+                    End If
+                    If Not pTrkCan.Continue Then
+                        'SUMMARY PRINT: End program as interrupted
+                        PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+                                                  sSDate, sSTime)
+                        'Destroy the progress dialog
+                        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                        If LogFileName.Text <> "" Then
+                            SaveLog(LogFileName.Text, PRINTtxt)
+                        End If
+                        Return
+                    End If
+                Next
+            End If
             '********************************************************************************************
-            'If the clustering method is 'Buffer: Nearest neighbor distance'
-        ElseIf IAF.bCMBNND = True Then
-
-            'PROGRESS UPDATE: 
-            pProDlg.Description = "Clustering calculation 'Buffer: Nearest neighbor distance'..."
-            PRINTtxt += vbCrLf & " [Clustering calculation 'Buffer: Nearest neighbor distance'...]"
-
-            Dim dGroup(3, 0) As Double
-            'Main feature iteration
-            pTrkCan.Reset()
-            For j As Integer = 0 To Ar.GetUpperBound(1)
-                'If the main feature NDIST is less than or equal to the user
-                'distance query
-                If Ar(4, j) <= CDbl(IAF.sNQUERY) Then
-                    'Leave a single blank line in the group table
-                    ReDim dGroup(3, 0)
-                    'Add the record to the potential cluster group
-                    dGroup(0, 0) = Ar(0, j) 'AID
-                    dGroup(1, 0) = Ar(1, j) 'OID
-                    dGroup(2, 0) = Ar(2, j) 'X
-                    dGroup(3, 0) = Ar(3, j) 'Y
-                    'Current feature iteration: GROUP construction of features within Near distance
-                    For k As Integer = 0 To Ar.GetUpperBound(1)
-                        '1. The OID of the main feature does not equal the OID the
-                        '   current feature
-                        '2. The distance between the main feature and the current feature
-                        '   is less than or equal to the sum of each feature's nearest
-                        '   neighbor distance value
-                        If Not Ar(1, k) = Ar(1, j) And Ar(4, k) <= CDbl(IAF.sNQUERY) And _
-                           GetDist(Ar(2, k), Ar(3, k), Ar(2, j), Ar(3, j), _
-                                   dSemiMajAxis, dSemiMinAxis, IAF.bMEASPLAN) <= _
-                           (Ar(4, k) + Ar(4, j)) Then
-                            'Add a single row to the end of the group table
-                            ReDim Preserve dGroup(3, dGroup.GetUpperBound(1) + 1)
-                            'Add the current feature to the potential cluster gorup
-                            dGroup(0, dGroup.GetUpperBound(1)) = Ar(0, k) 'AID
-                            dGroup(1, dGroup.GetUpperBound(1)) = Ar(1, k) 'OID
-                            dGroup(2, dGroup.GetUpperBound(1)) = Ar(2, k) 'X
-                            dGroup(3, dGroup.GetUpperBound(1)) = Ar(3, k) 'Y
-                        End If
-                    Next
-                    'If there are features in the group other than the main feature
-                    'If there are only two features in group:
-                    If dGroup.GetUpperBound(1) = 1 Then
-                        'If the second feature has a CID:
-                        If Ar2(dGroup(0, 1)) <> -1 Then
-                            'Assign the second current feature CID to the group's main feature CID
-                            Ar2(dGroup(0, 0)) = Ar2(dGroup(0, 1))
-                        Else
-                            'Assign the second current feature OID to the group's main feature CID
-                            Ar2(dGroup(0, 0)) = dGroup(1, 1)
-                        End If
-                    ElseIf dGroup.GetUpperBound(1) > 1 Then
-                        'If there are more than two features in the group:
-                        Dim nRepeat As Integer = 0
-                        Dim nRepeatOld As Integer = 0
-                        'Sort array with field: CID for ordering
-                        Dim Ar2Sorted(Ar2.GetUpperBound(0)) As Double
-                        System.Array.Copy(Ar2, 0, Ar2Sorted, 0, Ar2.Length)
-                        System.Array.Sort(Ar2Sorted)
-
-                        'Iterate through the group starting with second feature
-                        For m As Integer = 1 To dGroup.GetUpperBound(1)
-                            'If the CID of the group feature is set:
-                            If Ar2(dGroup(0, m)) <> -1 Then
-                                'Find the number of occurrances of this CID
-                                Dim n1stIndex, nLastIndex As Integer
-                                n1stIndex = System.Array.IndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
-                                nLastIndex = System.Array.LastIndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
-                                nRepeatOld = nRepeat
-                                nRepeat = (nLastIndex - n1stIndex) + 1
-                                'Set the CID of the main feature from the group to the CID
-                                'having the most occurrances in the group
-                                If Not nRepeat = 0 And nRepeat > nRepeatOld Then
-                                    'Assign the CID with most occurrances in the group
-                                    'to the main feature
-                                    Ar2(dGroup(0, 0)) = Ar2(dGroup(0, m))
-                                End If
-                            End If
-                        Next
-                        'If there were no CIDs in the group:
-                        If Ar2(dGroup(0, 0)) = -1 Then
-                            'Assign the second current feature OID to the group's main feature CID
-                            'and the rest of the group's CIDs
-                            Ar2(dGroup(0, 0)) = dGroup(1, 1)
-                            For a As Integer = 0 To dGroup.GetUpperBound(1)
-                                Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
-                            Next
-                        Else
-                            'If a CID was chosen as most repeated in the group:
-                            'Find all the group feature CID occurrances in the main CID list
-                            'and replace them with the most repeated CID (found above)
-                            For a As Integer = 1 To dGroup.GetUpperBound(1)
-                                For f As Integer = 0 To Ar2.GetUpperBound(0)
-                                    If Not Ar2(dGroup(0, a)) = -1 And Ar2(f) = Ar2(dGroup(0, a)) Then
-                                        'Replace the found CID with the most repeated CID
-                                        Ar2(f) = Ar2(dGroup(0, 0))
-                                    End If
-                                Next
-                            Next
-                            'Replace all the CIDs of the group for the main CID
-                            For a As Integer = 1 To dGroup.GetUpperBound(1)
-                                Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
-                            Next
-                        End If
-                    End If
+        ElseIf c_method = "dbscan" Then
+            Dim measurement_space As Boolean = False
+            If radMEASPLAN.Checked Then
+                measurement_space = True
+            End If
+            'DBSCAN
+            Dim counter As Integer = 0
+            For i As Integer = 0 To Ar.GetUpperBound(1) - 1
+                If Ar(4, i) < CDbl(txtNQUERY.Text) Then
+                    Dim Arr As New List(Of Double)
+                    Arr.Add(Ar(0, i))
+                    Arr.Add(Ar(1, i))
+                    Arr.Add(Ar(2, i))
+                    Arr.Add(Ar(3, i))
+                    dist_lists.Add(Arr)
+                    counter += 1
                 End If
+            Next
+
+            Dim cluster_id As Integer = 0
+            'Create a list of the unvisited nodes.  We iterate over these.
+            Dim Unvisited As New List(Of Integer)
+            Unvisited.Clear()
+            For i As Integer = 0 To dist_lists.Count - 1
+                Unvisited.Add(CInt(dist_lists(i)(0)))
+            Next
+
+            'Progress Bar
+            pProDlg.Description = "Clustering using DBScan..."
+            pStepPro.Message = String.Format("{0} / {1} Points Processed", dist_lists.Count - Unvisited.Count, dist_lists.Count)
+            pStepPro.MinRange = 0
+            pStepPro.MaxRange = dist_lists.Count - 1
+
+            'Setup to start at a random node
+            Dim randomnumber As New Random
+            Dim index As Integer = 0
+            Dim old_count As Integer = 0
+
+            'Iterate until we have visited all nodes.
+            Do Until Unvisited.Count = 0
+                'Grab the index of the current node
+                index = randomnumber.Next(0, Unvisited.Count - 1)
+                Dim node = Unvisited(index)
+                old_count = Unvisited.Count
+                'If node = 1077 Or node = 1078 Or node = 1079 Or node = 1076 Or node = 1080 Or node = 1081 Or node = 1082 Or node = 1083 Or node = 1084 Then MsgBox("here", MsgBoxStyle.OkOnly, "gotcha")
+
+                'Remove the node from the unvisited list and the node from the dist_lists
+                Unvisited.RemoveAt(index)
+
+                'Get the index from dist_lists from the node_id
+                Dim node_index As Integer = 0
+                node_index = GetNodeIndex(node)
+
+                'Get the neighbors to the current node
+                Dim neighbors = getNeighbors(CDbl(eps.Text), node_index, dSemiMajAxis, dSemiMinAxis, measurement_space)
+
+                'If we are greater than epsilon we have a cluster, otherwise we have noise.  Unmarked nodes are implicitly noise.
+                If neighbors.Count >= CInt(minpts.Text) Then 'neighbors includes the source point in the list
+
+                    'Attempt to expand the cluster
+                    Unvisited = ExpandCluster(neighbors, cluster_id, CDbl(eps.Text), CInt(minpts.Text), Ar2, Unvisited, dSemiMajAxis, dSemiMinAxis, measurement_space)
+
+                End If
+                pStepPro.StepValue = old_count - Unvisited.Count
+                pStepPro.Message = String.Format("{0} / {1} Points Processed", dist_lists.Count - Unvisited.Count, dist_lists.Count)
                 If Not pTrkCan.Continue Then
                     'SUMMARY PRINT: End program as interrupted
                     PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
                                               sSDate, sSTime)
                     'Destroy the progress dialog
                     ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                    If LogFileName.Text <> "" Then
-                        SaveLog(LogFileName.Text, PRINTtxt)
-                    End If
                     Return
                 End If
-            Next
-            '********************************************************************************************
-            'If the clustering method is 'Buffer: NND x factor'
-        ElseIf IAF.bCMBF = True Then
 
-            'PROGRESS UPDATE: 
-            pProDlg.Description = "Clustering calculation 'Buffer: NND x factor'..."
-            PRINTtxt += vbCrLf & " [Clustering calculation 'Buffer: NND x factor'...]"
-
-            Dim dGroup(3, 0) As Double
-            'Main feature iteration
-            pTrkCan.Reset()
-            For j As Integer = 0 To Ar.GetUpperBound(1)
-                'If the main feature NDIST is less than or equal to the user
-                'distance query
-                If Ar(4, j) <= CDbl(IAF.sNQUERY) Then
-                    'Leave a single blank line in the group table
-                    ReDim dGroup(3, 0)
-                    'Add the record to the potential cluster group
-                    dGroup(0, 0) = Ar(0, j) 'AID
-                    dGroup(1, 0) = Ar(1, j) 'OID
-                    dGroup(2, 0) = Ar(2, j) 'X
-                    dGroup(3, 0) = Ar(3, j) 'Y
-                    'Current feature iteration: GROUP construction of features within Near distance
-                    For k As Integer = 0 To Ar.GetUpperBound(1)
-                        '1. The OID of the main feature does not equal the OID the
-                        '   current feature
-                        '2. The current feature's nearest neighbor distance is less than or
-                        '   equal to the 'Distance to closest point' value
-                        '3. The distance between the main feature and the current feature
-                        '   is less than or equal to the sum of: each feature's nearest
-                        '   neighbor distance value time the factor value
-                        '- OR -
-                        '1. The OID of the main feature does not equal the OID the
-                        '   current feature
-                        '3. The distance between the main feature and the current feature
-                        '   is less than or equal to the main feature's nearest neighbor 
-                        '   distance value time the factor value
-                        If (Not Ar(1, k) = Ar(1, j) And Ar(4, k) <= CDbl(IAF.sNQUERY) And _
-                             GetDist(Ar(2, k), Ar(3, k), Ar(2, j), Ar(3, j), _
-                                     dSemiMajAxis, dSemiMinAxis, IAF.bMEASPLAN) <= _
-                             (Ar(4, k) * CDbl(IAF.sCMBFVAL)) + (Ar(4, j) * CDbl(IAF.sCMBFVAL))) Or _
-                           (Not Ar(1, k) = Ar(1, j) And GetDist(Ar(2, k), Ar(3, k), Ar(2, j), Ar(3, j), _
-                                                                dSemiMajAxis, dSemiMinAxis, IAF.bMEASPLAN) <= _
-                            (Ar(4, j) * CDbl(IAF.sCMBFVAL))) Then
-                            'Add a single row to the end of the group table
-                            ReDim Preserve dGroup(3, dGroup.GetUpperBound(1) + 1)
-                            'Add the current feature to the potential cluster gorup
-                            dGroup(0, dGroup.GetUpperBound(1)) = Ar(0, k) 'AID
-                            dGroup(1, dGroup.GetUpperBound(1)) = Ar(1, k) 'OID
-                            dGroup(2, dGroup.GetUpperBound(1)) = Ar(2, k) 'X
-                            dGroup(3, dGroup.GetUpperBound(1)) = Ar(3, k) 'Y
-                        End If
-                    Next
-
-                    'If there are only two features in group:
-                    If dGroup.GetUpperBound(1) = 1 Then
-                        'If the second feature has a CID:
-                        If Ar2(dGroup(0, 1)) <> -1 Then
-                            'Assign the second current feature CID to the group's main feature CID
-                            Ar2(dGroup(0, 0)) = Ar2(dGroup(0, 1))
-                        Else
-                            'Assign the second current feature OID to the group's main feature CID
-                            Ar2(dGroup(0, 0)) = dGroup(1, 1)
-                        End If
-                    ElseIf dGroup.GetUpperBound(1) > 1 Then
-                        'If there are more than two features in the group:
-                        Dim nRepeat As Integer = 0
-                        Dim nRepeatOld As Integer = 0
-                        'Sort array with field: CID for ordering
-                        Dim Ar2Sorted(Ar2.GetUpperBound(0)) As Double
-                        System.Array.Copy(Ar2, 0, Ar2Sorted, 0, Ar2.Length)
-                        System.Array.Sort(Ar2Sorted)
-
-                        'Iterate through the group starting with second feature
-                        For m As Integer = 1 To dGroup.GetUpperBound(1)
-                            'If the CID of the group feature is set:
-                            If Ar2(dGroup(0, m)) <> -1 Then
-                                'Find the number of occurrances of this CID
-                                Dim n1stIndex, nLastIndex As Integer
-                                n1stIndex = System.Array.IndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
-                                nLastIndex = System.Array.LastIndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
-                                nRepeatOld = nRepeat
-                                nRepeat = (nLastIndex - n1stIndex) + 1
-                                'Set the CID of the main feature from the group to the CID
-                                'having the most occurrances in the group
-                                If Not nRepeat = 0 And nRepeat > nRepeatOld Then
-                                    'Assign the CID with most occurrances in the group
-                                    'to the main feature
-                                    Ar2(dGroup(0, 0)) = Ar2(dGroup(0, m))
-                                End If
-                            End If
-                        Next
-                        'If there were no CIDs in the group:
-                        If Ar2(dGroup(0, 0)) = -1 Then
-                            'Assign the second current feature OID to the group's main feature CID
-                            'and the rest of the group's CIDs
-                            Ar2(dGroup(0, 0)) = dGroup(1, 1)
-                            For a As Integer = 0 To dGroup.GetUpperBound(1)
-                                Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
-                            Next
-                        Else
-                            'If a CID was chosen as most repeated in the group:
-                            'Find all the group feature CID occurrances in the main CID list
-                            'and replace them with the most repeated CID (found above)
-                            For a As Integer = 1 To dGroup.GetUpperBound(1)
-                                For f As Integer = 0 To Ar2.GetUpperBound(0)
-                                    If Not Ar2(dGroup(0, a)) = -1 And Ar2(f) = Ar2(dGroup(0, a)) Then
-                                        'Replace the found CID with the most repeated CID
-                                        Ar2(f) = Ar2(dGroup(0, 0))
-                                    End If
-                                Next
-                            Next
-                            'Replace all the CIDs of the group for the main CID
-                            For a As Integer = 1 To dGroup.GetUpperBound(1)
-                                Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
-                            Next
-                        End If
-                    End If
-                End If
-                If Not pTrkCan.Continue Then
-                    'SUMMARY PRINT: End program as interrupted
-                    PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
-                                              sSDate, sSTime)
-                    'Destroy the progress dialog
-                    ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                    If LogFileName.Text <> "" Then
-                        SaveLog(LogFileName.Text, PRINTtxt)
-                    End If
-                    Return
-                End If
-            Next
-            '********************************************************************************************
-            'If the clustering method is 'Buffer: Same distance'
-        Else
-
-            'PROGRESS UPDATE: 
-            pProDlg.Description = "Clustering calculation 'Buffer: Same distance'..."
-            PRINTtxt += vbCrLf & " [Clustering calculation 'Buffer: Same distance'...]"
-
-            Dim dGroup(3, 0) As Double
-            'Main feature iteration
-            pTrkCan.Reset()
-            For j As Integer = 0 To Ar.GetUpperBound(1)
-                'If the main feature NDIST is less than or equal to the user
-                'distance query
-                If Ar(4, j) <= CDbl(IAF.sNQUERY) Then
-                    'Leave a single blank line in the group table
-                    ReDim dGroup(3, 0)
-                    'Add the record to the potential cluster group
-                    dGroup(0, 0) = Ar(0, j) 'AID
-                    dGroup(1, 0) = Ar(1, j) 'OID
-                    dGroup(2, 0) = Ar(2, j) 'X
-                    dGroup(3, 0) = Ar(3, j) 'Y
-                    'Current feature iteration: GROUP construction of features within Near distance
-                    For k As Integer = 0 To Ar.GetUpperBound(1)
-                        '1. The OID of the main feature does not equal the OID the
-                        '   current feature
-                        '2. The current feature's nearest neighbor distance is less than or
-                        '   equal to the 'Distance to closest point' value
-                        '3. The distance between the main feature and the current feature
-                        '   is less than or equal to the 'Buffer option: Same distance' value
-                        '   times two
-                        '- OR -
-                        '1. The OID of the main feature does not equal the OID the
-                        '   current feature
-                        '3. The distance between the main feature and the current feature
-                        '   is less than or equal to the 'Buffer option: Same distance' value
-                        If (Not Ar(1, k) = Ar(1, j) And Ar(4, k) <= CDbl(IAF.sNQUERY) And _
-                             GetDist(Ar(2, k), Ar(3, k), Ar(2, j), Ar(3, j), _
-                                     dSemiMajAxis, dSemiMinAxis, IAF.bMEASPLAN) <= _
-                             (CDbl(IAF.sCMBSVAL) * 2)) Or _
-                           (Not Ar(1, k) = Ar(1, j) And GetDist(Ar(2, k), Ar(3, k), Ar(2, j), Ar(3, j), _
-                                                                dSemiMajAxis, dSemiMinAxis, IAF.bMEASPLAN) <= _
-                            CDbl(IAF.sCMBSVAL)) Then
-                            'Add a single row to the end of the group table
-                            ReDim Preserve dGroup(3, dGroup.GetUpperBound(1) + 1)
-                            'Add the current feature to the potential cluster gorup
-                            dGroup(0, dGroup.GetUpperBound(1)) = Ar(0, k) 'AID
-                            dGroup(1, dGroup.GetUpperBound(1)) = Ar(1, k) 'OID
-                            dGroup(2, dGroup.GetUpperBound(1)) = Ar(2, k) 'X
-                            dGroup(3, dGroup.GetUpperBound(1)) = Ar(3, k) 'Y
-                        End If
-                    Next
-                    'If there are features in the group other than the main feature
-                    'If there are only two features in group:
-                    If dGroup.GetUpperBound(1) = 1 Then
-                        'If the second feature has a CID:
-                        If Ar2(dGroup(0, 1)) <> -1 Then
-                            'Assign the second current feature CID to the group's main feature CID
-                            Ar2(dGroup(0, 0)) = Ar2(dGroup(0, 1))
-                        Else
-                            'Assign the second current feature OID to the group's main feature CID
-                            Ar2(dGroup(0, 0)) = dGroup(1, 1)
-                        End If
-                    ElseIf dGroup.GetUpperBound(1) > 1 Then
-                        'If there are more than two features in the group:
-                        Dim nRepeat As Integer = 0
-                        Dim nRepeatOld As Integer = 0
-                        'Sort array with field: CID for ordering
-                        Dim Ar2Sorted(Ar2.GetUpperBound(0)) As Double
-                        System.Array.Copy(Ar2, 0, Ar2Sorted, 0, Ar2.Length)
-                        System.Array.Sort(Ar2Sorted)
-
-                        'Iterate through the group starting with second feature
-                        For m As Integer = 1 To dGroup.GetUpperBound(1)
-                            'If the CID of the group feature is set:
-                            If Ar2(dGroup(0, m)) <> -1 Then
-                                'Find the number of occurrances of this CID
-                                Dim n1stIndex, nLastIndex As Integer
-                                n1stIndex = System.Array.IndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
-                                nLastIndex = System.Array.LastIndexOf(Ar2Sorted, Ar2(dGroup(0, m))) + 1
-                                nRepeatOld = nRepeat
-                                nRepeat = (nLastIndex - n1stIndex) + 1
-                                'Set the CID of the main feature from the group to the CID
-                                'having the most occurrances in the group
-                                If Not nRepeat = 0 And nRepeat > nRepeatOld Then
-                                    'Assign the CID with most occurrances in the group
-                                    'to the main feature
-                                    Ar2(dGroup(0, 0)) = Ar2(dGroup(0, m))
-                                End If
-                            End If
-                        Next
-                        'If there were no CIDs in the group:
-                        If Ar2(dGroup(0, 0)) = -1 Then
-                            'Assign the second current feature OID to the group's main feature CID
-                            'and the rest of the group's CIDs
-                            Ar2(dGroup(0, 0)) = dGroup(1, 1)
-                            For a As Integer = 0 To dGroup.GetUpperBound(1)
-                                Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
-                            Next
-                        Else
-                            'If a CID was chosen as most repeated in the group:
-                            'Find all the group feature CID occurrances in the main CID list
-                            'and replace them with the most repeated CID (found above)
-                            For a As Integer = 1 To dGroup.GetUpperBound(1)
-                                For f As Integer = 0 To Ar2.GetUpperBound(0)
-                                    If Not Ar2(dGroup(0, a)) = -1 And Ar2(f) = Ar2(dGroup(0, a)) Then
-                                        'Replace the found CID with the most repeated CID
-                                        Ar2(f) = Ar2(dGroup(0, 0))
-                                    End If
-                                Next
-                            Next
-                            'Replace all the CIDs of the group for the main CID
-                            For a As Integer = 1 To dGroup.GetUpperBound(1)
-                                Ar2(dGroup(0, a)) = Ar2(dGroup(0, 0))
-                            Next
-                        End If
-                    End If
-                End If
-                If Not pTrkCan.Continue Then
-                    'SUMMARY PRINT: End program as interrupted
-                    PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
-                                              sSDate, sSTime)
-                    'Destroy the progress dialog
-                    ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                    If LogFileName.Text <> "" Then
-                        SaveLog(LogFileName.Text, PRINTtxt)
-                    End If
-                    Return
-                End If
-            Next
+            Loop
+            'Cleanup
+            dist_lists.Clear()
         End If
-        '********************************************************************************************
-
 
         'Add the CID of the main feature to the master CID list
         Dim dCIDList(Ar.GetUpperBound(1)) As Double
@@ -1583,63 +1699,20 @@ Public Class frm_intersecttool
     End Sub
 
 
-#Region "***** CLUSTER METHOD *******"
-#End Region
 
-    Private Sub radCMS_GotFocus(ByVal sender As Object, _
-                                   ByVal e As System.EventArgs) _
-                                   Handles radCMS.GotFocus
-        HELP_ClusterMethodSameDist()
-    End Sub
-
-    Private Sub txtCMSVAL_GotFocus(ByVal sender As Object, _
-                                ByVal e As System.EventArgs) _
-                                Handles txtCMSVAL.GotFocus
-        HELP_ClusterMethodSameDist()
-    End Sub
-
-    Private Sub radCMBNND_GotFocus(ByVal sender As Object, _
-                                     ByVal e As System.EventArgs) _
-                                     Handles radCMBNND.GotFocus
-        HELP_ClusterMethodBNearestNDist()
-    End Sub
-
-    Private Sub radCMBF_GotFocus(ByVal sender As Object, _
-                                      ByVal e As System.EventArgs) _
-                                      Handles radCMBF.GotFocus
-        HELP_ClusterMethodBNearestNDistFact()
-    End Sub
-
-    Private Sub txtCMBFVAL_GotFocus(ByVal sender As Object, _
-                                 ByVal e As System.EventArgs) _
-                                 Handles txtCMBFVAL.GotFocus
-        HELP_ClusterMethodBNearestNDistFact()
-    End Sub
-
-    Private Sub radCMBS_GotFocus(ByVal sender As Object, _
-                                    ByVal e As System.EventArgs) _
-                                    Handles radCMBS.GotFocus
-        HELP_ClusterMethodBSameDist()
-    End Sub
-
-    Private Sub txtCMBSVAL_GotFocus(ByVal sender As Object, _
-                                 ByVal e As System.EventArgs) _
-                                 Handles txtCMBSVAL.GotFocus
-        HELP_ClusterMethodBSameDist()
-    End Sub
 
 #Region "***** POINT QUERY *********"
 #End Region
 
-    Private Sub grpCPNUM_Enter(sender As System.Object, _
-                                e As System.EventArgs) _
-                                Handles grpCPNUM.Enter
+    Private Sub grpCPNUM_Enter(ByVal sender As System.Object, _
+                                ByVal e As System.EventArgs)
+
         HELP_PntCount()
     End Sub
 
-    Private Sub grpCPNUM_Click(sender As System.Object, _
-                                e As System.EventArgs) _
-                                Handles grpCPNUM.Click
+    Private Sub grpCPNUM_Click(ByVal sender As System.Object, _
+                                ByVal e As System.EventArgs)
+
         HELP_PntCount()
     End Sub
 
@@ -1712,54 +1785,7 @@ Public Class frm_intersecttool
     End Sub
 
 
-    Private Sub HELP_ClusterMethodSameDist()
-
-        'Update help panel
-        Dim strText As String = _
-            "Intersections that fall within this distance from another " & _
-            "intersection are considered part of the same cluster."
-
-        HELPCntUpdate("Fixed distance", strText)
-
-    End Sub
-
-    Private Sub HELP_ClusterMethodBNearestNDist()
-
-        'Update help panel
-        Dim strText As String = _
-            "Intersections are buffered by a distance equal to their Nearest " & _
-            "Neighbor distance. Once buffers are merged, all intersections " & _
-            "that fall inside the merged area are considered part of the " & _
-            "same cluster."
-
-        HELPCntUpdate("Buffer option: Nearest Neighbor distance", strText)
-
-    End Sub
-
-    Private Sub HELP_ClusterMethodBNearestNDistFact()
-
-        'Update help panel
-        Dim strText As String = _
-            "Intersections are buffered by a distance equal to their Nearest " & _
-            "Neighbor distance times a factor value. Once buffers " & _
-            "are merged, all intersections that fall inside the merged area are " & _
-            "considered part of the same cluster."
-
-        HELPCntUpdate("Buffer option: Nearest Neighbor distance x factor", strText)
-
-    End Sub
-
-    Private Sub HELP_ClusterMethodBSameDist()
-
-        'Update help panel
-        Dim strText As String = _
-            "Intersections are buffered by this distance. Once buffers " & _
-            "are merged, all intersections that fall inside the merged area are " & _
-            "considered part of the same cluster."
-
-        HELPCntUpdate("Buffer option: Fixed distance", strText)
-
-    End Sub
+   
 
     Private Sub HELP_PntCount()
 
@@ -1782,29 +1808,8 @@ Public Class frm_intersecttool
 
     End Sub
 
-    Private Sub HELPCntUpdate(ByVal Title As String, ByVal Text As String)
 
-        rtxtHELP_CNT.Clear()
-
-        rtxtHELP_CNT.AppendText("   " & vbCrLf & Title)
-        rtxtHELP_CNT.Find(Title, RichTextBoxFinds.MatchCase)
-        rtxtHELP_CNT.SelectionFont = New Font("Arial", 12, FontStyle.Bold)
-        rtxtHELP_CNT.SelectionColor = Color.Black
-        rtxtHELP_CNT.DeselectAll()
-        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf)
-
-        rtxtHELP_CNT.AppendText(Text)
-
-        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf & vbCrLf)
-        rtxtHELP_CNT.Find("   ", RichTextBoxFinds.MatchCase)
-        rtxtHELP_CNT.ScrollToCaret()
-        rtxtHELP_CNT.DeselectAll()
-
-        rtxtHELP_CNT.Refresh()
-
-    End Sub
-
-    Private Function compute_intersection_stats(ByVal Ar, ByVal dist)
+    Private Function compute_intersection_stats(ByVal Ar, ByVal dist) As String
         Dim count, sum, sample, range, mean, std, median, min, max, iqr, uq, lq, sumsq, array() As Double
 
         count = 0
@@ -1971,8 +1976,191 @@ Public Class frm_intersecttool
           (String.Format(f400, "_")) & vbCrLf
         Return sReport
     End Function
+#Region "Clustering"
+    Private Sub clustmeth_grp_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles clustmeth_grp.Click
+        Help_ClusterMethod()
+    End Sub
+
+    Private Sub clustertab_h_Click(ByVal Sender As System.Object, ByVal e As System.EventArgs) Handles hierarchical.Click
+        Help_ClusterMethod()
+    End Sub
+
+    Private Sub clustertab_d_Click(ByVal Sender As System.Object, ByVal e As System.EventArgs) Handles dbscan.Click
+        Help_ClusterMethod()
+    End Sub
+
+    Private Sub clustertab_h_Focus(ByVal Sender As System.Object, ByVal e As System.EventArgs) Handles hierarchical.GotFocus
+        Help_ClusterMethod()
+    End Sub
+
+    Private Sub clustertab_d_Focus(ByVal Sender As System.Object, ByVal e As System.EventArgs) Handles dbscan.GotFocus
+        Help_ClusterMethod()
+    End Sub
+
+    Private Sub DBScan_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles dbscan.Click
+        HELP_DBScan()
+    End Sub
+
+    Private Sub radCMS_GotFocus(ByVal sender As Object, _
+                                  ByVal e As System.EventArgs) _
+                                  Handles radCMS.GotFocus
+        HELP_ClusterMethodSameDist()
+    End Sub
+
+    Private Sub txtCMSVAL_GotFocus(ByVal sender As Object, _
+                                ByVal e As System.EventArgs) _
+                                Handles txtCMSVAL.GotFocus
+        HELP_ClusterMethodSameDist()
+    End Sub
+
+    Private Sub radCMBNND_GotFocus(ByVal sender As Object, _
+                                     ByVal e As System.EventArgs) _
+                                     Handles radCMBNND.GotFocus
+        HELP_ClusterMethodBNearestNDist()
+    End Sub
+
+    Private Sub radCMBF_GotFocus(ByVal sender As Object, _
+                                      ByVal e As System.EventArgs) _
+                                      Handles radCMBF.GotFocus
+        HELP_ClusterMethodBNearestNDistFact()
+    End Sub
+
+    Private Sub txtCMBFVAL_GotFocus(ByVal sender As Object, _
+                                 ByVal e As System.EventArgs) _
+                                 Handles txtCMBFVAL.GotFocus
+        HELP_ClusterMethodBNearestNDistFact()
+    End Sub
+
+    Private Sub radCMBS_GotFocus(ByVal sender As Object, _
+                                    ByVal e As System.EventArgs) _
+                                    Handles radCMBS.GotFocus
+        HELP_ClusterMethodBSameDist()
+    End Sub
+
+    Private Sub txtCMBSVAL_GotFocus(ByVal sender As Object, _
+                                 ByVal e As System.EventArgs) _
+                                 Handles txtCMBSVAL.GotFocus
+        HELP_ClusterMethodBSameDist()
+    End Sub
+
+    Private Sub TextBox1_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs)
+        Help_ClusterMethod()
+    End Sub
+
+    Private Sub GroupBox3_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles GroupBox3.Enter
+        HELP_DBScan()
+    End Sub
+
+    Private Sub minpts_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles minpts.Click
+        HELP_DBScan()
+    End Sub
+
+    Private Sub Help_ClusterMethod()
+        'Update help panel
+        Dim strText As String = _
+            "DBScan - A density based clustering method which requires a minimum threshold number of impacts as a parameter.  This is the computationally faster clustering method." & _
+            Environment.NewLine & _
+            Environment.NewLine & _
+           "Heirarchal - A traditional clustering method that iterates over all point sequentially and merges clusters.  This is a signifigantly slower clustering method."
+
+        HELPCntUpdate("Clustering Method", strText)
+    End Sub
+
+    Private Sub eps_grp_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles eps_grp.Enter
+        HELP_DBScan()
+    End Sub
+
+    Private Sub eps_grp_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles eps_grp.Click
+        HELP_DBScan()
+    End Sub
+
+    Private Sub HELP_DBScan()
+        'Update help panel
+        Dim strText As String = _
+            "Minimum Cluster Seed Size determines the minimum number of clusters within the threshold distance in order to begin a new crater cluster." & _
+            Environment.NewLine & _
+            "Epsilon is the distance threshold at which points are clustered.  At distances beyond epsilon, a new cluster will be generated if the max seed size (density) is met." & _
+            Environment.NewLine & _
+           "The K-Distance graph provides a metric to assist in determining the distance at which outliers (noise) begin to impact cluster creation. " & _
+           "A drastic increase in slope is indicative of the distance at which outliers should be thresholded as noise. " & _
+           "Note that this is data specific, i.e. low ressolution source data with distinct spacecraft track boundaries skews this metric signifigantly."
+
+        HELPCntUpdate("Density Based Clustering (DBScan)", strText)
+    End Sub
+
+    Private Sub HELP_ClusterMethodSameDist()
+
+        'Update help panel
+        Dim strText As String = _
+            "Points that fall within this distance from a " & _
+            "point are considered part of the same cluster."
+
+        HELPCntUpdate("Fixed distance", strText)
+
+    End Sub
+
+    Private Sub HELP_ClusterMethodBNearestNDist()
+
+        'Update help panel
+        Dim strText As String = _
+            "Points are buffered by a distance equal to their Nearest " & _
+            "Neighbor distance. Once buffers are merged, all points " & _
+            "that fall inside the merged area are considered part of the " & _
+            "same cluster."
+
+        HELPCntUpdate("Buffer option: Nearest Neighbor distance", strText)
+
+    End Sub
+
+    Private Sub HELP_ClusterMethodBNearestNDistFact()
+
+        'Update help panel
+        Dim strText As String = _
+            "Points are buffered by a distance equal to their Nearest " & _
+            "Neighbor distance times a factor value. Once buffers " & _
+            "are merged, all points that fall inside the merged area are " & _
+            "considered part of the same cluster."
+
+        HELPCntUpdate("Buffer option: Nearest Neighbor distance x factor", strText)
+
+    End Sub
+
+    Private Sub HELP_ClusterMethodBSameDist()
+
+        'Update help panel
+        Dim strText As String = _
+            "Points are buffered by this distance. Once buffers " & _
+            "are merged, all points that fall inside the merged area are " & _
+            "considered part of the same cluster."
+
+        HELPCntUpdate("Buffer option: Fixed distance", strText)
+
+    End Sub
+
+    Private Sub HELPCntUpdate(ByVal Title As String, ByVal Text As String)
+
+        'Update the content of the help panel
+        rtxtHELP_CNT.Clear()
+
+        rtxtHELP_CNT.AppendText("   " & vbCrLf & Title)
+        rtxtHELP_CNT.Find(Title, RichTextBoxFinds.MatchCase)
+        rtxtHELP_CNT.SelectionFont = New Drawing.Font("Arial", 12, Drawing.FontStyle.Bold)
+        rtxtHELP_CNT.SelectionColor = Drawing.Color.Black
+        rtxtHELP_CNT.DeselectAll()
+        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf)
+
+        rtxtHELP_CNT.AppendText(Text)
+
+        rtxtHELP_CNT.AppendText(vbCrLf & vbCrLf & vbCrLf)
+        rtxtHELP_CNT.Find("   ", RichTextBoxFinds.MatchCase)
+        rtxtHELP_CNT.ScrollToCaret()
+        rtxtHELP_CNT.DeselectAll()
+
+        rtxtHELP_CNT.Refresh()
 
 
+    End Sub
+#End Region
 
 #Region "Weighted Help"
     Private Sub GroupBox2_Enter(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles GroupBox2.Enter
@@ -2029,6 +2217,5 @@ Public Class frm_intersecttool
 
     End Sub
 #End Region
-
 
 End Class

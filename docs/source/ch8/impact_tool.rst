@@ -15,26 +15,47 @@ Parameters
 
 Input Polyline Layer
 ~~~~~~~~~~~~~~~~~~~~
-.. image::  ../images/ch8_piat/
+.. image::  ../images/ch8_piat/inputlyr.png
 
-Nearest Neighbor Distance
+A single shapefile or featureclass of trajectories, generated using the previous tool.
+
+Nearest Neighbor Distance	
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-.. image::  ../images/ch8_piat/
+.. image::  ../images/ch8_piat/knn.png
+
+As with the clustering tool.  This is the distance beyond which intersection points will be considered noise and discarded.  This is particularly helpful when using long trajectories that may intersect in multiple places, one of which is far from an anticipated primary impact location.  In practice these are generally isolated intersections far from other intersections within the dataset.
 
 Measurement Space
 ~~~~~~~~~~~~~~~~~
 
-.. image::  ../images/ch8_piat/
+.. image::  ../images/ch8_piat/geom.png
 
 The *Measurement Space* parameters indicates where the distance between two observations is compute in :ref:`planar <app-planar>` or :ref:`geodesic <app-geodesic>` space.  The former is faster, but less accurate over large distances.
 
 .. warning::
 
    The error associated with planar distance computation over large distances on a spheroid can be significant.  This processing steps occurs once, and we suggest that you use geodesic distance measures unless you have a compelling reason not to.
-  
+
+Weighted Centroid
+~~~~~~~~~~~~~~~~~
+.. image:: ../images/ch8_piat/weighted.png   
+
+If the input shapefile or featureclass has an iflat (inverse flattening) field, it is possible to compute the weighted centroid of each itnersection cluster.  We compute the weighted centroid as
+
+:math:`\frac{1}{l_{1} * l_{2}}`, where
+
+:math:`l_{1}` is the first trajectory and :math:`l_{2}` is the second trajectory.
+
+.. figure:: ../images/ch8_piat/weighted_ex.png
+   :align: center
+   :figwidth: 85 %
+   
+   A trivial example of weighted (yellow) vs. unweighted (red) centroid.  By weighting the centroid computation the approximate primary impact is 'pulled' towards trajectory intersections with an inverse product ellipticity closer to 1 (the ideal inverse flattening flat).
+
+   
 Clustering Method
 ~~~~~~~~~~~~~~~~~
-.. image:: ../images/ch8_piat
+.. image:: ../images/ch8_piat/cmethod.png
 
 As with the clustering tool, it is possible to cluster the point intersections using either :ref:`DBScan <dbscan>` or :ref:`hierarchal <hierarchical>` clustering methods.  Please see the documentation on that page as the parameters, underlying algorithm, and rationale for application are the same.
 

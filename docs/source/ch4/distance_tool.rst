@@ -10,7 +10,7 @@ This tool computes the distance between each secondary and its *k* nearest neigh
 
 .. image:: ../images/ch4_distance/form.png
 
-This is the first processing step and is required for all input datasets stored as points.
+This is the first processing step and is required for all input datasets stored as points. 
 
 Parameters
 ++++++++++
