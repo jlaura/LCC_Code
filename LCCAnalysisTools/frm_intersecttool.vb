@@ -1232,8 +1232,7 @@ Public Class frm_intersecttool
                 index = randomnumber.Next(0, Unvisited.Count - 1)
                 Dim node = Unvisited(index)
                 old_count = Unvisited.Count
-                'If node = 1077 Or node = 1078 Or node = 1079 Or node = 1076 Or node = 1080 Or node = 1081 Or node = 1082 Or node = 1083 Or node = 1084 Then MsgBox("here", MsgBoxStyle.OkOnly, "gotcha")
-
+                
                 'Remove the node from the unvisited list and the node from the dist_lists
                 Unvisited.RemoveAt(index)
 
@@ -1273,6 +1272,17 @@ Public Class frm_intersecttool
         'Sort the CID master list
         System.Array.Sort(dCIDList)
 
+        'Check to ensure that we have at least one intersection.  If not, exit
+        Dim cluster As Boolean = False
+        For j As Integer = 0 To Ar2.GetUpperBound(0)
+            If Ar2(j) <> -1 Then cluster = True
+        Next
+        If cluster = False Then
+            MsgBox("No intersection clusters generated.  Try loosening the constraints.", MsgBoxStyle.Exclamation, "Clustering Error - No Clusters")
+            ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+            Return
+        End If
+
         'PROGRESS UPDATE: 
         pProDlg.Description = "Counting number of intersections per cluster..."
         PRINTtxt += vbCrLf & " [Counting number of intersections per cluster...]"
@@ -1281,15 +1291,15 @@ Public Class frm_intersecttool
         pTrkCan.Reset()
         For n As Integer = 0 To Ar.GetUpperBound(1)
             'If the main feature has no CID, skip it
-            If Ar2(Ar(0, n)) <> -1 Then
+            If Ar2(CInt(Ar(0, n))) <> -1 Then
                 'Get the first and last occurance of the main feature CID
                 'from the CID master list
                 Dim n1stIndex, nLastIndex As Integer
-                n1stIndex = System.Array.IndexOf(dCIDList, Ar2(Ar(0, n))) + 1
-                nLastIndex = System.Array.LastIndexOf(dCIDList, Ar2(Ar(0, n))) + 1
+                n1stIndex = System.Array.IndexOf(dCIDList, Ar2(CInt(Ar(0, n)))) + 1
+                nLastIndex = System.Array.LastIndexOf(dCIDList, Ar2(CInt(Ar(0, n)))) + 1
                 'Calculate the number of main feature CID occurrances 
                 'from the first and last index of that CID on the master CID list
-                Ar3(Ar(0, n)) = (nLastIndex - n1stIndex) + 1
+                Ar3(CInt(Ar(0, n))) = (nLastIndex - n1stIndex) + 1
             End If
             If Not pTrkCan.Continue Then
                 'SUMMARY PRINT: End program as interrupted
@@ -1330,8 +1340,15 @@ Public Class frm_intersecttool
             End If
         Next
 
+        'The threshold number is dependent on the clustering method selected.
+        Dim threshold_number As Integer = 0
+        If c_method = "dbscn" Then
+            threshold_number = CInt(eps.Text)
+        Else
+            threshold_number = CInt(IAF.sCPNUM)
+        End If
         'Get intersections per cluster statistics and write to log.
-        PRINTtxt += intersectionstats(Ar, Ar2, Ar3, IAF.sCPNUM)
+        PRINTtxt += intersectionstats(Ar, Ar2, Ar3, threshold_number)
 
         p_cPnum = CInt(IAF.sCPNUM)
         ArCPoints.RemoveAll(AddressOf FindCPointByPntCount)
@@ -1403,7 +1420,12 @@ Public Class frm_intersecttool
                 Dim pPoint As New PointClass()
                 pPoint.PutCoords(newCPoint.X, newCPoint.Y)
                 pPColl4.AddPoint(pPoint)
-                cluster_weights.Add(newCPoint.Weight)
+                If Double.IsInfinity(newCPoint.Weight) Then
+                    cluster_weights.Add(1)
+                Else
+                    cluster_weights.Add(newCPoint.Weight)
+                End If
+
             Next
             'Get the centroid for the point collection
             Dim weighted As Boolean = False
@@ -1880,7 +1902,7 @@ Public Class frm_intersecttool
         Return report
     End Function
 
-    Private Function intersectionstats(ByVal Ar, ByVal Ar2, ByVal Ar3, ByVal cluster_threshold)
+    Private Function intersectionstats(ByVal Ar(,) As Double, ByVal Ar2() As Double, ByVal Ar3() As Double, ByVal cluster_threshold As Integer) As String
         Dim dCount, dCountout, n, dRange, dMean, dStd, dIqr, dMin, dMax, dSumsq, dArray(), _
      dMedian, dLQ, dUQ As Double
 

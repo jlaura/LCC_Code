@@ -164,7 +164,7 @@ Partial Class frm_intersecttool
         Me.eps.Name = "eps"
         Me.eps.Size = New System.Drawing.Size(273, 20)
         Me.eps.TabIndex = 0
-        Me.eps.Text = "1500"
+        Me.eps.Text = "7500"
         Me.eps.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'GroupBox3
@@ -432,12 +432,10 @@ Partial Class frm_intersecttool
         '
         Me.radMEASPLAN.Appearance = System.Windows.Forms.Appearance.Button
         Me.radMEASPLAN.AutoSize = True
-        Me.radMEASPLAN.Checked = True
-        Me.radMEASPLAN.Location = New System.Drawing.Point(18, 19)
+        Me.radMEASPLAN.Location = New System.Drawing.Point(72, 18)
         Me.radMEASPLAN.Name = "radMEASPLAN"
         Me.radMEASPLAN.Size = New System.Drawing.Size(47, 23)
         Me.radMEASPLAN.TabIndex = 0
-        Me.radMEASPLAN.TabStop = True
         Me.radMEASPLAN.Text = "Planar"
         Me.radMEASPLAN.UseVisualStyleBackColor = True
         '
@@ -445,7 +443,8 @@ Partial Class frm_intersecttool
         '
         Me.radMEASGEO.Appearance = System.Windows.Forms.Appearance.Button
         Me.radMEASGEO.AutoSize = True
-        Me.radMEASGEO.Location = New System.Drawing.Point(71, 19)
+        Me.radMEASGEO.Checked = True
+        Me.radMEASGEO.Location = New System.Drawing.Point(6, 18)
         Me.radMEASGEO.Name = "radMEASGEO"
         Me.radMEASGEO.Size = New System.Drawing.Size(60, 23)
         Me.radMEASGEO.TabIndex = 1
