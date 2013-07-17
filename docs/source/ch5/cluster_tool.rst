@@ -73,6 +73,8 @@ Clustering Method
 
 The *Clustering Method* is the underlying mathematical algorithm that determines which secondaries are noise and which can be assigned to one or more clusters.  Two options for clustering are:
 
+.. _dbscan:
+
 DBScan
 ^^^^^^^
 DBScan is a density based scan that is ideal for datasets with varying point distribution densities, an unknown number of classes (clusters), and an unknown distance threshold.  This is because DBScan derives clusters based upon the distance between neighbors and the density of neighbors to one another.  Additionally, DBScan is computational more efficient that a Hierarchical clustering.
@@ -133,6 +135,8 @@ The following describes a 'toy' iteration of DBScan and illustrates the underlyi
 .. note:: 
    Step 5 provides a major speed improvement because the total number of points, queried for neighbors, decreases as clusters are identified.  We can assert that once a cluster is formed, the points that comprise said cluster can not be members in another cluster.
 
+.. _hierarchical:
+   
 Hierarchical
 ^^^^^^^^^^^^^
 This tool provides an divisive hierarchical clustering algorithm that seeks to identify small clusters (an individual observation initially) and merge them into progressively larger clusters.  This method visits each point individually and queries its memebership in an existing sub-cluster.  If the point is a member of a sub-cluster a local search is performed to visit all other cluster within *D*, a predetermined distance.  All points that fall within that distance from another member of the sub-cluster are removed from the primary cluster (the global dataset).
