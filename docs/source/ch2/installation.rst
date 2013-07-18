@@ -13,6 +13,15 @@ This tool has been designed to function with ArcMap version 10.0 and greater.  I
    
 Installing the Tool
 -------------------
+The tool is shipped as an ArcGIS Add-in.  Therefore installation is quite straight forward.  The .zip file contains both a PDF version of this documentation and a LCCAnalysisTools.esriaddin file.
+
+Double clikcing on the addin file will launch the addin installation window.
+
+.. image:: ../images/installation/ins_addin.png
+
+Click Install Add-In to install the addin into your ArcMap application.
+
+Launch ArcMap.  The toolbar may have been automatically displayed.  If so, skip the next section, Adding the Tool to ArcMap.
 
 Adding the Tool to ArcMap
 -------------------------

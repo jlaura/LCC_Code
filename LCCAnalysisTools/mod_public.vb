@@ -1707,7 +1707,7 @@ Public Module mod_public
     End Function
     
 
-    Public Sub ExtractNearest(ByRef Ar, ByVal distance_table)
+    Public Sub ExtractNearest(ByRef Ar, ByVal distance_table, ByVal n)
         'Open the distance table
         Dim table = getTableByName(distance_table)
         Dim InFid As Integer = table.FindField("IN_FID")
@@ -1716,11 +1716,12 @@ Public Module mod_public
         'Generate the search curosr
         Dim cursor As ICursor = table.Search(Nothing, True)
         Dim row As IRow = cursor.NextRow()
-
+        'If the workspace is a geodatabase subtract 1 from row.Value(InFID)
+        'Else we are working with a shapefile, subtract 0.
         'Iterate through the rows.
         While Not row Is Nothing
-            If row.Value(NearDist) < Ar(4, row.Value(InFid) - 1) Then
-                Ar(4, row.Value(InFid) - 1) = row.Value(NearDist)
+            If row.Value(NearDist) < Ar(4, row.Value(InFid) - n) Then
+                Ar(4, row.Value(InFid) - n) = row.Value(NearDist)
             End If
             row = cursor.NextRow()
 

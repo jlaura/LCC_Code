@@ -484,7 +484,7 @@ Public Class frm_clustertool
         Dim pFClass As IFeatureClass = pFlayer.FeatureClass 'A property - the datasource for the layer
         Dim pDataset As IDataset = pFClass
         Dim pFDataset As IFeatureDataset = pFClass.FeatureDataset
-        Dim pWrkspc2 As IWorkspace2 = DirectCast(pDataset.Workspace, IWorkspace2)
+        Dim pWrkspc2 As IWorkspace = DirectCast(pDataset.Workspace, IWorkspace)
         Dim pSpatRef As ISpatialReference = GetFLayerSpatRef(pFlayer)
         Dim pGCS As IGeographicCoordinateSystem2 = GetGCS(pSpatRef) ' GetGCS lives in mod_public
         Dim dSemiMajAxis As Double = pGCS.Datum.Spheroid.SemiMajorAxis
@@ -600,7 +600,11 @@ Public Class frm_clustertool
         Dim dFeature1(2, 0) As Double
         pTrkCan.Reset()
 
-        ExtractNearest(Ar, distance_table)
+        'Check whether this is a shapefile or a geodatabase.
+        Dim fid_offset As Integer = 0
+        If pWrkspc2.Type = esriWorkspaceType.esriLocalDatabaseWorkspace Then fid_offset = 1
+
+        ExtractNearest(Ar, distance_table, fid_offset)
 
         If Not pTrkCan.Continue Then
             'SUMMARY PRINT: End program as interrupted
@@ -1135,40 +1139,40 @@ Public Class frm_clustertool
                 measurement_space = True
 
             End If
-                'DBSCAN
-                Dim counter As Integer = 0
-                For i As Integer = 0 To Ar.GetUpperBound(1) - 1
-                    If Ar(4, i) < CDbl(txtNQUERY.Text) Then
-                        Dim Arr As New List(Of Double)
-                        Arr.Add(Ar(0, i))
-                        Arr.Add(Ar(1, i))
-                        Arr.Add(Ar(2, i))
-                        Arr.Add(Ar(3, i))
-                        dist_lists.Add(Arr)
-                        counter += 1
-                    End If
-                Next
+            'DBSCAN
+            Dim counter As Integer = 0
+            For i As Integer = 0 To Ar.GetUpperBound(1) - 1
+                If Ar(4, i) < CDbl(txtNQUERY.Text) Then
+                    Dim Arr As New List(Of Double)
+                    Arr.Add(Ar(0, i))
+                    Arr.Add(Ar(1, i))
+                    Arr.Add(Ar(2, i))
+                    Arr.Add(Ar(3, i))
+                    dist_lists.Add(Arr)
+                    counter += 1
+                End If
+            Next
 
-                Dim cluster_id As Integer = 0
-                'Create a list of the unvisited nodes.  We iterate over these.
-                Dim Unvisited As New List(Of Integer)
-                Unvisited.Clear()
-                For i As Integer = 0 To dist_lists.Count - 1
+            Dim cluster_id As Integer = 0
+            'Create a list of the unvisited nodes.  We iterate over these.
+            Dim Unvisited As New List(Of Integer)
+            Unvisited.Clear()
+            For i As Integer = 0 To dist_lists.Count - 1
                 Unvisited.Add(CInt(dist_lists(i)(0)))
-                Next
+            Next
 
-                'Progress Bar
-                pProDlg.Description = "Clustering using DBScan..."
+            'Progress Bar
+            pProDlg.Description = "Clustering using DBScan..."
             pStepPro.Message = String.Format("{0} / {1} Points Processed", dist_lists.Count - Unvisited.Count, dist_lists.Count)
-                pStepPro.MinRange = 0
-                pStepPro.MaxRange = dist_lists.Count - 1
+            pStepPro.MinRange = 0
+            pStepPro.MaxRange = dist_lists.Count - 1
 
-                'Setup to start at a random node
-                Dim randomnumber As New Random
-                Dim index As Integer = 0
-                Dim old_count As Integer = 0
+            'Setup to start at a random node
+            Dim randomnumber As New Random
+            Dim index As Integer = 0
+            Dim old_count As Integer = 0
 
-                'Iterate until we have visited all nodes.
+            'Iterate until we have visited all nodes.
             Do Until Unvisited.Count = 0
                 'Grab the index of the current node
                 index = randomnumber.Next(0, Unvisited.Count - 1)
@@ -1205,84 +1209,84 @@ Public Class frm_clustertool
                 End If
 
             Loop
-                'Cleanup
-                dist_lists.Clear()
+            'Cleanup
+            dist_lists.Clear()
 
-            End If
-            '********************************************************************************************
+        End If
+        '********************************************************************************************
 
 
-            'Add the CID of the main feature to the master CID list
-            Dim dCIDList(Ar.GetUpperBound(1)) As Double
-            System.Array.Copy(Ar2, 0, dCIDList, 0, Ar2.Length)
-            'Sort the CID master list
-            System.Array.Sort(dCIDList)
+        'Add the CID of the main feature to the master CID list
+        Dim dCIDList(Ar.GetUpperBound(1)) As Double
+        System.Array.Copy(Ar2, 0, dCIDList, 0, Ar2.Length)
+        'Sort the CID master list
+        System.Array.Sort(dCIDList)
 
-            'PROGRESS UPDATE: 
-            pProDlg.Description = "Counting number of features per cluster..."
-            PRINTtxt += vbCrLf & " [Counting number of features per cluster...]"
+        'PROGRESS UPDATE: 
+        pProDlg.Description = "Counting number of features per cluster..."
+        PRINTtxt += vbCrLf & " [Counting number of features per cluster...]"
         pStepPro.Message = "Processing:"
-            'Get the number of CID occurances from the CID master list for each main feature CID
-            pTrkCan.Reset()
-            For n As Integer = 0 To Ar.GetUpperBound(1)
-                'If the main feature has no CID, skip it
-                If Ar2(Ar(0, n)) <> -1 Then
-                    'Get the first and last occurance of the main feature CID
-                    'from the CID master list
-                    Dim n1stIndex, nLastIndex As Integer
-                    n1stIndex = System.Array.IndexOf(dCIDList, Ar2(Ar(0, n))) + 1
-                    nLastIndex = System.Array.LastIndexOf(dCIDList, Ar2(Ar(0, n))) + 1
-                    'Calculate the number of main feature CID occurrances 
-                    'from the first and last index of that CID on the master CID list
-                    Ar3(Ar(0, n)) = (nLastIndex - n1stIndex) + 1
-                End If
-                If Not pTrkCan.Continue Then
-                    'SUMMARY PRINT: End program as interrupted
-                    PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
-                                              sSDate, sSTime)
-                    'Destroy the progress dialog
-                    ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-                    If LogFileName.Text <> "" Then
-                        SaveLog(LogFileName.Text, PRINTtxt)
-                        Return
-                    End If
+        'Get the number of CID occurances from the CID master list for each main feature CID
+        pTrkCan.Reset()
+        For n As Integer = 0 To Ar.GetUpperBound(1)
+            'If the main feature has no CID, skip it
+            If Ar2(Ar(0, n)) <> -1 Then
+                'Get the first and last occurance of the main feature CID
+                'from the CID master list
+                Dim n1stIndex, nLastIndex As Integer
+                n1stIndex = System.Array.IndexOf(dCIDList, Ar2(Ar(0, n))) + 1
+                nLastIndex = System.Array.LastIndexOf(dCIDList, Ar2(Ar(0, n))) + 1
+                'Calculate the number of main feature CID occurrances 
+                'from the first and last index of that CID on the master CID list
+                Ar3(Ar(0, n)) = (nLastIndex - n1stIndex) + 1
+            End If
+            If Not pTrkCan.Continue Then
+                'SUMMARY PRINT: End program as interrupted
+                PRINTtxt += SumEndProgram("INTERRUPTED: Process interrupted by user.", _
+                                          sSDate, sSTime)
+                'Destroy the progress dialog
+                ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+                If LogFileName.Text <> "" Then
+                    SaveLog(LogFileName.Text, PRINTtxt)
                     Return
                 End If
-            Next
+                Return
+            End If
+        Next
 
-            'PROGRESS UPDATE: 
-            pProDlg.Description = "Computing Cluster Statistics..."
-            PRINTtxt += vbCrLf & " [Computing Cluster Statistics...]"
+        'PROGRESS UPDATE: 
+        pProDlg.Description = "Computing Cluster Statistics..."
+        PRINTtxt += vbCrLf & " [Computing Cluster Statistics...]"
 
-            'Compute Cluster Statistics
-            PRINTtxt += CalcClusterStats(Ar, Ar2, Ar3)
+        'Compute Cluster Statistics
+        PRINTtxt += CalcClusterStats(Ar, Ar2, Ar3)
 
-            'PROGRESS UPDATE: 
-            pProDlg.Description = "Creating point feature class..."
-            PRINTtxt += vbCrLf & " [Creating point feature class...]"
+        'PROGRESS UPDATE: 
+        pProDlg.Description = "Creating point feature class..."
+        PRINTtxt += vbCrLf & " [Creating point feature class...]"
 
-            Dim pNewReqFields As IFields = GetClusterReqFields(True)
-            Dim pNewFLayer As IFeatureLayer = New FeatureLayerClass()
-            pNewFLayer.FeatureClass = CreateFeatureClass(pWrkspc2, pFDataset, CAF.sOUT, _
-                                                         pNewReqFields, _
-                                                         esriGeometryType.esriGeometryPoint, _
-                                                         pSpatRef)
-            pNewFLayer.Name = pNewFLayer.FeatureClass.AliasName
-            Dim pNewFClass As IFeatureClass = pNewFLayer.FeatureClass
+        Dim pNewReqFields As IFields = GetClusterReqFields(True)
+        Dim pNewFLayer As IFeatureLayer = New FeatureLayerClass()
+        pNewFLayer.FeatureClass = CreateFeatureClass(pWrkspc2, pFDataset, CAF.sOUT, _
+                                                     pNewReqFields, _
+                                                     esriGeometryType.esriGeometryPoint, _
+                                                     pSpatRef)
+        pNewFLayer.Name = pNewFLayer.FeatureClass.AliasName
+        Dim pNewFClass As IFeatureClass = pNewFLayer.FeatureClass
 
-            Dim pNewFCursor As IFeatureCursor = pNewFClass.Insert(True)
+        Dim pNewFCursor As IFeatureCursor = pNewFClass.Insert(True)
 
-            'Begin edit session and operation
-            Dim pEditor As IEditor = My.ArcMap.Editor
-            pEditor.StartEditing(pWrkspc2)
-            pEditor.StartOperation()
+        'Begin edit session and operation
+        Dim pEditor As IEditor = My.ArcMap.Editor
+        pEditor.StartEditing(pWrkspc2)
+        pEditor.StartOperation()
 
-            'PROGRESS UPDATE: 
-            pProDlg.Description = "Storing point features..."
-            PRINTtxt += vbCrLf & " [Storing point features...]"
+        'PROGRESS UPDATE: 
+        pProDlg.Description = "Storing point features..."
+        PRINTtxt += vbCrLf & " [Storing point features...]"
 
-            'Update the features with the values computed above
-            pTrkCan.Reset()
+        'Update the features with the values computed above
+        pTrkCan.Reset()
         For o As Integer = 0 To Ar2.Length - 1
             If Ar2(Ar(0, o)) <> -1 Then
                 pFeature1 = pFClass.GetFeature(Ar(1, o))
@@ -1307,28 +1311,28 @@ Public Class frm_clustertool
 
         Next
 
-            'Stop edit operation and session, save edits
-            pEditor.StopOperation("Cluster features")
-            StopEditSession(True)
+        'Stop edit operation and session, save edits
+        pEditor.StopOperation("Cluster features")
+        StopEditSession(True)
 
-            'Add the new layer to the map
-            Dim pNewLayer As ILayer = pNewFLayer
-            pMxDoc.ActiveView.FocusMap.AddLayer(pNewLayer)
+        'Add the new layer to the map
+        Dim pNewLayer As ILayer = pNewFLayer
+        pMxDoc.ActiveView.FocusMap.AddLayer(pNewLayer)
 
-            'Refresh the Toc and Map
-            pMxDoc.UpdateContents()
-            pMxDoc.ActiveView.Refresh()
+        'Refresh the Toc and Map
+        pMxDoc.UpdateContents()
+        pMxDoc.ActiveView.Refresh()
 
-            'SUMMARY PRINT: End program as complete
-            PRINTtxt += SumEndProgram("COMPLETE: Cluster process complete.", _
-                                      sSDate, sSTime)
+        'SUMMARY PRINT: End program as complete
+        PRINTtxt += SumEndProgram("COMPLETE: Cluster process complete.", _
+                                  sSDate, sSTime)
 
-            'Destroy the progress dialog
-            ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
-            'Save the log here without a dialog
-            If LogFileName.Text <> "" Then
-                SaveLog(LogFileName.Text, PRINTtxt)
-            End If
+        'Destroy the progress dialog
+        ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)
+        'Save the log here without a dialog
+        If LogFileName.Text <> "" Then
+            SaveLog(LogFileName.Text, PRINTtxt)
+        End If
 
     End Sub
 

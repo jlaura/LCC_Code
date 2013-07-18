@@ -177,7 +177,7 @@ Public Class frm_dirdistool
         Dim Mean As Double = sum / CntArray.Count
         'Populate the mininum distance text box with the optimized distance
 
-        txtDDPNUM.Text = CStr(Math.Round(Mean, 2))
+        txtDDPNUM.Text = CStr(Math.Round(Mean, 0))
         
         'Destroy the progress dialog
         ProgressDialogDispose(pProDlg, pStepPro, pTrkCan, pProDlgFact)

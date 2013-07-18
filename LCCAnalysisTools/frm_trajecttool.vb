@@ -622,14 +622,14 @@ Public Class frm_trajecttool
                         Dim iCID As Integer = pFeature1.Value(pFeature1.Fields.FindField("cid"))
                         Dim dIFlat As Double = pFeature1.Value(pFeature1.Fields.FindField("iflat"))
                         Dim dMajAxis As Double = pFeature1.Value(pFeature1.Fields.FindField("majaxis"))
-                        Dim dFFX As Integer = pFeature1.Value(pFeature1.Fields.FindField("ffx"))
-                        Dim dFFY As Integer = pFeature1.Value(pFeature1.Fields.FindField("ffy"))
-                        Dim dFTX As Integer = pFeature1.Value(pFeature1.Fields.FindField("ftx"))
-                        Dim dFTY As Integer = pFeature1.Value(pFeature1.Fields.FindField("fty"))
-                        Dim dTFX As Integer = pFeature1.Value(pFeature1.Fields.FindField("tfx"))
-                        Dim dTFY As Integer = pFeature1.Value(pFeature1.Fields.FindField("tfy"))
-                        Dim dTTX As Integer = pFeature1.Value(pFeature1.Fields.FindField("ttx"))
-                        Dim dTTY As Integer = pFeature1.Value(pFeature1.Fields.FindField("tty"))
+                        Dim dFFX As Double = pFeature1.Value(pFeature1.Fields.FindField("ffx"))
+                        Dim dFFY As Double = pFeature1.Value(pFeature1.Fields.FindField("ffy"))
+                        Dim dFTX As Double = pFeature1.Value(pFeature1.Fields.FindField("ftx"))
+                        Dim dFTY As Double = pFeature1.Value(pFeature1.Fields.FindField("fty"))
+                        Dim dTFX As Double = pFeature1.Value(pFeature1.Fields.FindField("tfx"))
+                        Dim dTFY As Double = pFeature1.Value(pFeature1.Fields.FindField("tfy"))
+                        Dim dTTX As Double = pFeature1.Value(pFeature1.Fields.FindField("ttx"))
+                        Dim dTTY As Double = pFeature1.Value(pFeature1.Fields.FindField("tty"))
 
                         ArInDDs.Add(New ClusterDD(Nothing, iCID, Nothing, dIFlat, dMajAxis, _
                                                   dFFX, dFFY, dFTX, dFTY, _
