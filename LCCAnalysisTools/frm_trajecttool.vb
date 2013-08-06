@@ -729,6 +729,18 @@ Public Class frm_trajecttool
         Dim dTrajDist As Double = Nothing
         If TAF.bTDDEG = True Then
             Select Case TAF.sTDDEGVAL
+                Case "10"
+                    dTrajDist = GetGeodeticDist(0, 0, 0.1, 5, _
+                                                pGCS.Datum.Spheroid.SemiMajorAxis, _
+                                                pGCS.Datum.Spheroid.SemiMinorAxis)
+                Case "24"
+                    dTrajDist = GetGeodeticDist(0, 0, 0.1, 12, _
+                                            pGCS.Datum.Spheroid.SemiMajorAxis, _
+                                            pGCS.Datum.Spheroid.SemiMinorAxis)
+                Case "45"
+                    dTrajDist = GetGeodeticDist(0, 0, 0.1, 22.5, _
+                                              pGCS.Datum.Spheroid.SemiMajorAxis, _
+                                              pGCS.Datum.Spheroid.SemiMinorAxis)
                 Case "90"
                     dTrajDist = GetGeodeticDist(0, 0, 0.1, 45, _
                                               pGCS.Datum.Spheroid.SemiMajorAxis, _

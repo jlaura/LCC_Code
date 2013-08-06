@@ -297,7 +297,7 @@ Partial Class frm_trajecttool
         '
         Me.cboTDDEGVAL.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cboTDDEGVAL.FormattingEnabled = True
-        Me.cboTDDEGVAL.Items.AddRange(New Object() {"90", "180", "270", "360"})
+        Me.cboTDDEGVAL.Items.AddRange(New Object() {"10", "24", "45", "90", "180", "270", "360"})
         Me.cboTDDEGVAL.Location = New System.Drawing.Point(36, 19)
         Me.cboTDDEGVAL.Name = "cboTDDEGVAL"
         Me.cboTDDEGVAL.Size = New System.Drawing.Size(83, 21)
