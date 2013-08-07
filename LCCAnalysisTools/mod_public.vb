@@ -1804,5 +1804,87 @@ Public Module mod_public
     End Function
 #End Region
 
+    Public Class KDTree
+        Private median As Double
+        Private left As List(Of Double)
+        Private right As List(Of Double)
+
+        'Public Sub New(ByVal t1 As Object, ByVal t2 As Object)
+        '    Me.t1 = t1
+        '    Me.t2 = t2
+        'End Sub
+        'Public Property m_t1() As Object
+        '    Get
+        '        Return t1
+        '    End Get
+        '    Set(ByVal value As Object)
+        '        t1 = t1
+        '    End Set
+        'End Property
+        'Public Property m_t2() As Object
+        '    Get
+        '        Return t2
+        '    End Get
+        '    Set(ByVal value As Object)
+        '        t2 = t2
+        '    End Set
+        'End Property
+    End Class
+
+#Region "KDTree"
+    'This is a stub for a 2D-Tree that should significantly improve performance of the primary impact approximation tool.
+    Public Function Build_KD_Tree(ByVal depth As Integer, ByVal Points(,) As Double)
+        '1. Check to see that the tree has enough points.  Otherwise this recursively loops forever
+        If Points.GetUpperBound(1) - 1 = 0 Then
+            'Return
+        ElseIf Points.GetUpperBound(1) - 1 = 1 Then
+            'Create a Leaf
+        End If
+
+        '2. Partition the points and get the median
+        If Points.GetUpperBound(1) - 1 Mod 2 = 0 Then
+            'Even depth, partition on the x value
+            partitionx(Points)
+        Else
+            'Odd depth, partition on the y value
+            partitiony(Points)
+        End If
+
+        'left_children = Build_KD_Tree(depth +1, left_children)
+        'right_children = Build_KD_Tree(depth + 1, right_children)
+
+        'Return median, left_children, right_children
+    End Function
+
+    Private Function partitionx(ByVal Points)
+        'Sort by the x coordinate
+        'find the median, check that the median value is unique, if not step down until it is
+        'Partition the list at the median, into lt and gt equal to
+        ' return the median, the lt list and the gt list
+    End Function
+
+    Private Function partitiony(ByVal Points)
+        'Sort by the y coordinate
+        'find the median, check that the median value is unique, if not step down until it is
+        'Partition the list at the median, into lt and gt equal to
+        ' return the median, the lt list and the gt list
+    End Function
+
+    Public Function nearest_neighbor(ByVal lval As Double, ByVal rval As Double, ByVal kdtree As KDTree)
+        'medianValue = kdtree.median
+        'Dim SubTree As KDTree
+        'If lval < medianValue Then
+        '    subtree = kdtree.leftchildren
+        'Else
+        '    subtree = kdtree.rightchildren
+        'End If
+
+        'retval = nearest_neighbor(rval, lval, SubTree)
+
+        'Return retval
+        Return Nothing
+    End Function
+
+#End Region
 End Module
 
