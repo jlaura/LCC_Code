@@ -274,11 +274,12 @@ Public Class frm_distancetool
         pProDlg.Description = "Extracting Nearest Neighbor distances..."
 
         Dim feature(2, 0) As Double 'Indices are OID | xcoord | ycoord
+
         For i As Integer = 0 To Ar.GetUpperBound(1)
             feature(0, 0) = Ar(1, i)
             feature(1, 0) = Ar(2, i)
             feature(2, 0) = Ar(3, i)
-            Dim dist(3, knn) As Double ' Indices are OID | xcoord | ycoord | distance
+            Dim dist(3, CInt(knn)) As Double ' Indices are OID | xcoord | ycoord | distance
 
             'Find the K-Nearest Neighbors in Geodesic space.
             FindNearestBF(Ar, feature, dist, semi_major_axis, semi_minor_axis, knn, bPlan)

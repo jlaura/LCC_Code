@@ -511,7 +511,7 @@ Public Class frm_intersecttool
         '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         pStepPro.MaxRange = ArOIDPairs.Count
         pStepPro.StepValue = 1
-        '<<<<<<<<<q<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         ''PROGRESS UPDATE: 
         'pProDlg.Description = "Removing duplicate intersections..."

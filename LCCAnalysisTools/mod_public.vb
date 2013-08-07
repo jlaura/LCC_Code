@@ -1565,7 +1565,7 @@ Public Module mod_public
         For i As Integer = 0 To Ar.GetUpperBound(1) - 1
             distance = GetDist(Ar(2, i), Ar(3, i), feature(1, 0), feature(2, 0), dSemiMajAxis, dSemiMinAxis, bPlan)
             If distance <> 0 Then
-                If counter <= knn Then
+                If counter < knn Then
                     'Autoload the first n distances and track where the max distance is in the array
                     dist(0, counter) = Ar(1, i)
                     dist(1, counter) = Ar(2, i)
@@ -1622,7 +1622,6 @@ Public Module mod_public
 
         If bPlan Then
             Return Sqrt(((x2 - x1) ^ 2) + ((y2 - y1) ^ 2)) ' This is the Euclidean distance between 2 pts in 2-D space
-
         Else
             Return GetGeodeticDist(y1, x1, y2, x2, dSemiMajAxis, dSemiMinAxis) 'This returns the geodesic distance.
         End If

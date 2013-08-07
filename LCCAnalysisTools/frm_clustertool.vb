@@ -1634,10 +1634,32 @@ Public Class frm_clustertool
         For i = 0 To DistArray.GetUpperBound(0) - 1
             DistArray(i) = 9999999
         Next
+
+        Dim indexmap As New Dictionary(Of Integer, Integer)
+        'This checks for an OID mapping so that non-sequentially mappings can be supported
+
+        Dim fcursor As IFeatureCursor = pFClass.Search(Nothing, False)
+        Dim frow As IFeature = fcursor.NextFeature
+        Dim n As Integer = 0
+        If pWrkspc2.Type = esriWorkspaceType.esriLocalDatabaseWorkspace Then
+            n = 1
+            Dim oid_counter As Integer = 1
+            Do While Not frow Is Nothing
+                indexmap.Add(CInt(frow.OID), oid_counter)
+                oid_counter = oid_counter + 1
+                frow = fcursor.NextFeature
+            Loop
+        Else
+            Dim fid_counter As Integer = 0
+            Do While Not frow Is Nothing
+                indexmap.Add(fid_counter, fid_counter)
+                fid_counter = fid_counter + 1
+            Loop
+        End If
+
         'Open the distance table
         Dim table = getTableByName(distance_table)
-        Dim InFid As Integer = 5
-        InFid = table.FindField("IN_FID")
+        Dim InFid As Integer = table.FindField("IN_FID")
 
         Dim NearDist As Integer = table.FindField("NEAR_DIST")
 
@@ -1646,8 +1668,8 @@ Public Class frm_clustertool
 
         Do While Not row Is Nothing
             Try
-                If row.Value(NearDist) < DistArray(row.Value(InFid) - 1) Then
-                    DistArray(row.Value(InFid) - 1) = row.Value(NearDist)
+                If CDbl(row.Value(NearDist)) < CDbl(DistArray(indexmap(row.Value(InFid)) - n)) Then
+                    DistArray(indexmap(row.Value(InFid)) - n) = CDbl(row.Value(NearDist))
                 End If
                 row = cursor.NextRow
                 If Not pTrkCan.Continue Then
@@ -1656,7 +1678,7 @@ Public Class frm_clustertool
                 End If
             Catch ex As Exception
                 row = cursor.NextRow
-                'MsgBox(row.Value(InFid), MsgBoxStyle.MsgBoxHelp, "Row OID")
+                MsgBox(row.Value(InFid), MsgBoxStyle.MsgBoxHelp, "Row OID")
             End Try
 
         Loop
@@ -1690,11 +1712,11 @@ Public Class frm_clustertool
         'Compute the quartiles
         If IEEERemainder(dCount, 2) = 0 Then
             dMedian = (DistArray(Round(dCount * 0.5)) + _
-                       DistArray(Round((dCount * 0.5) + 1))) / 2
+                        DistArray(Round((dCount * 0.5) + 1))) / 2
             dLQ = (DistArray(Round(dCount * 0.25)) + _
-                   DistArray(Round((dCount * 0.25) + 1))) / 2
+                    DistArray(Round((dCount * 0.25) + 1))) / 2
             dUQ = (DistArray(Round(dCount * 0.75)) + _
-                   DistArray(Round((dCount * 0.75) + 1))) / 2
+                    DistArray(Round((dCount * 0.75) + 1))) / 2
         Else
             dMedian = DistArray(Round(dCount * 0.5))
             dLQ = DistArray(Round(dCount * 0.25))
