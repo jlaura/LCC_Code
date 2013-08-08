@@ -617,6 +617,9 @@ Public Class frm_intersecttool
         'Create an array with field: CNT
         Dim Ar3(ArIntPts.Count - 1) As Double
 
+        'Add a check here for an excessive number of intersections.
+
+
         'PROGRESS UPDATE: 
         pProDlg.Description = "Extracting OID, X and Y values..."
         PRINTtxt += vbCrLf & " [Extracting OID, X and Y values...]"

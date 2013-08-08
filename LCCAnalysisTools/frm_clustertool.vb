@@ -566,6 +566,12 @@ Public Class frm_clustertool
         pProDlg.Description = "Extracting OID, X and Y values..."
         'PRINTtxt += vbCrLf & " [Extracting OID, X and Y values...]"
 
+        'If the spatial reference is planar and the distance computation is geodesic, we need to store the x,y values as lat / lon pairs
+        Dim gcs As Boolean = False
+        If TypeOf pSpatRef Is IProjectedCoordinateSystem And radMEASPLAN.Checked = False Then
+            gcs = True
+        End If
+
         'Populate array with AID,OID,X,Y from all records in feature class.
         Dim cnt As Integer = 0
         Dim pPoint As IPoint = Nothing
@@ -573,8 +579,14 @@ Public Class frm_clustertool
             Ar(0, cnt) = cnt 'AID
             Ar(1, cnt) = pFeature1.OID 'OID
             pPoint = pFeature1.ShapeCopy
-            Ar(2, cnt) = pPoint.X 'X
-            Ar(3, cnt) = pPoint.Y 'Y
+            If gcs = True Then
+                pPoint.Project(pGCS)
+                Ar(2, cnt) = pPoint.X 'X
+                Ar(3, cnt) = pPoint.Y 'Y
+            Else
+                Ar(2, cnt) = pPoint.X 'X
+                Ar(3, cnt) = pPoint.Y 'Y
+            End If
             Ar(4, cnt) = 9999999 ' Placeholder 'really large distance'
             Ar2(cnt) = -1 'CID
             Ar3(cnt) = -1 'CNT

@@ -1534,6 +1534,8 @@ Public Module mod_public
 
         Dim dDist, dDistOld As Double
 
+
+
         If CInt(dFeature1(0, 0)) = pArray(1, pArray.GetLowerBound(1)) Then
             dDistOld = GetDist(pArray(2, pArray.GetLowerBound(1) + 1), _
                                pArray(3, pArray.GetLowerBound(1) + 1), _
@@ -1707,6 +1709,7 @@ Public Module mod_public
     
 
     Public Sub ExtractNearest(ByRef Ar, ByVal distance_table, ByVal n)
+
         'Open the distance table
         Dim table = getTableByName(distance_table)
         Dim InFid As Integer = table.FindField("IN_FID")
